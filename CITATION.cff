@@ -1,0 +1,15 @@
+cff-version: 1.2.0
+message: "Please cite the ECHO-G paper and this software release."
+title: "ECHO-G: Embodied Co-speech Humanoid mOtion Generation"
+type: software
+version: 0.1.0
+date-released: 2026-08-27
+authors:
+  - name: "SOAR-LAB, Nanjing University"
+  - name: "Mondo Robotics"
+license: "LicenseRef-PolyForm-Noncommercial-1.0.0"
+keywords:
+  - co-speech gesture generation
+  - humanoid robots
+  - diffusion transformer
+  - flow matching

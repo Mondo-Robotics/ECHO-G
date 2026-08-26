@@ -1,0 +1,68 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "echo-g"
+version = "0.1.0"
+description = "Direct robot-space co-speech humanoid motion generation with SGDiT"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "PolyForm-Noncommercial-1.0.0" }
+authors = [
+  { name = "SOAR-LAB, Nanjing University" },
+  { name = "Mondo Robotics" },
+]
+keywords = [
+  "co-speech gesture",
+  "diffusion transformer",
+  "flow matching",
+  "humanoid robotics",
+]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Science/Research",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+  "numpy>=1.24",
+  "PyYAML>=6.0",
+  "torch>=2.1",
+]
+
+[project.optional-dependencies]
+preprocess = [
+  "scipy>=1.10",
+  "soundfile>=0.12",
+  "transformers>=5.2,<6",
+]
+dev = [
+  "pytest>=8",
+  "ruff>=0.6",
+]
+
+[project.scripts]
+echo-g-train = "echo_g.training:main"
+echo-g-sample = "echo_g.inference:main"
+echo-g-extract-conditions = "echo_g.conditions:main"
+echo-g-validate-data = "echo_g.validate_data:main"
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
