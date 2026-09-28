@@ -7,9 +7,3 @@
 # (xuhao3e8@gmail.com) and Dr. Shuo Yang (shuo.yang@mondorobotics.com).
 
 from __future__ import annotations
-
-from echo_g.config import ExperimentConfig
-from echo_g.model import SpeechGroundedDiT
-
-__all__ = ["ExperimentConfig", "SpeechGroundedDiT"]
-__version__ = "0.2.0.dev0"

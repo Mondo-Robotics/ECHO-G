@@ -1,0 +1,8 @@
+{
+  "status": "pass",
+  "mujoco_version": "3.10.0",
+  "joint_mapping": "reversed document order remapped to canonical names",
+  "rendered_frames": 3,
+  "synthetic_asset_only": true,
+  "real_g1_xml_and_mesh_validation": "pending external asset"
+}

@@ -1,0 +1,80 @@
+{
+  "schema": "echo-g-v2-dataset-manifest-v1",
+  "release_candidate_date": "2026-09-28",
+  "name": "ECHO-G V2 BEAT2 G1 direct30 full-text drop split",
+  "publication_status": "source_identity_frozen_public_archives_pending",
+  "hugging_face": {
+    "status": "planned_not_uploaded",
+    "repo_id": null,
+    "revision": null,
+    "url": null,
+    "repo_type": "dataset"
+  },
+  "license_status": "final_distribution_terms_pending",
+  "scope": [
+    "processed_robot_motion",
+    "frozen_conditions",
+    "word_time_annotations",
+    "splits",
+    "train_only_statistics",
+    "audits_and_checksums"
+  ],
+  "excluded_from_first_release": [
+    "Seedance",
+    "HumanRetarget_targets",
+    "legacy_all_status_training_split"
+  ],
+  "raw_source_policy": "Raw speech, transcript text and third-party assets use separate fetch/reconstruction instructions under their own terms.",
+  "representation_schema": "projecthermes-g1-39d-standard-v2",
+  "motion_dimension": 39,
+  "fps": 30,
+  "max_valid_frames": 600,
+  "max_text_tokens": 256,
+  "actual_max_text_tokens_in_source_release": 247,
+  "actual_max_text_tokens_in_validation": 73,
+  "audio_dimension": 1024,
+  "text_dimension": 2560,
+  "counts": {
+    "train": 14987,
+    "validation": 3242,
+    "union": 18229,
+    "validation_aligned_frames": 891351,
+    "statistics_training_frames": 3537311
+  },
+  "held_out_speaker_prefixes": [
+    "english_1_wayne_",
+    "english_21_ayana_",
+    "english_3_solomon_"
+  ],
+  "source_identities": {
+    "source_release_version_sha256": "610339f317ad3aa72a007cda14062cbdc39ca655930df14de1a1cb4b4007f4ad",
+    "source_release_version_hash_is_public_archive_hash": false,
+    "splits/train_drop.txt": {
+      "sha256": "18c9d6abdc1eabc79889d2d2cfc6620e75cb2781db9e0824473411b8dbdfe66a",
+      "clips": 14987
+    },
+    "splits/val_common.txt": {
+      "sha256": "36a960134a321f7b2c47c1b24aabfdf1fa8ee213ea59a8570740be196ba7d83b",
+      "clips": 3242
+    },
+    "stats/drop_train.pt": {
+      "sha256": "9378214e1033a7fb309532a040b07f87a9010fbd484a30b8b9962cc75704aac8",
+      "training_clips": 14987,
+      "training_frames": 3537311
+    },
+    "audit/condition/per_clip_condition_motion_audit.csv": {
+      "sha256": "be4feba6a494d7175d5fc1243d17f4aa41d55d88fe9aa1a48866088b88130eb2",
+      "hash_scope": "original_source_audit_before_public_packaging"
+    }
+  },
+  "public_packaging": {
+    "inventory_sha256": null,
+    "word_time_annotation_schema": null,
+    "shards": []
+  },
+  "provenance": {
+    "source_kind": "audited_original_v2_experiment_metadata",
+    "experiment_json_sha256": "ba5ce14ba11974fd7e875125bad9e328d3563c551fea6556baadc85f789e93af",
+    "source_name": "release30_wordtime_v2_20260913_v1/qknorm_wordtime/experiment.json"
+  }
+}

@@ -12,6 +12,7 @@ import csv
 import math
 import os
 import random
+import re
 from collections.abc import Iterator
 from pathlib import Path
 from typing import Any
@@ -29,6 +30,8 @@ def read_stems(path: Path) -> list[str]:
         raise ValueError(f"{path}: split is empty")
     if len(stems) != len(set(stems)):
         raise ValueError(f"{path}: split contains duplicate stems")
+    if any(not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]*", stem) for stem in stems):
+        raise ValueError(f"{path}: split contains an unsafe stem")
     return stems
 
 
@@ -51,7 +54,11 @@ def load_aligned_lengths(path: Path) -> dict[str, int]:
                 raise ValueError(f"{path}: row without a stem")
             if row.get("error"):
                 raise ValueError(f"{path}: audited error for {stem}: {row['error']}")
+            if stem in lengths:
+                raise ValueError(f"{path}: duplicate audited stem {stem}")
             lengths[stem] = int(row["aligned_frames"])
+            if lengths[stem] < 2:
+                raise ValueError(f"{path}: invalid aligned length for {stem}")
     if not lengths:
         raise ValueError(f"{path}: no aligned lengths")
     return lengths
@@ -64,9 +71,7 @@ def load_motion_stats(path: Path, motion_dim: int) -> tuple[torch.Tensor, torch.
     mean = torch.as_tensor(payload["mean"]).float().reshape(-1)
     std = torch.as_tensor(payload["std"]).float().reshape(-1)
     if mean.shape != (motion_dim,) or std.shape != (motion_dim,):
-        raise ValueError(
-            f"{path}: expected {motion_dim}D statistics, got {mean.shape}/{std.shape}"
-        )
+        raise ValueError(f"{path}: expected {motion_dim}D statistics, got {mean.shape}/{std.shape}")
     if not torch.isfinite(mean).all() or not torch.isfinite(std).all():
         raise ValueError(f"{path}: statistics contain non-finite values")
     if torch.any(std <= 0):
@@ -79,6 +84,105 @@ def _audio_features(payload: dict[str, Any]) -> torch.Tensor:
     if key not in payload:
         raise KeyError("condition payload has no audio_features")
     return torch.as_tensor(payload[key]).float()
+
+
+def decode_condition(
+    payload: dict[str, Any],
+    stem: str,
+    config: DataConfig,
+    model_config: ModelConfig,
+    frames: int | None = None,
+) -> dict[str, Any]:
+    audio = _audio_features(payload)
+    if audio.ndim != 2 or audio.shape[1] != model_config.audio_dim:
+        raise ValueError(f"{stem}: invalid audio shape {tuple(audio.shape)}")
+    if float(payload.get("fps", payload.get("latent_fps", config.fps))) != config.fps:
+        raise ValueError(f"{stem}: condition frame rate differs from the configuration")
+    frames = len(audio) if frames is None else frames
+    if not 2 <= frames <= config.max_frames or frames > len(audio):
+        raise ValueError(f"{stem}: input must fit {config.max_frames} frames; split explicitly")
+    if not torch.isfinite(audio).all():
+        raise ValueError(f"{stem}: non-finite audio features")
+    text = torch.as_tensor(payload["text_tokens"]).float()
+    if (
+        text.ndim != 2
+        or text.shape[1] != model_config.text_dim
+        or not 1 <= len(text) <= config.max_text_tokens
+    ):
+        raise ValueError(
+            f"{stem}: expected complete text with at most {config.max_text_tokens} tokens"
+        )
+    token_count = payload.get("n_tokens")
+    if type(token_count) is not int or token_count != len(text):
+        raise ValueError(f"{stem}: text cache was truncated; regenerate full V2 conditions")
+    if not payload.get("has_word_timing") or "token_times" not in payload:
+        raise ValueError(f"{stem}: V2 requires word-derived token timestamps")
+    times = torch.as_tensor(payload["token_times"]).float()
+    if (
+        times.shape != (len(text), 2)
+        or not torch.isfinite(times).all()
+        or bool((times < 0).any())
+        or bool((times[:, 1] < times[:, 0]).any())
+    ):
+        raise ValueError(f"{stem}: invalid token timestamps")
+    if not torch.isfinite(text).all():
+        raise ValueError(f"{stem}: non-finite text features")
+    audio = audio[:frames]
+    if config.conditioning == "text-only":
+        audio = torch.zeros_like(audio)
+    return {
+        "audio": audio,
+        "text": text,
+        "frames": frames,
+        "stem": stem,
+        "frame_times": torch.arange(frames, dtype=torch.float32) / config.fps,
+        "token_centers": times.mean(dim=-1),
+        "has_timing": True,
+    }
+
+
+class ConditionDataset(Dataset[dict[str, Any]]):
+    """Inference conditions without target motion files or dataset statistics."""
+
+    def __init__(
+        self,
+        condition_dir: Path,
+        stems: list[str],
+        config: DataConfig,
+        model_config: ModelConfig,
+        lengths: dict[str, int] | None = None,
+    ) -> None:
+        self.condition_root = condition_dir
+        self.stems = stems
+        self.config = config
+        self.model_config = model_config
+        self.lengths: list[int] = []
+        if not stems or len(stems) != len(set(stems)):
+            raise ValueError("Expected nonempty, unique condition stems")
+        for stem in stems:
+            if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]*", stem):
+                raise ValueError(f"Unsafe stem: {stem!r}")
+            payload = torch.load(
+                condition_dir / f"{stem}.pt", map_location="cpu", weights_only=True
+            )
+            frames = None if lengths is None else min(lengths[stem], config.max_frames)
+            sample = decode_condition(payload, stem, config, model_config, frames)
+            self.lengths.append(sample["frames"])
+
+    def __len__(self) -> int:
+        return len(self.stems)
+
+    def __getitem__(self, index: int) -> dict[str, Any]:
+        stem = self.stems[index]
+        payload = torch.load(
+            self.condition_root / f"{stem}.pt", map_location="cpu", weights_only=True
+        )
+        sample = decode_condition(
+            payload, stem, self.config, self.model_config, self.lengths[index]
+        )
+        # The shared batch allocator uses this tensor; sampling never consumes it.
+        sample["motion"] = torch.zeros(sample["frames"], self.model_config.motion_dim)
+        return sample
 
 
 class RobotSpeechDataset(Dataset[dict[str, Any]]):
@@ -143,9 +247,7 @@ class RobotSpeechDataset(Dataset[dict[str, Any]]):
         condition = torch.load(
             self.condition_root / f"{stem}.pt", map_location="cpu", weights_only=True
         )
-        motion = torch.load(
-            self.motion_root / f"{stem}.pt", map_location="cpu", weights_only=True
-        )
+        motion = torch.load(self.motion_root / f"{stem}.pt", map_location="cpu", weights_only=True)
         audio = _audio_features(condition)
         robot = torch.as_tensor(motion["robot_repr"])
         real_frames = min(int(motion.get("real_num_frames", robot.shape[0])), robot.shape[0])
@@ -182,42 +284,12 @@ class RobotSpeechDataset(Dataset[dict[str, Any]]):
         if audio.shape[-1] != self.model_config.audio_dim:
             raise ValueError(f"{stem}: invalid audio shape {tuple(audio.shape)}")
 
-        if "text_tokens" in condition:
-            text = torch.as_tensor(condition["text_tokens"]).float()
-            text = text[: self.config.max_text_tokens]
-        elif "text_pooled" in condition:
-            text = torch.as_tensor(condition["text_pooled"]).float().reshape(1, -1)
-        else:
-            raise KeyError(f"{stem}: condition payload has no text features")
-        if text.shape[0] == 0 and "text_pooled" in condition:
-            text = torch.as_tensor(condition["text_pooled"]).float().reshape(1, -1)
-        if text.shape[0] == 0 or text.shape[-1] != self.model_config.text_dim:
-            raise ValueError(f"{stem}: invalid text shape {tuple(text.shape)}")
-
-        token_centers = torch.zeros(text.shape[0], dtype=torch.float32)
-        has_timing = bool(condition.get("has_word_timing", False))
-        if has_timing and "token_times" in condition:
-            token_times = torch.as_tensor(condition["token_times"]).float()[: text.shape[0]]
-            if token_times.shape == (text.shape[0], 2) and torch.isfinite(token_times).all():
-                token_centers = token_times.mean(dim=-1)
-            else:
-                has_timing = False
-        else:
-            has_timing = False
-
         normalized_motion = (motion - self.mean) / self.std
         if not torch.isfinite(normalized_motion).all():
             raise ValueError(f"{stem}: normalized motion contains non-finite values")
-        return {
-            "audio": audio,
-            "text": text,
-            "motion": normalized_motion,
-            "frames": frames,
-            "stem": stem,
-            "frame_times": torch.arange(frames, dtype=torch.float32) / self.config.fps,
-            "token_centers": token_centers,
-            "has_timing": has_timing,
-        }
+        sample = decode_condition(condition, stem, self.config, self.model_config, frames)
+        sample["motion"] = normalized_motion
+        return sample
 
 
 class LengthBucketBatchSampler(Sampler[list[int]]):
@@ -296,7 +368,7 @@ def collate_motion(samples: list[dict[str, Any]]) -> dict[str, Any]:
         if sample["has_timing"]:
             time_distance[row, :frames, :tokens] = (
                 sample["frame_times"][:, None] - sample["token_centers"][None, :]
-            ).abs()
+            )
         stems.append(sample["stem"])
     return {
         "audio": audio,

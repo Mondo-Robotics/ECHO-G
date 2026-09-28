@@ -34,12 +34,13 @@ from echo_g.utils import (
     move_batch,
     sha256,
 )
+from echo_g.v2_attention import V2_CONFIG, V2_SCHEMA
 
 LOGGER = logging.getLogger(__name__)
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Train the sinusoidal ECHO-G SGDiT")
+    parser = argparse.ArgumentParser(description="Train the ECHO-G V2 SGDiT")
     parser.add_argument("--config", type=Path, required=True)
     parser.add_argument("--data-root", type=Path, required=True)
     parser.add_argument("--output-dir", type=Path, required=True)
@@ -100,6 +101,7 @@ def build_loaders(
         config.training.seed,
         config.training.bucket_multiplier,
         shuffle=True,
+        drop_last=True,
     )
     val_sampler = LengthBucketBatchSampler(
         val_dataset.lengths,
@@ -107,6 +109,7 @@ def build_loaders(
         config.training.seed,
         config.training.bucket_multiplier,
         shuffle=False,
+        drop_last=True,
     )
     train_loader = DataLoader(
         train_dataset,
@@ -143,30 +146,35 @@ def evaluate(
     temporal_weight: float,
     max_batches: int,
 ) -> float:
-    backup = cpu_state(model.state_dict())
+    # Clone even on CPU: detach().cpu() can still alias the live model.
+    backup = {name: value.detach().cpu().clone() for name, value in model.state_dict().items()}
+    was_training = model.training
     model.load_state_dict(ema, strict=True)
     model.eval()
     total = 0.0
     batches = 0
-    devices = [device.index] if device.type == "cuda" and device.index is not None else []
-    with torch.random.fork_rng(devices=devices):
-        torch.manual_seed(100_003)
-        if device.type == "cuda":
-            torch.cuda.manual_seed_all(100_003)
-        for index, batch in enumerate(loader):
-            if max_batches > 0 and index >= max_batches:
-                break
-            batch = move_batch(batch, device)
-            loss, _, _ = flow_matching_loss(model, batch, 0.0, temporal_weight)
-            if not torch.isfinite(loss):
-                raise FloatingPointError(f"non-finite validation loss at batch {index}")
-            total += float(loss.item())
-            batches += 1
-    if batches == 0:
-        raise ValueError("validation loader produced no batches")
-    model.load_state_dict(backup, strict=True)
-    model.train()
-    return total / batches
+    # manual_seed initializes every CUDA generator; preserve all of them as well.
+    devices = list(range(torch.cuda.device_count())) if torch.cuda.is_available() else []
+    try:
+        with torch.random.fork_rng(devices=devices):
+            torch.manual_seed(100_003)
+            if device.type == "cuda":
+                torch.cuda.manual_seed_all(100_003)
+            for index, batch in enumerate(loader):
+                if max_batches > 0 and index >= max_batches:
+                    break
+                batch = move_batch(batch, device)
+                loss, _, _ = flow_matching_loss(model, batch, 0.0, temporal_weight)
+                if not torch.isfinite(loss):
+                    raise FloatingPointError(f"non-finite validation loss at batch {index}")
+                total += float(loss.item())
+                batches += 1
+        if batches == 0:
+            raise ValueError("validation loader produced no batches")
+        return total / batches
+    finally:
+        model.load_state_dict(backup, strict=True)
+        model.train(was_training)
 
 
 def experiment_metadata(
@@ -190,6 +198,18 @@ def experiment_metadata(
         "val_clips": len(val_dataset),
         "precision": "fp32",
         "amp": False,
+        "architecture": "v2",
+        "conditioning": config.data.conditioning,
+        "max_frames": config.data.max_frames,
+        "max_text_tokens": config.data.max_text_tokens,
+        "wordtime_schema": V2_SCHEMA,
+        "wordtime_mode": "qknorm_wordtime",
+        "wordtime_config": dict(V2_CONFIG),
+        "time_distance_convention": "signed_frame_minus_token_center_seconds",
+        "validation_drop_last": True,
+        "validation_loss_clips": (
+            len(val_dataset) // config.training.batch_size * config.training.batch_size
+        ),
     }
 
 
@@ -250,9 +270,7 @@ def run_training(
     configure_reproducibility(config.training.seed)
     device = resolve_device(device_name)
     output_dir.mkdir(parents=True, exist_ok=True)
-    mean, std = load_motion_stats(
-        data_root / config.data.stats_file, config.model.motion_dim
-    )
+    mean, std = load_motion_stats(data_root / config.data.stats_file, config.model.motion_dim)
     train_dataset, val_dataset, train_sampler, train_loader, val_loader = build_loaders(
         config,
         data_root,
@@ -324,13 +342,25 @@ def run_training(
     accumulation = 0
     reached_step_limit = global_step >= config.training.max_optimizer_steps
     last_validation = float("nan")
+    # Recreating an iterator midway through an epoch consumes a new CPU base
+    # seed. The interrupted run already consumed it; Dataset loading is purely
+    # deterministic, so preserve the training RNG during that reconstruction.
+    preserve_iterator_rng = resume is not None and (
+        next_batch_index > 0 or (train_loader.persistent_workers and epoch > 0)
+    )
 
     while epoch < config.training.max_epochs and not reached_step_limit:
         train_sampler.set_epoch(epoch)
         model.train()
         epoch_losses = torch.zeros(3, dtype=torch.float64)
         epoch_batches = 0
-        for batch_index, batch in enumerate(train_loader):
+        if preserve_iterator_rng:
+            with torch.random.fork_rng(devices=[]):
+                train_iterator = iter(train_loader)
+            preserve_iterator_rng = False
+        else:
+            train_iterator = iter(train_loader)
+        for batch_index, batch in enumerate(train_iterator):
             if batch_index < next_batch_index:
                 continue
             batch = move_batch(batch, device)
@@ -342,8 +372,7 @@ def run_training(
             )
             if not torch.isfinite(total):
                 raise FloatingPointError(
-                    f"non-finite loss at epoch={epoch} batch={batch_index} "
-                    f"stems={batch['stems']}"
+                    f"non-finite loss at epoch={epoch} batch={batch_index} stems={batch['stems']}"
                 )
             (total / config.training.gradient_accumulation).backward()
             accumulation += 1

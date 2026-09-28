@@ -1,0 +1,92 @@
+{
+  "snapshot_date": "2026-09-28",
+  "source_repository": "ProjectHermes_DiT_noWAN",
+  "policy": "Metric computations and physical motion export are preserved; package imports and CLI asset paths are adapted. Original third-party notices are retained. No model weights, datasets, robot XML or meshes are bundled.",
+  "files": [
+    {
+      "source": "hermes/motion_vae/rotation.py",
+      "source_sha256": "105b502124ecaf97805f60ae8be428b3554cbd52f139d001f74c1af208c5c6b6",
+      "target": "src/echo_g/evaluation/rotation.py",
+      "target_sha256": "da50cb6d0b73fc4ca2a25d843df994829cc743260b0eb0c6ac0524f62939b715",
+      "adaptation": "Package import adaptation; project header/future annotations added where absent; computational code unchanged."
+    },
+    {
+      "source": "hermes/robot_retarget/g1_kinematics.py",
+      "source_sha256": "2629aa1cb35f26a7eda2ecde2d6b39735f7e185c64e15c7edcb8207ca88c4cd8",
+      "target": "src/echo_g/evaluation/g1_kinematics.py",
+      "target_sha256": "bd2bd562784bc354ee16b3baa7e1753fae3fd899f208241093875078325b8448",
+      "adaptation": "Package import adaptation; project header/future annotations added where absent; computational code unchanged."
+    },
+    {
+      "source": "hermes/robot_retarget/mujoco_export.py",
+      "source_sha256": "b2b9046f9edaad4465bca3189898c8c48917e60fce28e7766c5cf1e6ed60837e",
+      "target": "src/echo_g/visualization/mujoco_export.py",
+      "target_sha256": "ea3f4c23f4580aec88be1d977bbb99d5056245fb70c7097e68c442903ec4d6d6",
+      "adaptation": "Package import adaptation; project header/future annotations added where absent; computational code unchanged."
+    },
+    {
+      "source": "hermes/robot_fgd/featurize.py",
+      "source_sha256": "838b884a512243b8d3aa1842ce7d0e59b093d63deaf8599e61aa93315e615f8a",
+      "target": "src/echo_g/evaluation/robot_fgd/featurize.py",
+      "target_sha256": "1876b507c44faa6c3cddd8a3ff9fc7916641aa89a2ac30fe01e271d318793ba4",
+      "adaptation": "Package import adaptation; project header/future annotations added where absent; computational code unchanged."
+    },
+    {
+      "source": "hermes/robot_fgd/motion_encoder.py",
+      "source_sha256": "de122ed3a65106d01cf4d054de49428a42777e5b4e9df7fa794d128d3b1f282f",
+      "target": "src/echo_g/evaluation/robot_fgd/motion_encoder.py",
+      "target_sha256": "ba1280b746c3f84391d1ed827b9520d21265a53feea852ddb44bef14242ea683",
+      "adaptation": "Package import adaptation; project header/future annotations added where absent; computational code unchanged."
+    },
+    {
+      "source": "hermes/robot_fgd/skeleton.py",
+      "source_sha256": "fe6e4102572e48058bd66958970b7a89e0b9ba1e482279eef0bc226e872bf26e",
+      "target": "src/echo_g/evaluation/robot_fgd/skeleton.py",
+      "target_sha256": "18b9920e51a432a14cb1640c3cf475983d952d483310d24aad8b6f42f3c196cb",
+      "adaptation": "Package import adaptation; project header/future annotations added where absent; computational code unchanged."
+    },
+    {
+      "source": "hermes/robot_fgd/skeleton_DME.py",
+      "source_sha256": "ed62dd3f10dab25a17332b60c4502d9ed06a93a93f9be13870f1ba4f9b2bbff0",
+      "target": "src/echo_g/evaluation/robot_fgd/skeleton_DME.py",
+      "target_sha256": "6f19d2f9d8be213c27cd9c887c4ed21708f05cb4dba15a766608b4c60bf1eca3",
+      "adaptation": "Package import adaptation; project header/future annotations added where absent; computational code unchanged."
+    },
+    {
+      "source": "hermes/robot_fgd/decoders.py",
+      "source_sha256": "a9fa1b812a0a45a3e48a8f8773b0359d385021db2f613f4aa8341a3310edb5c9",
+      "target": "src/echo_g/evaluation/robot_fgd/decoders.py",
+      "target_sha256": "9af5b6344f79d8019688522a3a729f53ca0fca24328976fc024bfbb8b71bea55",
+      "adaptation": "Package import adaptation; project header/future annotations added where absent; computational code unchanged."
+    },
+    {
+      "source": "hermes/robot_retarget/robot_repr.py",
+      "source_sha256": "9c2b99e3b80c2b329b2dae582894d0587a6b534a439831c481262695aadf660e",
+      "target": "src/echo_g/evaluation/robot_repr.py",
+      "target_sha256": "f71a942d7c716f36bbebddf26ea8b61a27a7692d7839437a2be5c98c68824e85",
+      "adaptation": "Only canonical G1 joint names and dimension constants required by evaluation/export are retained."
+    },
+    {
+      "source": "scripts/eval_g1_motion_cls.py",
+      "source_sha256": "a3b43627143b10336805d63b07b0e0cedd1f45c37061b0c2fbe4929625a2929e",
+      "target": "src/echo_g/evaluation/g1_motion_cls.py",
+      "target_sha256": "f949a0b800c97a40a93e76695f0557234c643aaad45fb4305550712f5145e303",
+      "adaptation": "Metric math unchanged. Package imports adapted; internal asset defaults replaced with required explicit CLI paths; public documentation references updated."
+    },
+    {
+      "source": "scripts/export_robot_repr_mujoco_npz.py",
+      "source_sha256": "8d07020dbfd8c373205a19bcd51ba3d77f680e5b9495a73d884cdcef6fe93e91",
+      "target": "src/echo_g/visualization/export.py",
+      "target_sha256": "769d8bf74cc8edfcefa42ebb9d5f64c270cf55954696edef68b13568bda7f02b",
+      "adaptation": "Package imports adapted; parent-repository path injection removed. Export math and CLI contract preserved."
+    },
+    {
+      "source": "scripts/render_g1_motion.py",
+      "source_sha256": "3e72588d067a3c64ceb9eee947a924353cb3547c6a05223f034de0de12f66f8a",
+      "target": "src/echo_g/visualization/render.py",
+      "target_sha256": "d7c6d1b48f70da880cfa1e75019c225e88f666c609a33cb35d3ea67256ad89e5",
+      "adaptation": "Preserves camera, physical poses, frame resampling and libx264 settings. Explicit XML path, named canonical joint mapping, schema checks, lazy optional imports, streaming frames and renderer cleanup added."
+    }
+  ],
+  "formatting_note": "Ruff formatting/import sorting applied. Narrow file-level exceptions preserve archived object/super/format/zip/loop syntax. Numerical function/class AST verified after excluding imports and docstrings."
+}

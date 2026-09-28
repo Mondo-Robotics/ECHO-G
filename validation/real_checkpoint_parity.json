@@ -1,0 +1,70 @@
+{
+  "status": "pass",
+  "scope": "real_best_checkpoint_frozen_condition_canary",
+  "checkpoint_sha256": "c1e7e863e28b76b710bc18f9e9029836771fc86c1bb9fca42aa9d7655f74a616",
+  "checkpoint_step": 15000,
+  "strict_state_dict_exact": true,
+  "sampling_steps": 8,
+  "guidance_scale": 1.0,
+  "seed": 0,
+  "torch": "2.7.0+cu128",
+  "gpu": "NVIDIA A800-SXM4-80GB",
+  "rows": [
+    {
+      "stem": "english_1_wayne_0_90_90_utt_0001",
+      "frames": 60,
+      "tokens": 8,
+      "input_exact": true,
+      "velocity_exact": true,
+      "prediction_exact": true,
+      "max_abs": 0.0,
+      "signed_vs_absolute_velocity_max_abs": 0.00023218244314193726,
+      "prediction_tensor_sha256": "7102ac246eeb3256d88e742318ed890cc366a050087e02d01fc53c9eb259964b"
+    },
+    {
+      "stem": "english_1_wayne_0_100_100_utt_0000",
+      "frames": 312,
+      "tokens": 40,
+      "input_exact": true,
+      "velocity_exact": true,
+      "prediction_exact": true,
+      "max_abs": 0.0,
+      "signed_vs_absolute_velocity_max_abs": 0.000952601432800293,
+      "prediction_tensor_sha256": "e77818852dc956d67278e97dd8ae1d8e28d8be28f5dd84133b572913ef121204"
+    },
+    {
+      "stem": "english_21_ayana_0_26_26_utt_0000",
+      "frames": 591,
+      "tokens": 73,
+      "input_exact": true,
+      "velocity_exact": true,
+      "prediction_exact": true,
+      "max_abs": 0.0,
+      "signed_vs_absolute_velocity_max_abs": 0.0007491409778594971,
+      "prediction_tensor_sha256": "0248a6b22595b55a698cefebe3fe0252885d0c5a9eb18b701e933d6bd87ccb8f"
+    },
+    {
+      "stem": "english_1_wayne_1_2_2_utt_0049",
+      "frames": 600,
+      "tokens": 52,
+      "input_exact": true,
+      "velocity_exact": true,
+      "prediction_exact": true,
+      "max_abs": 0.0,
+      "signed_vs_absolute_velocity_max_abs": 0.0013884305953979492,
+      "prediction_tensor_sha256": "8dff02ca0fbb76aa7c0f6c18753758f4701696a9961999f14ed47c186775831a"
+    },
+    {
+      "stem": "chinese_13_lu_2_66_66_utt_0000",
+      "frames": 588,
+      "tokens": 247,
+      "input_exact": true,
+      "velocity_exact": true,
+      "prediction_exact": true,
+      "max_abs": 0.0,
+      "signed_vs_absolute_velocity_max_abs": 0.0008268356323242188,
+      "prediction_tensor_sha256": "45f730082b369633d71a4ecfbab4a86963fcc17680e05bb04142cb49b5726839"
+    }
+  ],
+  "validation_limit": "Five clips; not a new full benchmark or raw encoder parity claim."
+}

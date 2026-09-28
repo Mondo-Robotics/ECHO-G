@@ -49,6 +49,7 @@ def synthetic_release(tmp_path: Path) -> tuple[Path, ExperimentConfig]:
                 "text_pooled": torch.randn(12, generator=generator),
                 "token_times": torch.tensor([[0.0, 0.1], [0.1, 0.2], [0.2, 0.3]]),
                 "has_word_timing": True,
+                "n_tokens": 3,
             },
             condition_root / f"{stem}.pt",
         )

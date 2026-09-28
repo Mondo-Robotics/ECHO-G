@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "echo-g"
-version = "0.1.0"
-description = "Direct robot-space co-speech humanoid motion generation with SGDiT"
+version = "0.2.0.dev0"
+description = "V2 speech-grounded robot motion with global/local word-time attention"
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "PolyForm-Noncommercial-1.0.0" }
@@ -35,9 +35,21 @@ dependencies = [
 
 [project.optional-dependencies]
 preprocess = [
-  "scipy>=1.10",
-  "soundfile>=0.12",
-  "transformers>=5.2,<6",
+  "torch>=2.4",
+  "scipy==1.15.3",
+  "soundfile==0.13.1",
+  "librosa==0.11.0",
+  "transformers==5.2.0",
+]
+benchmark = [
+  "scipy==1.15.3",
+  "librosa==0.11.0",
+  "soundfile==0.13.1",
+]
+visualization = [
+  "mujoco==3.10.0",
+  "imageio==2.37.0",
+  "imageio-ffmpeg==0.6.0",
 ]
 dev = [
   "pytest>=8",
@@ -47,6 +59,10 @@ dev = [
 [project.scripts]
 echo-g-train = "echo_g.training:main"
 echo-g-sample = "echo_g.inference:main"
+echo-g-infer = "echo_g.inference:infer_main"
+echo-g-eval = "echo_g.evaluation.g1_motion_cls:main"
+echo-g-export-mujoco = "echo_g.visualization.export:main"
+echo-g-render = "echo_g.visualization.render:main"
 echo-g-extract-conditions = "echo_g.conditions:main"
 echo-g-validate-data = "echo_g.validate_data:main"
 

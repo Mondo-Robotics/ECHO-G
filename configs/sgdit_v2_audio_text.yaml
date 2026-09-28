@@ -1,0 +1,58 @@
+# Copyright (c) 2026 SOAR-LAB,
+# School of Intelligence Science and Technology, Nanjing University.
+# Project Hermes is developed by Dr. Hao Xu's team with sponsorship from
+# Mondo Robotics (妙动科技).
+# Licensed under PolyForm Noncommercial License 1.0.0.
+# Commercial use requires written permission from Dr. Hao Xu
+# (xuhao3e8@gmail.com) and Dr. Shuo Yang (shuo.yang@mondorobotics.com).
+
+data:
+  conditioning: audio-text
+  fps: 30
+  max_frames: 600
+  max_text_tokens: 256
+  condition_dir: condition_30fps
+  motion_dir: motion_39d_30fps
+  train_split: splits/train_drop.txt
+  val_split: splits/val_common.txt
+  stats_file: stats/drop_train.pt
+  aligned_lengths_file: audit/condition/per_clip_condition_motion_audit.csv
+  representation_schema: projecthermes-g1-39d-standard-v2
+
+model:
+  motion_dim: 39
+  audio_dim: 1024
+  text_dim: 2560
+  hidden_dim: 768
+  num_layers: 12
+  num_heads: 8
+  feedforward_dim: 2048
+  dropout: 0.0
+  architecture: v2
+  position_encoding: learned
+  max_t: 608
+  max_text_tokens: 256
+
+training:
+  batch_size: 3
+  gradient_accumulation: 16
+  max_optimizer_steps: 63000
+  max_epochs: 400
+  learning_rate: 0.0003
+  weight_decay: 0.0001
+  condition_dropout: 0.1
+  temporal_loss_weight: 0.5
+  ema_decay: 0.999
+  gradient_clip: 1.0
+  seed: 20260825
+  num_workers: 8
+  bucket_multiplier: 64
+  log_every_steps: 50
+  evaluate_every_steps: 5000
+  save_every_steps: 5000
+  validation_batches: 0
+  keep_step_checkpoints: false
+
+sampling:
+  integration_steps: 8
+  guidance_scale: 1.0

@@ -39,5 +39,5 @@ def test_word_timestamps_follow_token_offsets() -> None:
     )
     spans = token_time_spans(transcript, [(0, 5), (5, 6), (6, 11)], words)
     assert torch.allclose(spans[0], torch.tensor([0.1, 0.4]))
-    assert torch.allclose(spans[1], torch.zeros(2))
+    assert torch.allclose(spans[1], torch.tensor([0.4, 0.4]))
     assert torch.allclose(spans[2], torch.tensor([0.6, 1.0]))

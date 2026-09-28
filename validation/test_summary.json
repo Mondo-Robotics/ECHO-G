@@ -1,0 +1,11 @@
+{
+  "status": "pass",
+  "tests": 43,
+  "passed": 42,
+  "skipped": 1,
+  "failures": 0,
+  "errors": 0,
+  "skip_reason": "MuJoCo is not installed in the Hermes CPU test environment",
+  "ruff": "pass",
+  "scope": "CPU unit and regression tests; independent synthetic MuJoCo render validated separately"
+}

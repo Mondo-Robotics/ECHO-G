@@ -16,6 +16,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from echo_g.config import ModelConfig
+from echo_g.v2_attention import V2_CONFIG, attention_weights, block_parameters, initial_logit
 
 
 def timestep_embedding(timestep: torch.Tensor, dimension: int) -> torch.Tensor:
@@ -32,29 +33,11 @@ def timestep_embedding(timestep: torch.Tensor, dimension: int) -> torch.Tensor:
     return embedding
 
 
-def sinusoidal_position_encoding(
-    frames: int,
-    dimension: int,
-    device: torch.device,
-    dtype: torch.dtype,
-) -> torch.Tensor:
-    if frames <= 0:
-        raise ValueError("frames must be positive")
-    positions = torch.arange(frames, device=device, dtype=torch.float32)[:, None]
-    even_indices = torch.arange(0, dimension, 2, device=device, dtype=torch.float32)
-    divisor = torch.exp(even_indices * (-math.log(10_000.0) / dimension))
-    angles = positions * divisor
-    encoding = torch.zeros(frames, dimension, device=device, dtype=torch.float32)
-    encoding[:, 0::2] = torch.sin(angles)
-    encoding[:, 1::2] = torch.cos(angles[:, : encoding[:, 1::2].shape[1]])
-    return encoding.unsqueeze(0).to(dtype=dtype)
-
-
 def modulate(values: torch.Tensor, shift: torch.Tensor, scale: torch.Tensor) -> torch.Tensor:
     return values * (1.0 + scale.unsqueeze(1)) + shift.unsqueeze(1)
 
 
-class TimedCrossAttentionBlock(nn.Module):
+class V2CrossAttentionBlock(nn.Module):
     def __init__(self, hidden: int, heads: int, feedforward: int, dropout: float) -> None:
         super().__init__()
         if hidden % heads:
@@ -70,7 +53,6 @@ class TimedCrossAttentionBlock(nn.Module):
         self.key = nn.Linear(hidden, hidden)
         self.value = nn.Linear(hidden, hidden)
         self.cross_output = nn.Linear(hidden, hidden)
-        self.time_bias_strength = nn.Parameter(torch.tensor(0.5))
         self.mlp_norm = nn.LayerNorm(hidden, elementwise_affine=False, eps=1e-6)
         self.mlp = nn.Sequential(
             nn.Linear(hidden, feedforward),
@@ -80,6 +62,30 @@ class TimedCrossAttentionBlock(nn.Module):
         self.adaptive_norm = nn.Sequential(nn.SiLU(), nn.Linear(hidden, 9 * hidden))
         nn.init.zeros_(self.adaptive_norm[-1].weight)
         nn.init.zeros_(self.adaptive_norm[-1].bias)
+        self.qk_temperature_raw = nn.Parameter(
+            torch.full(
+                (heads,),
+                initial_logit(
+                    V2_CONFIG["temperature_init"],
+                    V2_CONFIG["temperature_min"],
+                    V2_CONFIG["temperature_max"],
+                ),
+            )
+        )
+        self.word_sigma_raw = nn.Parameter(
+            torch.full(
+                (heads,),
+                initial_logit(
+                    V2_CONFIG["sigma_init_seconds"],
+                    V2_CONFIG["sigma_min_seconds"],
+                    V2_CONFIG["sigma_max_seconds"],
+                ),
+            )
+        )
+        self.word_lag_raw = nn.Parameter(torch.zeros(heads))
+        self.word_mix_raw = nn.Parameter(
+            torch.full((heads,), initial_logit(V2_CONFIG["init_mix"], 0.0, V2_CONFIG["max_mix"]))
+        )
 
     def cross_attention(
         self,
@@ -94,13 +100,10 @@ class TimedCrossAttentionBlock(nn.Module):
         query = query.transpose(1, 2)
         key = self.key(text).view(batch, tokens, self.heads, self.head_dim).transpose(1, 2)
         value = self.value(text).view(batch, tokens, self.heads, self.head_dim).transpose(1, 2)
-        logits = torch.matmul(query.float(), key.float().transpose(-1, -2))
-        logits = logits / math.sqrt(self.head_dim)
-        time_bias = -F.softplus(self.time_bias_strength.float()) * time_distance.float()
-        logits = logits + time_bias.unsqueeze(1)
-        logits = logits.masked_fill(text_padding_mask[:, None, None, :], float("-inf"))
-        attention = torch.softmax(logits, dim=-1)
-        attended = torch.matmul(attention, value.float()).to(motion.dtype)
+        weights, _ = attention_weights(
+            query, key, text_padding_mask, time_distance, **block_parameters(self)
+        )
+        attended = (weights @ value.float()).to(motion.dtype)
         attended = attended.transpose(1, 2).reshape(batch, frames, hidden)
         return self.cross_output(attended)
 
@@ -141,6 +144,7 @@ class SpeechGroundedDiT(nn.Module):
         self.config = config
         self.motion_dim = config.motion_dim
         self.hidden = config.hidden_dim
+        self.max_t = config.max_t
         self.motion_projection = nn.Linear(config.motion_dim, config.hidden_dim)
         self.audio_norm = nn.LayerNorm(config.audio_dim)
         self.audio_projection = nn.Linear(config.audio_dim, config.hidden_dim)
@@ -151,9 +155,11 @@ class SpeechGroundedDiT(nn.Module):
             nn.SiLU(),
             nn.Linear(config.hidden_dim, config.hidden_dim),
         )
+        self.position = nn.Parameter(torch.zeros(1, config.max_t, config.hidden_dim))
+        nn.init.normal_(self.position, std=0.02)
         self.blocks = nn.ModuleList(
             [
-                TimedCrossAttentionBlock(
+                V2CrossAttentionBlock(
                     config.hidden_dim,
                     config.num_heads,
                     config.feedforward_dim,
@@ -162,9 +168,7 @@ class SpeechGroundedDiT(nn.Module):
                 for _ in range(config.num_layers)
             ]
         )
-        self.final_norm = nn.LayerNorm(
-            config.hidden_dim, elementwise_affine=False, eps=1e-6
-        )
+        self.final_norm = nn.LayerNorm(config.hidden_dim, elementwise_affine=False, eps=1e-6)
         self.final_adaptive_norm = nn.Sequential(
             nn.SiLU(), nn.Linear(config.hidden_dim, 2 * config.hidden_dim)
         )
@@ -177,7 +181,15 @@ class SpeechGroundedDiT(nn.Module):
     @classmethod
     def from_checkpoint_config(cls, payload: dict[str, Any]) -> SpeechGroundedDiT:
         if "hidden" in payload:
-            position_encoding = payload.get("pos_enc", "sinusoidal")
+            required = {"motion_dim", "max_t", "pos_enc", "hidden", "layers", "heads", "ff_dim"}
+            missing = sorted(required - payload.keys())
+            allowed = required | {"audio_dim", "text_dim", "dropout"}
+            unknown = sorted(payload.keys() - allowed)
+            if missing or unknown or payload.get("pos_enc") != "learned":
+                raise ValueError(
+                    f"invalid original V2 model_config: missing={missing}, unknown={unknown}; "
+                    "pos_enc must be learned"
+                )
             config = ModelConfig(
                 motion_dim=int(payload["motion_dim"]),
                 audio_dim=int(payload.get("audio_dim", 1024)),
@@ -187,16 +199,20 @@ class SpeechGroundedDiT(nn.Module):
                 num_heads=int(payload["heads"]),
                 feedforward_dim=int(payload["ff_dim"]),
                 dropout=float(payload.get("dropout", 0.0)),
-                position_encoding=str(position_encoding),
+                max_t=int(payload["max_t"]),
             )
         else:
+            if payload.get("architecture") != "v2":
+                raise ValueError("checkpoint must explicitly declare architecture='v2'")
             config = ModelConfig(**payload)
         return cls(config)
 
     def positional_encoding(
         self, frames: int, device: torch.device, dtype: torch.dtype
     ) -> torch.Tensor:
-        return sinusoidal_position_encoding(frames, self.hidden, device, dtype)
+        if not 1 <= frames <= self.max_t:
+            raise ValueError(f"sequence length {frames} exceeds model capacity [1, {self.max_t}]")
+        return self.position[:, :frames].to(dtype=dtype)
 
     def forward(
         self,
@@ -209,6 +225,8 @@ class SpeechGroundedDiT(nn.Module):
         time_distance: torch.Tensor,
     ) -> torch.Tensor:
         frames = noised_motion.shape[1]
+        if not 1 <= text_tokens.shape[1] <= self.config.max_text_tokens:
+            raise ValueError("text token count exceeds model capacity")
         hidden = (
             self.motion_projection(noised_motion)
             + self.audio_projection(self.audio_norm(audio))

@@ -1,0 +1,187 @@
+{
+  "schema": "echo-g-v2-historical-reference-results-v1",
+  "status": "historical_reference_not_current_branch_full_benchmark",
+  "checkpoint_sha256": "c1e7e863e28b76b710bc18f9e9029836771fc86c1bb9fca42aa9d7655f74a616",
+  "weights": "ema",
+  "checkpoint_step": 15000,
+  "historical_evaluator": {
+    "commit": "e4be2e8955e47dc591427ae8d1d25cb4cc04de43",
+    "sha256": "f76b3e281436eb0af13b3a76e70b7694e49067c6bfc2a77e080fe14cd64482e7"
+  },
+  "single_seed": {
+    "date": "2026-09-19",
+    "clips": 3242,
+    "frames": 891351,
+    "seed": 0,
+    "euler_steps": 8,
+    "cfg": 1.0,
+    "metrics": {
+      "FGD": 2.2783488876001456,
+      "Div": 0.8402629311262025,
+      "Div_GT": 1.1597175934725334,
+      "Div_signed_gap": -0.3194546623463309,
+      "Div_gap": 0.3194546623463309,
+      "Div_relative_gap": 0.27545901187011423,
+      "Multimodality": null,
+      "Multimodality_eq16_literal": null,
+      "Multimodality_status": "SKIPPED_NO_MULTIRUN",
+      "Multimodality_clips": 0,
+      "Multimodality_runs_per_clip": 0,
+      "Multimodality_pairs_per_clip": 0,
+      "Multimodality_frames": 0,
+      "SRGR": 0.7488324639999308,
+      "SRGR_numerator": 3502630.927246794,
+      "SRGR_denominator": 4677456.034073755,
+      "SRGR_semantic_mass": 155915.20113579184,
+      "SRGR_frames": 891351,
+      "BA": {
+        "mean": 0.4713691178275428,
+        "std": 0.14317351093920674,
+        "min": 0.0,
+        "max": 0.7767299552734128,
+        "n": 3242,
+        "mean_unweighted": 0.45640290698131264
+      },
+      "BA_GT": {
+        "mean": 0.5344117589875796,
+        "std": 0.1456949351917425,
+        "min": 0.0,
+        "max": 0.8210771052229192,
+        "n": 3242,
+        "mean_unweighted": 0.5273153737839774
+      },
+      "BA_signed_gap": -0.06304264116003683,
+      "BA_gap": 0.06304264116003683,
+      "BA_relative_gap": 0.11796641840267219,
+      "Jerk": {
+        "mean": 50.6834785348363,
+        "std": 16.442136495391157,
+        "min": 28.33631612697754,
+        "max": 174.18266904389515,
+        "n": 3242
+      },
+      "Jerk_GT": {
+        "mean": 38.61603495422704,
+        "std": 24.312826089231805,
+        "min": 6.5389986215680915,
+        "max": 119.85628628771406,
+        "n": 3242
+      },
+      "Jerk_signed_gap": 12.067443580609257,
+      "Jerk_gap": 12.067443580609257,
+      "Jerk_relative_gap": 0.31249825609784193,
+      "Jerk_ratio": 1.312498256097842,
+      "Jerk_length_weighted": {
+        "mean": 48.32277587780043,
+        "std": 13.655856242734684,
+        "min": 28.33631612697754,
+        "max": 174.18266904389515,
+        "n": 3242,
+        "weight_sum": 881625
+      },
+      "Jerk_GT_length_weighted": {
+        "mean": 39.28395519409566,
+        "std": 24.45331850520345,
+        "min": 6.5389986215680915,
+        "max": 119.85628628771406,
+        "n": 3242,
+        "weight_sum": 881625
+      },
+      "Jerk_length_weighted_signed_gap": 9.03882068370477,
+      "Jerk_length_weighted_gap": 9.03882068370477,
+      "Jerk_length_weighted_relative_gap": 0.23008937463260562,
+      "Jerk_length_weighted_ratio": 1.2300893746326056,
+      "jerk_generated": {
+        "mean": 50.6834785348363,
+        "std": 16.442136495391157,
+        "min": 28.33631612697754,
+        "max": 174.18266904389515,
+        "n": 3242
+      },
+      "jerk_reference": {
+        "mean": 38.61603495422704,
+        "std": 24.312826089231805,
+        "min": 6.5389986215680915,
+        "max": 119.85628628771406,
+        "n": 3242
+      },
+      "jerk_generated_length_weighted": {
+        "mean": 48.32277587780043,
+        "std": 13.655856242734684,
+        "min": 28.33631612697754,
+        "max": 174.18266904389515,
+        "n": 3242,
+        "weight_sum": 881625
+      },
+      "jerk_reference_length_weighted": {
+        "mean": 39.28395519409566,
+        "std": 24.45331850520345,
+        "min": 6.5389986215680915,
+        "max": 119.85628628771406,
+        "n": 3242,
+        "weight_sum": 881625
+      },
+      "foot_ground_error": {
+        "mean": 0.00843468832701421,
+        "std": 0.00424979359001137,
+        "min": 0.0009277396032839644,
+        "max": 0.02945559415297631,
+        "n": 3242
+      },
+      "contact_sliding_speed": {
+        "mean": 0.05190072521650078,
+        "std": 0.019878843994961003,
+        "min": 0.025531968101859093,
+        "max": 0.4245621860027313,
+        "n": 3242
+      }
+    },
+    "source_report_sha256": "661e3eddb30746ead61f226be883ca198f39f15273f7916baf1986ad286c5916"
+  },
+  "mm20": {
+    "date": "2026-09-19",
+    "seeds": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19
+    ],
+    "clips": 3242,
+    "predictions": 64840,
+    "frames_across_seeds": 17827020,
+    "value": 1.7855559846504696,
+    "eq16_literal_diagnostic": 1.6962781854179545,
+    "source_report_sha256": "1d8d94609303e2d39184bc828e65cdcfbf7b45da8a4a5c7c4a177f3c7c1fb53f",
+    "aggregation": "Per-stem mean pairwise pose-only 30-body G1 FK L1 distance across 190 unordered pairs; then clip-equal mean. No division by the 90 coordinate dimensions."
+  },
+  "historical_standalone_port_validation": {
+    "date": "2026-09-19",
+    "clips": 3242,
+    "frames": 891351,
+    "exact_clips": 3242,
+    "max_abs": 0.0,
+    "source_report_sha256": "ff214afecefea6da57b63c3e64ad382debd020b257e83df1fc3d8cb3df8857e3",
+    "scope": "Earlier standalone inference implementation with fixed frozen conditions; this is not a validation result of the new src/echo_g package."
+  },
+  "current_branch_full_set_benchmark": {
+    "status": "not_run",
+    "report": null
+  },
+  "raw_input_limitations": "Earlier raw feature re-extraction did not meet historical audio-cache tolerance. Exact source-cache audio reproduction is not claimed."
+}

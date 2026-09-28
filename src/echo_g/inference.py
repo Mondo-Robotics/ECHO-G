@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import argparse
 import logging
+import math
 from pathlib import Path
 from typing import Any
 
@@ -18,9 +19,12 @@ from torch.utils.data import DataLoader
 
 from echo_g.config import ExperimentConfig
 from echo_g.data import (
+    ConditionDataset,
     LengthBucketBatchSampler,
     RobotSpeechDataset,
     collate_motion,
+    load_aligned_lengths,
+    read_stems,
 )
 from echo_g.flow import sample_euler
 from echo_g.model import SpeechGroundedDiT
@@ -28,23 +32,33 @@ from echo_g.training import resolve_device
 from echo_g.utils import (
     atomic_json_save,
     atomic_torch_save,
+    configure_reproducibility,
     move_batch,
     sha256,
     stable_seed,
 )
+from echo_g.v2_attention import V2_CONFIG, V2_SCHEMA
 
 LOGGER = logging.getLogger(__name__)
+TIME_CONVENTION = "signed_frame_minus_token_center_seconds"
 
 
-def parse_args() -> argparse.Namespace:
+def parse_args(condition_only: bool = False) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Sample robot motion with ECHO-G SGDiT")
     parser.add_argument("--checkpoint", type=Path, required=True)
-    parser.add_argument("--data-root", type=Path, required=True)
+    if condition_only:
+        parser.add_argument("--condition-dir", type=Path, required=True)
+        parser.add_argument("--stem-list", type=Path)
+        parser.add_argument("--lengths-csv", type=Path)
+        parser.set_defaults(data_root=None)
+    else:
+        parser.add_argument("--data-root", type=Path, required=True)
+        parser.set_defaults(condition_dir=None, stem_list=None, lengths_csv=None)
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument(
         "--config",
         type=Path,
-        help="Required only for legacy paper checkpoints without an embedded config",
+        help="Required for original V2 checkpoints without an embedded package config",
     )
     parser.add_argument("--split", choices=["train", "val"], default="val")
     parser.add_argument("--seeds", type=int, nargs="+", default=[0])
@@ -77,21 +91,45 @@ def load_model_and_config(
     experiment = checkpoint["experiment"]
     if "config" in experiment:
         config = ExperimentConfig.from_dict(experiment["config"])
+        if config_path is not None and ExperimentConfig.from_yaml(config_path) != config:
+            raise ValueError("--config differs from the checkpoint's embedded configuration")
         model = SpeechGroundedDiT(config.model)
     else:
         if config_path is None:
-            raise ValueError("--config is required for a legacy paper checkpoint")
+            raise ValueError("--config is required for a original V2 checkpoint")
         config = ExperimentConfig.from_yaml(config_path)
         model_config = checkpoint.get("model_config")
         if not isinstance(model_config, dict):
-            raise ValueError(f"{checkpoint_path}: missing legacy model_config")
+            raise ValueError(f"{checkpoint_path}: missing V2 model_config")
+        expected = {
+            "wordtime_schema": V2_SCHEMA,
+            "wordtime_mode": "qknorm_wordtime",
+            "wordtime_config": V2_CONFIG,
+            "time_distance_convention": TIME_CONVENTION,
+            "max_text_tokens": config.data.max_text_tokens,
+            "conditioning": config.data.conditioning,
+            "target": "robot",
+            "fps": config.data.fps,
+            "max_frames": config.data.max_frames,
+        }
+        for name, value in expected.items():
+            if experiment.get(name) != value:
+                raise ValueError(f"Original checkpoint experiment.{name} differs from V2 config")
         model = SpeechGroundedDiT.from_checkpoint_config(model_config)
         if model.config != config.model:
-            raise ValueError("legacy checkpoint architecture does not match --config")
+            raise ValueError("V2 checkpoint architecture does not match --config")
     model.load_state_dict(checkpoint["ema"], strict=True)
     model.to(device).eval()
-    mean = torch.as_tensor(checkpoint["motion_mean"]).float()
-    std = torch.as_tensor(checkpoint["motion_std"]).float().clamp_min(1e-6)
+    mean = torch.as_tensor(checkpoint["motion_mean"]).float().reshape(-1)
+    std = torch.as_tensor(checkpoint["motion_std"]).float().reshape(-1)
+    if (
+        mean.shape != (model.motion_dim,)
+        or std.shape != mean.shape
+        or not torch.isfinite(mean).all()
+        or not torch.isfinite(std).all()
+        or bool((std <= 0).any())
+    ):
+        raise ValueError("Checkpoint has invalid motion normalization statistics")
     return model, config, mean, std, experiment
 
 
@@ -100,6 +138,7 @@ def validate_prediction(
     expected_frames: int,
     expected_dimension: int,
     seed: int,
+    identity: dict[str, Any],
 ) -> None:
     payload = torch.load(path, map_location="cpu", weights_only=True)
     motion = torch.as_tensor(payload["robot_repr"])
@@ -109,13 +148,14 @@ def validate_prediction(
         "seed": int(payload.get("seed", -1)) == seed,
         "units": payload.get("representation_units") == "physical",
     }
+    checks.update({key: payload.get(key) == value for key, value in identity.items()})
     if not all(checks.values()):
         raise ValueError(f"{path}: incompatible existing prediction {checks}")
 
 
 def export_predictions(
     checkpoint_path: Path,
-    data_root: Path,
+    data_root: Path | None,
     output_dir: Path,
     device_name: str,
     split: str = "val",
@@ -127,7 +167,13 @@ def export_predictions(
     num_workers: int = 4,
     overwrite: bool = False,
     config_path: Path | None = None,
+    condition_dir: Path | None = None,
+    stem_list: Path | None = None,
+    lengths_csv: Path | None = None,
 ) -> Path:
+    if batch_size < 1 or num_workers < 0 or limit < 0:
+        raise ValueError("Invalid batch size, worker count, or limit")
+    configure_reproducibility(0)
     device = resolve_device(device_name)
     model, config, mean, std, experiment = load_model_and_config(
         checkpoint_path, config_path, device
@@ -135,17 +181,42 @@ def export_predictions(
     sample_seeds = [0] if seeds is None else seeds
     if not sample_seeds:
         raise ValueError("at least one sampling seed is required")
-    integration_steps = steps or config.sampling.integration_steps
+    integration_steps = config.sampling.integration_steps if steps is None else steps
     cfg = guidance_scale if guidance_scale is not None else config.sampling.guidance_scale
-    dataset = RobotSpeechDataset(
-        data_root,
-        config.data,
-        config.model,
-        split,
-        mean,
-        std,
-        max_items=limit,
-    )
+    if integration_steps < 1 or not math.isfinite(cfg) or cfg < 0:
+        raise ValueError("Invalid sampling steps or guidance scale")
+    if len(sample_seeds) != len(set(sample_seeds)):
+        raise ValueError("Duplicate sample seeds")
+    if condition_dir is not None:
+        if data_root is not None:
+            raise ValueError("Use either --condition-dir or --data-root")
+        stems = (
+            read_stems(stem_list)
+            if stem_list
+            else sorted(p.stem for p in condition_dir.glob("*.pt"))
+        )
+        if limit:
+            stems = stems[:limit]
+        lengths = load_aligned_lengths(lengths_csv) if lengths_csv else None
+        dataset = ConditionDataset(condition_dir, stems, config.data, config.model, lengths)
+    else:
+        if data_root is None:
+            raise ValueError("A data root or condition directory is required")
+        dataset = RobotSpeechDataset(
+            data_root,
+            config.data,
+            config.model,
+            split,
+            mean,
+            std,
+            max_items=limit,
+        )
+        expected_split_hash = experiment.get(f"{split}_split_sha256")
+        if expected_split_hash and sha256(dataset.split_path) != expected_split_hash:
+            raise ValueError(
+                "Dataset split differs from the checkpoint; "
+                "use condition-only inference for new data"
+            )
     sampler = LengthBucketBatchSampler(
         dataset.lengths,
         batch_size,
@@ -172,6 +243,21 @@ def export_predictions(
         stems = collated["stems"]
         frame_counts = [int(value) for value in collated["motion_mask"].sum(dim=1)]
         batch = move_batch(collated, device)
+        condition_hashes = {stem: sha256(dataset.condition_root / f"{stem}.pt") for stem in stems}
+        identities = {
+            stem: {
+                "source_checkpoint_sha256": checkpoint_hash,
+                "source_condition_sha256": condition_hashes[stem],
+                "integration_steps": integration_steps,
+                "guidance_scale": cfg,
+                "fps": float(config.data.fps),
+                "representation_schema": config.data.representation_schema,
+                "time_distance_convention": TIME_CONVENTION,
+                "conditioning": config.data.conditioning,
+                "stem": stem,
+            }
+            for stem in stems
+        }
         for sample_seed in sample_seeds:
             seed_root = output_dir / f"seed_{sample_seed:03d}"
             output_paths = [seed_root / f"{stem}.pt" for stem in stems]
@@ -183,6 +269,7 @@ def export_predictions(
                         frame_counts[row],
                         config.model.motion_dim,
                         sample_seed,
+                        identities[stems[row]],
                     )
                 else:
                     missing_rows.append(row)
@@ -227,7 +314,7 @@ def export_predictions(
                         "seed": sample_seed,
                         "representation_units": "physical",
                         "representation_schema": config.data.representation_schema,
-                        "source_checkpoint_sha256": checkpoint_hash,
+                        **identities[stem],
                     },
                     output_paths[row],
                 )
@@ -238,11 +325,13 @@ def export_predictions(
 
     expected = len(dataset) * len(sample_seeds)
     manifest = {
-        "schema": "echo-g-sgdit-inference-v1",
+        "schema": "echo-g-v2-inference-v1",
         "status": "complete",
         "checkpoint_sha256": checkpoint_hash,
         "training_schema": experiment.get("schema"),
-        "split": split,
+        "split": split if condition_dir is None else None,
+        "time_distance_convention": TIME_CONVENTION,
+        "wordtime_schema": V2_SCHEMA,
         "utterances": len(dataset),
         "seeds": sample_seeds,
         "expected_files": expected,
@@ -259,9 +348,9 @@ def export_predictions(
     return marker
 
 
-def main() -> None:
+def main(condition_only: bool = False) -> None:
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
-    args = parse_args()
+    args = parse_args(condition_only)
     export_predictions(
         args.checkpoint,
         args.data_root,
@@ -276,7 +365,14 @@ def main() -> None:
         args.num_workers,
         args.overwrite,
         args.config,
+        args.condition_dir,
+        args.stem_list,
+        args.lengths_csv,
     )
+
+
+def infer_main() -> None:
+    main(condition_only=True)
 
 
 if __name__ == "__main__":

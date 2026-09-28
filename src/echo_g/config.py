@@ -19,24 +19,27 @@ import yaml
 class DataConfig:
     fps: int = 30
     max_frames: int = 600
-    max_text_tokens: int = 64
+    max_text_tokens: int = 256
     condition_dir: str = "condition_30fps"
     motion_dir: str = "motion_39d_30fps"
-    train_split: str = "splits/train_all.txt"
+    train_split: str = "splits/train_drop.txt"
     val_split: str = "splits/val_common.txt"
-    stats_file: str = "stats/all_train.pt"
-    aligned_lengths_file: str | None = (
-        "audit/condition/per_clip_condition_motion_audit.csv"
-    )
+    stats_file: str = "stats/drop_train.pt"
+    aligned_lengths_file: str | None = "audit/condition/per_clip_condition_motion_audit.csv"
     representation_schema: str = "projecthermes-g1-39d-standard-v2"
+    conditioning: str = "audio-text"
 
     def validate(self) -> None:
         if self.fps <= 0:
             raise ValueError("data.fps must be positive")
         if self.max_frames < 2:
             raise ValueError("data.max_frames must be at least 2")
-        if self.max_text_tokens <= 0:
-            raise ValueError("data.max_text_tokens must be positive")
+        if not 1 <= self.max_text_tokens <= 256:
+            raise ValueError("data.max_text_tokens must be in [1, 256]")
+        if self.max_frames > 600:
+            raise ValueError("V2 data.max_frames cannot exceed 600")
+        if self.conditioning not in {"audio-text", "text-only"}:
+            raise ValueError("data.conditioning must be audio-text or text-only")
 
 
 @dataclass(frozen=True)
@@ -49,12 +52,18 @@ class ModelConfig:
     num_heads: int = 8
     feedforward_dim: int = 2048
     dropout: float = 0.0
-    position_encoding: str = "sinusoidal"
+    architecture: str = "v2"
+    position_encoding: str = "learned"
+    max_t: int = 608
+    max_text_tokens: int = 256
 
     def validate(self) -> None:
-        if self.position_encoding != "sinusoidal":
-            raise ValueError("this release supports sinusoidal position encoding only")
+        if self.architecture != "v2" or self.position_encoding != "learned":
+            raise ValueError("this branch supports V2 with learned position encoding only")
+        if not 1 <= self.max_text_tokens <= 256:
+            raise ValueError("model.max_text_tokens must be in [1, 256]")
         dimensions = {
+            "max_t": self.max_t,
             "motion_dim": self.motion_dim,
             "audio_dim": self.audio_dim,
             "text_dim": self.text_dim,
@@ -180,6 +189,10 @@ class ExperimentConfig:
         self.model.validate()
         self.training.validate()
         self.sampling.validate()
+        if self.data.max_frames > self.model.max_t:
+            raise ValueError("data.max_frames exceeds model.max_t")
+        if self.data.max_text_tokens > self.model.max_text_tokens:
+            raise ValueError("data.max_text_tokens exceeds model.max_text_tokens")
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)

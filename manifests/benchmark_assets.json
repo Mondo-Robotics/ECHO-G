@@ -1,0 +1,58 @@
+{
+  "schema": "echo-g-v2-benchmark-assets-v1",
+  "status": "asset_packaging_pending",
+  "hugging_face": {
+    "status": "planned_not_uploaded",
+    "repo_id": null,
+    "revision": null,
+    "url": null
+  },
+  "evaluator": "scripts/eval_g1_motion_cls.py",
+  "assets": [
+    {
+      "role": "learned_FGD_encoder",
+      "reference_filename": "g1_aeskconv_full_pure2_w192.bin",
+      "url": null,
+      "sha256": null,
+      "status": "pending_public_asset_identity",
+      "suggested_local_path": "weights/g1_aeskconv_full_pure2_w192.bin",
+      "reference_sha256": "466b18af663156637b3dac8ce5fc074487e287b0c5d2749744fb4580ce00909a",
+      "reference_sha256_source": "audited V2 text-only step025000 evaluation contract, same G1 encoder"
+    },
+    {
+      "role": "BA_mean_velocity_normalization",
+      "reference_filename": "g1_mean_vel_30body.npy",
+      "url": null,
+      "sha256": null,
+      "status": "pending_public_asset_identity",
+      "suggested_local_path": "data/benchmark/g1_mean_vel_30body.npy"
+    },
+    {
+      "role": "SRGR_semantic_cache",
+      "reference_name": "beat2_official_first_match_30fps_val_common_v1",
+      "url": null,
+      "inventory_sha256": null,
+      "required_clips": 3242,
+      "required_frames": 891351,
+      "status": "pending_public_asset_identity",
+      "suggested_local_path": "data/benchmark/semantics_30fps",
+      "payload_protocol": "beat2_official_first_match_30fps_v1"
+    },
+    {
+      "role": "raw_audio_for_BA",
+      "url": null,
+      "status": "source_fetch_or_reconstruction_instructions_pending",
+      "distribution": "source_terms_apply",
+      "suggested_local_path": "data/beat2_audio/<stem>/audio.wav"
+    },
+    {
+      "role": "G1_robot_XML_and_meshes_for_MuJoCo",
+      "url": null,
+      "status": "third_party_fetch_instructions_pending",
+      "distribution": "third_party_terms_apply",
+      "reference_filename": "g1_mocap_29dof.xml",
+      "suggested_local_path": "assets_external/unitree_g1/g1_mocap_29dof.xml"
+    }
+  ],
+  "note": "Null fields are intentional placeholders. Original model benchmark scores do not establish equivalence of arbitrary substitute metric assets."
+}

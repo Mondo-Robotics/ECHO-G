@@ -1,0 +1,41 @@
+{
+  "status": "pass",
+  "wheel": "echo_g-0.2.0.dev0-py3-none-any.whl",
+  "wheel_sha256": "7d009c7f20e72368d2fb4c9bf30ec2a5c0ed49155ed7bfc730e37fbe69aec420",
+  "isolated_install": true,
+  "cwd_outside_checkout": true,
+  "cli_help_checks": [
+    {
+      "command": "echo-g-eval",
+      "exit_code": 0
+    },
+    {
+      "command": "echo-g-export-mujoco",
+      "exit_code": 0
+    },
+    {
+      "command": "echo-g-extract-conditions",
+      "exit_code": 0
+    },
+    {
+      "command": "echo-g-infer",
+      "exit_code": 0
+    },
+    {
+      "command": "echo-g-render",
+      "exit_code": 0
+    },
+    {
+      "command": "echo-g-sample",
+      "exit_code": 0
+    },
+    {
+      "command": "echo-g-train",
+      "exit_code": 0
+    },
+    {
+      "command": "echo-g-validate-data",
+      "exit_code": 0
+    }
+  ]
+}
