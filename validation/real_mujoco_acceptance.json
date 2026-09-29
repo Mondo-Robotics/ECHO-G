@@ -337,5 +337,31 @@
       "audio_duration_seconds": 10.304
     },
     "corrected_on": "2026-09-29"
+  },
+  "render_pipeline_comparison_to_inference_commit": {
+    "commit": "06055037f2bbdbf89a09868ad27d0c586d088a73",
+    "all_compared_files_byte_identical": true,
+    "compared_files": [
+      "scripts/export_robot_repr_mujoco_npz.py",
+      "scripts/render_g1_motion.py",
+      "src/echo_g/utils.py",
+      "src/echo_g/evaluation/g1_kinematics.py",
+      "src/echo_g/evaluation/__init__.py",
+      "src/echo_g/evaluation/rotation.py",
+      "src/echo_g/evaluation/g1_motion_cls.py",
+      "src/echo_g/evaluation/robot_repr.py",
+      "src/echo_g/visualization/__init__.py",
+      "src/echo_g/visualization/render.py",
+      "src/echo_g/visualization/mujoco_export.py",
+      "src/echo_g/visualization/export.py",
+      "src/echo_g/evaluation/robot_fgd/skeleton.py",
+      "src/echo_g/evaluation/robot_fgd/__init__.py",
+      "src/echo_g/evaluation/robot_fgd/featurize.py",
+      "src/echo_g/evaluation/robot_fgd/decoders.py",
+      "src/echo_g/evaluation/robot_fgd/motion_encoder.py",
+      "src/echo_g/evaluation/robot_fgd/skeleton_DME.py"
+    ],
+    "scope": "Export/render modules, wrappers, evaluation utilities and shared utils; the complete recorded installation snapshot is not relabeled as this commit.",
+    "prediction_source": "new full-set inference using commit 06055037f2bbdbf89a09868ad27d0c586d088a73"
   }
 }

@@ -1,6 +1,7 @@
 # V2 release-branch acceptance — 2026-09-29
 
-Implementation commit: `06055037f2bbdbf89a09868ad27d0c586d088a73` on `release/v2-20260928`.
+Inference/cache implementation commit: `06055037f2bbdbf89a09868ad27d0c586d088a73` on
+`release/v2-20260928`. The rendering snapshot is identified separately below.
 This report concerns the packaged implementation. Historical results are retained separately.
 
 ## Cache completeness and package checks
@@ -88,6 +89,11 @@ The package exported and rendered its new prediction for
 real robot, ground and gestures. External assets and media are not bundled in the code repository.
 The remote EGL loader was missing, so the same public pipeline was run in an isolated local
 environment with MuJoCo 3.10.0. No renderer source changes were required.
+The renderer was installed from the recorded working-tree snapshot based on `7043f2f`;
+its export/render modules, wrappers and evaluation utilities are byte-identical to those
+in `0605503`. Its prediction input comes from the new `0605503` full-set inference run.
+The render report retains the actual snapshot hashes rather than relabeling that whole
+snapshot as the later commit.
 
 [Render and media identity report](../validation/real_mujoco_acceptance.json).
 

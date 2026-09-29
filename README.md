@@ -50,7 +50,8 @@ the data release. Seedance is not included.
 The commands below require locally provisioned assets until the Hugging Face links are filled in.
 The new package completed [common3242 and real-input acceptance](docs/BRANCH_VALIDATION.md)
 on 2026-09-29: FGD **2.278311**, three raw-input reference comparisons, and a real G1 video.
-Same-input reference outputs are exact; historical frozen raw-feature-cache agreement remains
+The tested matched-runtime and raw-input reference comparisons are exact; historical
+frozen raw-feature-cache agreement remains
 unmet. Use the frozen conditions for benchmark reproduction.
 
 ## Installation
