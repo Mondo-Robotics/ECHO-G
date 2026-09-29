@@ -1,16 +1,16 @@
-# ECHO-G V2 dataset card
+# ECHO-G dataset card
 
 Status: **uploaded private preview, 2026-09-29** at
 [gaopusen/ECHO-G](https://huggingface.co/datasets/gaopusen/ECHO-G). Access is limited to
 authorized accounts; public release remains pending.
-This card describes the BEAT2-derived data used by V2 audio+text.
+This card describes the BEAT2-derived data used by ECHO-G.
 [Download and usage](DATASET.md) · [Data format](DATA_FORMAT.md).
 
 ## Scope and population
 
 The release targets co-speech motion generation in the Unitree G1 robot representation. It uses
 processed BEAT2-derived motion and aligned frozen speech/text conditions. The first release
-excludes Seedance, HumanRetarget targets, and the earlier all-status model/data configuration.
+includes robot motion and excludes Seedance and human-motion targets.
 
 | Split | File | Clips |
 |---|---|---:|
@@ -25,10 +25,9 @@ Validation holds out speaker prefixes `english_1_wayne_*`, `english_21_ayana_*`,
 historical trainer's batch-three validation loader dropped its final incomplete batch and used
 3,240 examples for checkpoint selection; full benchmark export covers all 3,242.
 
-All model inputs use 30 FPS and at most 600 valid frames (20 seconds). V2 permits 256 tokenizer
-units; the full-text release has at most 247, and common3242 at most 73. Token capacity is
-not a word-count limit. The split, normalization, and text cache differ from older 64-token or
-multi-rate releases.
+All model inputs use 30 FPS and at most 600 valid frames (20 seconds). The model permits
+256 tokenizer units; the dataset has at most 247, and the validation split at most 73.
+Token capacity is not a word-count limit.
 
 ## Included data
 
@@ -64,20 +63,19 @@ an AMASS-compatible input format; this is not a claim that the source is the AMA
    sign-continuous root quaternions; the 29 hinge-joint angles remain unchanged.
 3. Clip-constant vertical grounding, then FK and derived velocity reconstruction at 30 FPS.
 4. Physical-quality checks, explicit exclusions, and severe high-frequency-tail screening.
-5. Direct construction of physical39 with frame-zero base yaw removed. This is a native 30 FPS
-   chain, not the earlier 30→50→30 data pipeline.
+5. Direct construction of physical39 with frame-zero base yaw removed at native 30 FPS.
 6. Audio/motion length screening, condition completion, and frozen common-prefix alignment.
-7. Train-only statistics, frozen split lists, and full-text condition preparation for V2.
+7. Train-only statistics, frozen split lists, and full-text condition preparation.
 
 Mandatory quality checks are Integrity, Foot Contact, Grounding, Self Collision, G1 Continuity,
-Smoothness, and Match, all at Pass. The V2 `drop` policy additionally rejects Joint Limits Fail,
+Smoothness, and Match, all at Pass. The `drop` policy additionally rejects Joint Limits Fail,
 Unknown, and missing statuses, while accepting Pass/Warning. The severe-tail gate excludes clips
 satisfying both world-space J30 ≥ 120 m/s³ and energy above 10 Hz ≥ 10%. The source release also
 uses a fixed explicit-exclusion list, reflected in the released split files.
 
 Final audio screening accepts only `audio_frames - motion_frames` in `[-1, +1]`. There is no
 motion time-warp to audio length. Stored common-prefix lengths define paired loading. Before
-that screen, the drop-policy pool had 18,315 clips; after it, the V2 train/validation union has
+that screen, the drop-policy pool had 18,315 clips; after it, the train/validation union has
 18,229. Frozen full-text preparation changes the text cache, not the split or motion statistics.
 
 ## Representation and normalization

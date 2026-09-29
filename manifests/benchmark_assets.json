@@ -4,7 +4,7 @@
   "hugging_face": {
     "status": "dataset_uploaded_private_preview",
     "repo_id": "gaopusen/ECHO-G",
-    "revision": "da2c78c7c111fd7673da2055544d481e3e61922f",
+    "revision": "6abf2ddc129de54e2d950775023492f34fc71ac5",
     "url": "https://huggingface.co/datasets/gaopusen/ECHO-G",
     "repo_type": "dataset",
     "private": true,
@@ -26,17 +26,17 @@
     {
       "role": "BA_mean_velocity_normalization",
       "reference_filename": "g1_mmae_30body_30fps.npy",
-      "url": "https://huggingface.co/datasets/gaopusen/ECHO-G/resolve/da2c78c7c111fd7673da2055544d481e3e61922f/eval_assets/mmae/g1_mmae_30body_30fps.npy",
+      "url": "https://huggingface.co/datasets/gaopusen/ECHO-G/resolve/6abf2ddc129de54e2d950775023492f34fc71ac5/eval_assets/mmae/g1_mmae_30body_30fps.npy",
       "sha256": "0f763e6d54ca7bb33e49b0336ba2cc3359f9e9d5942e7f475c85c74b4b66e880",
       "status": "included_in_uploaded_private_dataset_preview",
-      "suggested_local_path": "data/echo-g-v2/eval_assets/mmae/g1_mmae_30body_30fps.npy"
+      "suggested_local_path": "data/echo-g/eval_assets/mmae/g1_mmae_30body_30fps.npy"
     },
     {
       "role": "raw_audio_for_BA",
-      "url": "https://huggingface.co/datasets/gaopusen/ECHO-G/tree/da2c78c7c111fd7673da2055544d481e3e61922f/data",
+      "url": "https://huggingface.co/datasets/gaopusen/ECHO-G/tree/6abf2ddc129de54e2d950775023492f34fc71ac5/data",
       "status": "included_in_uploaded_private_dataset_preview",
       "distribution": "source_terms_apply",
-      "suggested_local_path": "data/echo-g-v2/audio/<stem>.wav",
+      "suggested_local_path": "data/echo-g/audio/<stem>.wav",
       "archive_paths": [
         "data/audio-00000-of-00003.tar",
         "data/audio-00001-of-00003.tar",

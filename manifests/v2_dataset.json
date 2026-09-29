@@ -1,12 +1,12 @@
 {
   "schema": "echo-g-v2-dataset-manifest-v1",
   "release_candidate_date": "2026-09-29",
-  "name": "ECHO-G V2 BEAT2 G1 direct30 full-text drop split",
+  "name": "ECHO-G BEAT2 G1 motion dataset",
   "publication_status": "uploaded_private_preview_public_release_terms_pending",
   "hugging_face": {
     "status": "uploaded_private_preview",
     "repo_id": "gaopusen/ECHO-G",
-    "revision": "da2c78c7c111fd7673da2055544d481e3e61922f",
+    "revision": "6abf2ddc129de54e2d950775023492f34fc71ac5",
     "url": "https://huggingface.co/datasets/gaopusen/ECHO-G",
     "repo_type": "dataset",
     "private": true,
@@ -53,7 +53,7 @@
     "english_3_solomon_"
   ],
   "public_packaging": {
-    "inventory_sha256": "0ca25d4bc38f5353626b2a0ea52c4c7b8353dcc61af33f32bdd5c00a2854a13f",
+    "inventory_sha256": "0a827e2a267f6db7945506d930c4a881cb834d0a11d7d73eda01fec5dea220b9",
     "word_time_annotation_schema": "echo-g-word-token-annotations-v1",
     "shards": [
       {
@@ -144,12 +144,12 @@
     "condition_manifest_sha256": "81e0b1197821f9014d147c8d17970ac9143a7d7f72c529d74e891a944d692b01",
     "stats_drop_train_sha256": "dc57d8f9fa5b74d644c7daeb219d2dad656ad4a24910bdbcd9d3d9f559b05ec6",
     "inventory_path": "checksums/SHA256SUMS",
-    "inventory_files": 91164,
+    "inventory_files": 91163,
     "archive_index_sha256": "96931d7dd0fdf34fa60aedd719659946e03e5df57d1ea56569d0e8d7c9f4e77d",
     "archive_index_path": "data_archives.json",
     "archive_bytes": 18523729920,
-    "download_bytes": 18612181475,
-    "download_files": 34
+    "download_bytes": 18612178897,
+    "download_files": 33
   },
   "condition_cache_integrity": {
     "identity_manifest": "manifests/v2_frozen_conditions.json",

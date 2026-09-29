@@ -53,10 +53,10 @@ Set the paths below to the downloaded dataset and external FGD encoder:
 ```bash
 python scripts/eval_g1_motion_cls.py \
   --pred-dir results/v2_audio_text/seed_000 \
-  --ref-dir data/echo-g-v2/motion_39d_30fps \
-  --val-split data/echo-g-v2/splits/val_common.txt \
-  --wav-dir data/echo-g-v2/audio \
-  --mmae-file data/echo-g-v2/eval_assets/mmae/g1_mmae_30body_30fps.npy \
+  --ref-dir data/echo-g/motion_39d_30fps \
+  --val-split data/echo-g/splits/val_common.txt \
+  --wav-dir data/echo-g/audio \
+  --mmae-file data/echo-g/eval_assets/mmae/g1_mmae_30body_30fps.npy \
   --g1-ae-ckpt weights/g1_aeskconv_full_pure2_w192.bin \
   --fps 30 --ba-direction audio_to_motion \
   --enable-foot-metrics --require-all-stems \

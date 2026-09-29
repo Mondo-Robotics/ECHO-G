@@ -13,8 +13,8 @@
   "hugging_face": {
     "status": "uploaded_private_preview",
     "repo_id": "gaopusen/ECHO-G",
-    "revision": "da2c78c7c111fd7673da2055544d481e3e61922f",
-    "url": "https://huggingface.co/datasets/gaopusen/ECHO-G/resolve/da2c78c7c111fd7673da2055544d481e3e61922f/audit/condition/frozen_conditions.json",
+    "revision": "6abf2ddc129de54e2d950775023492f34fc71ac5",
+    "url": "https://huggingface.co/datasets/gaopusen/ECHO-G/resolve/6abf2ddc129de54e2d950775023492f34fc71ac5/audit/condition/frozen_conditions.json",
     "repo_type": "dataset",
     "private": true,
     "access": "authorized_accounts_only"

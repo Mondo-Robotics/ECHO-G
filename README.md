@@ -30,14 +30,14 @@ remain pending. Model weights and the FGD encoder have not been uploaded.
 
 | Asset | Hugging Face location | Status |
 |---|---|---|
-| V2 processed robot-motion dataset | [gaopusen/ECHO-G](https://huggingface.co/datasets/gaopusen/ECHO-G) | Uploaded private preview |
+| Processed robot-motion dataset | [gaopusen/ECHO-G](https://huggingface.co/datasets/gaopusen/ECHO-G) | Uploaded private preview |
 | V2 audio+text `best.pt` (15k, EMA) | **To be added** | Upload pending |
 | Benchmark FGD encoder | **To be added** | Weight upload pending; identity recorded |
 | Frozen BA normalization | With dataset | Included in the private dataset preview |
 
 The prepared dataset contains processed robot motions, frozen audio/text conditions, clip-aligned
 audio, source transcripts, word-time annotations, frozen splits, training statistics, and the
-frozen BA normalization array. The V2 split is **14,987 training clips + 3,242 validation clips**.
+frozen BA normalization array. The dataset split is **14,987 training clips + 3,242 validation clips**.
 Audio is stored as `audio/<stem>.wav`, source text as `transcripts/<stem>.txt`, and canonical text,
 word times, and tokenizer mapping as `annotations/words/<stem>.json`. `raw_inputs.jsonl` provides
 inputs for feature extraction. BEAT2-derived audio/text retain their applicable source license
@@ -48,7 +48,7 @@ The public benchmark reports FGD, Div, BA, weighted jerk, foot metrics, and opti
 not require or distribute semantic labels. See [the benchmark protocol](docs/BENCHMARK.md).
 
 - [V2 model card](docs/MODEL_CARD.md)
-- [V2 dataset card](docs/DATASET_CARD.md)
+- [Dataset card](docs/DATASET_CARD.md)
 - [Download and use the dataset](docs/DATASET.md)
 - [Data format and timing contract](docs/DATA_FORMAT.md)
 - [Dataset asset manifest](manifests/v2_dataset.json)
