@@ -11,8 +11,10 @@ python -m pip install -e '.[benchmark]'
 python -c "import librosa, scipy, soundfile; print(librosa.__version__, scipy.__version__, soundfile.__version__)"
 ```
 
-Dataset and model weights will be distributed on Hugging Face. Uploads and final links are
-**pending**. Dataset archive and FGD/MMAE asset hashes are already recorded in the
+The dataset is available in the private preview
+[gaopusen/ECHO-G](https://huggingface.co/datasets/gaopusen/ECHO-G); see the
+[download guide](DATASET.md). Only authorized accounts can access it. V2 model weights and
+the FGD encoder have **not been uploaded**. Dataset archive and FGD/MMAE asset hashes are recorded in the
 [dataset manifest](../manifests/v2_dataset.json) and
 [benchmark asset manifest](../manifests/benchmark_assets.json); this branch contains code,
 protocols and identity records, not the large assets.
@@ -21,11 +23,11 @@ Use the same pinned asset revisions for every model in a comparison.
 | Required input | Expected content | Distribution |
 |---|---|---|
 | Predictions | One physical `robot_repr[T,39]` tensor per `<stem>.pt`, 30 FPS | Generate with V2 inference |
-| References | Released V2 robot motion files, same stems and coordinate system | Hugging Face dataset link: **pending** |
-| Split | Released `splits/val_common.txt`; any formal exclusion list must be frozen and shared across methods | Hugging Face dataset link: **pending** |
+| References | Released V2 robot motion files, same stems and coordinate system | [Private dataset preview](https://huggingface.co/datasets/gaopusen/ECHO-G) |
+| Split | Released `splits/val_common.txt`; any formal exclusion list must be frozen and shared across methods | [Private dataset preview](https://huggingface.co/datasets/gaopusen/ECHO-G) |
 | FGD encoder | Trained G1 skeleton-convolution AE `g1_aeskconv_full_pure2_w192.bin`, with its configuration/state | Hugging Face evaluation weights link: **pending** |
-| BA normalization | `eval_assets/mmae/g1_mmae_30body_30fps.npy`, finite array of shape `(30,)` | Included in the dataset; Hugging Face link: **pending** |
-| Audio | `audio/<stem>.wav`, matching the start of the released motion | Included in the dataset under its source terms; Hugging Face link: **pending** |
+| BA normalization | `eval_assets/mmae/g1_mmae_30body_30fps.npy`, finite array of shape `(30,)` | Included in the [private dataset preview](https://huggingface.co/datasets/gaopusen/ECHO-G) |
+| Audio | `audio/<stem>.wav`, matching the start of the released motion | Included in the [private dataset preview](https://huggingface.co/datasets/gaopusen/ECHO-G), under its source terms |
 
 BA reads the included clip-aligned waveform, not the frozen acoustic feature tensor. The
 loader accepts both `<wav-dir>/<stem>.wav` and the legacy `<wav-dir>/<stem>/audio.wav` layout.
@@ -51,10 +53,10 @@ Set the paths below to the downloaded dataset and external FGD encoder:
 ```bash
 python scripts/eval_g1_motion_cls.py \
   --pred-dir results/v2_audio_text/seed_000 \
-  --ref-dir data/v2/motion_39d_30fps \
-  --val-split data/v2/splits/val_common.txt \
-  --wav-dir data/v2/audio \
-  --mmae-file data/v2/eval_assets/mmae/g1_mmae_30body_30fps.npy \
+  --ref-dir data/echo-g-v2/motion_39d_30fps \
+  --val-split data/echo-g-v2/splits/val_common.txt \
+  --wav-dir data/echo-g-v2/audio \
+  --mmae-file data/echo-g-v2/eval_assets/mmae/g1_mmae_30body_30fps.npy \
   --g1-ae-ckpt weights/g1_aeskconv_full_pure2_w192.bin \
   --fps 30 --ba-direction audio_to_motion \
   --enable-foot-metrics --require-all-stems \

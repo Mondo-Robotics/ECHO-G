@@ -23,16 +23,17 @@ branch/tag will be arranged separately. HumanRetarget and Seedance data are outs
 
 ## Data and weights
 
-**The processed dataset and V2 weights will be released on Hugging Face. Links are pending.**
-No Hugging Face repository IDs, revisions, or downloadable archives are available from this
-release candidate yet.
+**The dataset is available in the private preview repository
+[gaopusen/ECHO-G](https://huggingface.co/datasets/gaopusen/ECHO-G).** Access requires an
+authorized Hugging Face account. Public release and the license for new dataset contributions
+remain pending. Model weights and the FGD encoder have not been uploaded.
 
 | Asset | Hugging Face location | Status |
 |---|---|---|
-| V2 processed robot-motion dataset | **To be added** | Prepared; upload and release terms pending |
+| V2 processed robot-motion dataset | [gaopusen/ECHO-G](https://huggingface.co/datasets/gaopusen/ECHO-G) | Uploaded private preview |
 | V2 audio+text `best.pt` (15k, EMA) | **To be added** | Upload pending |
 | Benchmark FGD encoder | **To be added** | Weight upload pending; identity recorded |
-| Frozen BA normalization | With dataset | Included in prepared dataset |
+| Frozen BA normalization | With dataset | Included in the private dataset preview |
 
 The prepared dataset contains processed robot motions, frozen audio/text conditions, clip-aligned
 audio, source transcripts, word-time annotations, frozen splits, training statistics, and the
@@ -56,7 +57,7 @@ not require or distribute semantic labels. See [the benchmark protocol](docs/BEN
 - [Benchmark asset manifest](manifests/benchmark_assets.json)
 
 Follow the [dataset download guide](docs/DATASET.md), then use the commands below.
-Hugging Face links will be filled in after publication.
+The dataset download is approximately **18.61 GB**, including 12 tar archives (18.52 GB).
 
 ## Installation
 
@@ -255,7 +256,7 @@ configs/                  V2 training and inference configuration
 src/echo_g/               model, data, training, inference, and condition extraction
 scripts/                  G1 evaluation and MuJoCo visualization entry points
 docs/                     architecture, data/model cards, and usage protocols
-manifests/                asset identities and pending Hugging Face locations
+manifests/                asset identities and Hugging Face distribution status
 tests/                    implementation and integration checks
 ```
 
@@ -263,5 +264,5 @@ tests/                    implementation and integration checks
 
 This branch retains the existing [LICENSE](LICENSE) and [NOTICE](NOTICE) without changes.
 Final code, dataset, weight, and third-party distribution terms will be discussed before
-publication; a planned Hugging Face location is not a license grant. The current source license
+public release; private dataset access is not a license grant. The current source license
 is PolyForm Noncommercial 1.0.0. Citation metadata is in [CITATION.cff](CITATION.cff).

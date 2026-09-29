@@ -1,6 +1,8 @@
 # ECHO-G V2 dataset card
 
-Status: **release candidate, 2026-09-29; Hugging Face upload pending**.
+Status: **uploaded private preview, 2026-09-29** at
+[gaopusen/ECHO-G](https://huggingface.co/datasets/gaopusen/ECHO-G). Access is limited to
+authorized accounts; public release remains pending.
 This card describes the BEAT2-derived data used by V2 audio+text.
 [Download and usage](DATASET.md) · [Data format](DATA_FORMAT.md).
 
@@ -101,5 +103,7 @@ coverage of every speaker, language, gesture style, robot, or physical execution
 Generated references and MuJoCo renders are not a robot-control validation.
 
 BEAT2-derived audio/text retain their applicable upstream terms and attribution. The dataset
-includes source and modification notices. The Hugging Face repository/revision and license for
-new contributions will be added before publication; the code branch retains its existing license.
+includes source and modification notices. The license for new contributions will be finalized
+before public release; private preview access does not grant additional distribution rights.
+The code branch retains its existing license. The pinned dataset revision is recorded in the
+[dataset manifest](../manifests/v2_dataset.json).

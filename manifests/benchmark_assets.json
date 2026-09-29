@@ -1,11 +1,17 @@
 {
   "schema": "echo-g-v2-benchmark-assets-v1",
-  "status": "hugging_face_upload_and_external_robot_asset_instructions_pending",
+  "status": "dataset_uploaded_private_preview_fgd_and_external_robot_assets_pending",
   "hugging_face": {
-    "status": "planned_not_uploaded",
-    "repo_id": null,
-    "revision": null,
-    "url": null
+    "status": "dataset_uploaded_private_preview",
+    "repo_id": "gaopusen/ECHO-G",
+    "revision": "da2c78c7c111fd7673da2055544d481e3e61922f",
+    "url": "https://huggingface.co/datasets/gaopusen/ECHO-G",
+    "repo_type": "dataset",
+    "private": true,
+    "applies_to": [
+      "BA_mean_velocity_normalization",
+      "raw_audio_for_BA"
+    ]
   },
   "evaluator": "scripts/eval_g1_motion_cls.py",
   "assets": [
@@ -20,17 +26,22 @@
     {
       "role": "BA_mean_velocity_normalization",
       "reference_filename": "g1_mmae_30body_30fps.npy",
-      "url": null,
+      "url": "https://huggingface.co/datasets/gaopusen/ECHO-G/resolve/da2c78c7c111fd7673da2055544d481e3e61922f/eval_assets/mmae/g1_mmae_30body_30fps.npy",
       "sha256": "0f763e6d54ca7bb33e49b0336ba2cc3359f9e9d5942e7f475c85c74b4b66e880",
-      "status": "included_in_prepared_dataset",
-      "suggested_local_path": "data/v2/eval_assets/mmae/g1_mmae_30body_30fps.npy"
+      "status": "included_in_uploaded_private_dataset_preview",
+      "suggested_local_path": "data/echo-g-v2/eval_assets/mmae/g1_mmae_30body_30fps.npy"
     },
     {
       "role": "raw_audio_for_BA",
-      "url": null,
-      "status": "included_in_prepared_dataset",
+      "url": "https://huggingface.co/datasets/gaopusen/ECHO-G/tree/da2c78c7c111fd7673da2055544d481e3e61922f/data",
+      "status": "included_in_uploaded_private_dataset_preview",
       "distribution": "source_terms_apply",
-      "suggested_local_path": "data/v2/audio/<stem>.wav"
+      "suggested_local_path": "data/echo-g-v2/audio/<stem>.wav",
+      "archive_paths": [
+        "data/audio-00000-of-00003.tar",
+        "data/audio-00001-of-00003.tar",
+        "data/audio-00002-of-00003.tar"
+      ]
     },
     {
       "role": "G1_robot_XML_and_meshes_for_MuJoCo",
@@ -41,7 +52,7 @@
       "suggested_local_path": "assets_external/unitree_g1/g1_mocap_29dof.xml"
     }
   ],
-  "note": "Download links will be filled in when assets are published. Use the listed metric asset SHA256 values to reproduce the reference scores.",
+  "note": "The private dataset preview contains BA audio and normalization. The FGD encoder and model checkpoints are not uploaded; robot assets remain external. Use the listed SHA256 values and pinned dataset revision.",
   "excluded_metrics": [
     "SRGR"
   ]
