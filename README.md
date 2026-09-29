@@ -23,8 +23,10 @@ MuJoCo visualization for the released robot-motion dataset.
 
 **The dataset is available in the private preview repository
 [gaopusen/ECHO-G](https://huggingface.co/datasets/gaopusen/ECHO-G).** Access requires an
-authorized Hugging Face account. Public release and the license for new dataset contributions
-remain pending. Model weights and the FGD encoder have not been uploaded.
+authorized Hugging Face account. Public release remains pending. ECHO-G data contributions
+and project model/evaluation weights use **CC BY-NC 4.0**; third-party materials retain their
+applicable terms. See [licensing scope](docs/LICENSING.md). Model weights and the FGD encoder
+have not been uploaded.
 
 | Asset | Hugging Face location | Status |
 |---|---|---|
@@ -262,7 +264,8 @@ tests/                    implementation and integration checks
 
 ## License and citation
 
-This branch retains the existing [LICENSE](LICENSE) and [NOTICE](NOTICE) without changes.
-Final code, dataset and weight distribution terms will be confirmed before public release;
-third-party assets retain their included license notices; private dataset access is not a license grant. The current source license
-is PolyForm Noncommercial 1.0.0. Citation metadata is in [CITATION.cff](CITATION.cff).
+Code retains **PolyForm Noncommercial 1.0.0** under [LICENSE](LICENSE) and [NOTICE](NOTICE).
+ECHO-G data contributions and project model/evaluation weights use **CC BY-NC 4.0** under
+[LICENSE-DATA-WEIGHTS](LICENSE-DATA-WEIGHTS). Third-party materials retain their applicable
+licenses. See [licensing scope and contacts](docs/LICENSING.md). Citation metadata is in
+[CITATION.cff](CITATION.cff).

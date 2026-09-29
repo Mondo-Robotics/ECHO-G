@@ -10,7 +10,7 @@
     "url": null,
     "repo_type": "model"
   },
-  "license_status": "final_distribution_terms_pending",
+  "license_status": "confirmed",
   "checkpoint": {
     "suggested_local_filename": "best.pt",
     "sha256": "c1e7e863e28b76b710bc18f9e9029836771fc86c1bb9fca42aa9d7655f74a616",
@@ -85,5 +85,9 @@
     ]
   },
   "dataset_manifest": "dataset.json",
-  "historical_results_manifest": "reference_results.json"
+  "historical_results_manifest": "reference_results.json",
+  "license": "cc-by-nc-4.0",
+  "license_file": "LICENSE-DATA-WEIGHTS",
+  "license_scope": "Project rights in the ECHO-G model weights; third-party materials retain their applicable terms.",
+  "licensing_document": "docs/LICENSING.md"
 }

@@ -49,4 +49,7 @@ MuJoCo visualization is a rendering of reference motion, not a closed-loop track
 The model's Hugging Face URL and immutable revision will be added after upload. Source speech,
 transcript and encoder assets have separate terms. G1 XML and meshes are included with the
 dataset under BSD-3-Clause; they are not embedded in this code repository.
-Final release licensing remains to be discussed; the existing repository license is unchanged.
+The ECHO-G checkpoint is designated **CC BY-NC 4.0**, covering rights held by the project;
+see [LICENSE-DATA-WEIGHTS](../LICENSE-DATA-WEIGHTS) and [licensing scope](LICENSING.md).
+The checkpoint has not yet been uploaded. Code remains under PolyForm Noncommercial 1.0.0.
+Third-party rights are not replaced by the checkpoint license.

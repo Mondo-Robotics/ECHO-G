@@ -137,5 +137,8 @@ The packaged G1 encoder derives from the project's G1 adaptation of PantoMatrix
 EMAGE evaluation code, with skeleton convolution from DeepMotionEditing and decoder
 code from TM2T. Their source notices are retained in the vendored files. The rotation
 utilities retain their PyTorch3D-derived attribution. No third-party model weights,
-robot assets, SMPL-X assets or audio are included in this code branch. Final release
-licensing and distribution details remain to be agreed by the project owners.
+robot assets, SMPL-X assets or audio are included in this code branch. The project-trained
+FGD encoder weights are designated **CC BY-NC 4.0** and have not yet been uploaded.
+The project's contribution to the frozen BA normalization is covered by the same data license.
+Code and third-party source materials retain their applicable licenses; see
+[licensing scope](LICENSING.md).

@@ -4,7 +4,7 @@
   "hugging_face": {
     "status": "dataset_uploaded_private_preview",
     "repo_id": "gaopusen/ECHO-G",
-    "revision": "2026-09-29",
+    "revision": "2026-09-29-license",
     "url": "https://huggingface.co/datasets/gaopusen/ECHO-G",
     "repo_type": "dataset",
     "private": true,
@@ -13,7 +13,7 @@
       "raw_audio_for_BA",
       "G1_robot_XML_and_meshes_for_MuJoCo"
     ],
-    "commit_sha": "fd0fa719143df8e2e7afd40968660922ab93f59e"
+    "commit_sha": "d823a10dcba627561bb8183d613158f2814aedfc"
   },
   "evaluator": "scripts/eval_g1_motion_cls.py",
   "assets": [
@@ -23,19 +23,25 @@
       "url": null,
       "sha256": "466b18af663156637b3dac8ce5fc074487e287b0c5d2749744fb4580ce00909a",
       "status": "public_upload_pending",
-      "suggested_local_path": "weights/g1_aeskconv_full_pure2_w192.bin"
+      "suggested_local_path": "weights/g1_aeskconv_full_pure2_w192.bin",
+      "license": "cc-by-nc-4.0",
+      "license_file": "LICENSE-DATA-WEIGHTS",
+      "license_scope": "Project rights in this asset; third-party materials retain their applicable terms."
     },
     {
       "role": "BA_mean_velocity_normalization",
       "reference_filename": "g1_mmae_30body_30fps.npy",
-      "url": "https://huggingface.co/datasets/gaopusen/ECHO-G/resolve/2026-09-29/eval_assets/mmae/g1_mmae_30body_30fps.npy",
+      "url": "https://huggingface.co/datasets/gaopusen/ECHO-G/resolve/2026-09-29-license/eval_assets/mmae/g1_mmae_30body_30fps.npy",
       "sha256": "0f763e6d54ca7bb33e49b0336ba2cc3359f9e9d5942e7f475c85c74b4b66e880",
       "status": "included_in_uploaded_private_dataset_preview",
-      "suggested_local_path": "data/echo-g/eval_assets/mmae/g1_mmae_30body_30fps.npy"
+      "suggested_local_path": "data/echo-g/eval_assets/mmae/g1_mmae_30body_30fps.npy",
+      "license": "cc-by-nc-4.0",
+      "license_file": "LICENSE-DATA-WEIGHTS",
+      "license_scope": "Project rights in this asset; third-party materials retain their applicable terms."
     },
     {
       "role": "raw_audio_for_BA",
-      "url": "https://huggingface.co/datasets/gaopusen/ECHO-G/tree/2026-09-29/data",
+      "url": "https://huggingface.co/datasets/gaopusen/ECHO-G/tree/2026-09-29-license/data",
       "status": "included_in_uploaded_private_dataset_preview",
       "distribution": "source_terms_apply",
       "suggested_local_path": "data/echo-g/audio/<stem>.wav",
@@ -47,7 +53,7 @@
     },
     {
       "role": "G1_robot_XML_and_meshes_for_MuJoCo",
-      "url": "https://huggingface.co/datasets/gaopusen/ECHO-G/resolve/2026-09-29/robot_assets/unitree_g1.tar",
+      "url": "https://huggingface.co/datasets/gaopusen/ECHO-G/resolve/2026-09-29-license/robot_assets/unitree_g1.tar",
       "status": "included_in_uploaded_private_dataset_preview",
       "distribution": "BSD-3-Clause; copyright and license included in the archive",
       "reference_filename": "g1_mocap_29dof.xml",
@@ -63,5 +69,6 @@
   "note": "The private dataset preview contains BA audio and normalization and the G1 MuJoCo XML/meshes. The FGD encoder and model checkpoints are not uploaded. Use the listed SHA256 values and pinned dataset revision.",
   "excluded_metrics": [
     "SRGR"
-  ]
+  ],
+  "licensing_document": "docs/LICENSING.md"
 }

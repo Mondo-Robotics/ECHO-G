@@ -100,8 +100,10 @@ pipeline, a particular robot, and held-out speakers from that corpus. They do no
 coverage of every speaker, language, gesture style, robot, or physical execution setting.
 Generated references and MuJoCo renders are not a robot-control validation.
 
-BEAT2-derived audio/text retain their applicable upstream terms and attribution. The dataset
-includes source and modification notices. The license for new contributions will be finalized
-before public release; private preview access does not grant additional distribution rights.
-The code branch retains its existing license. The pinned dataset revision is recorded in the
-[dataset manifest](../manifests/dataset.json).
+ECHO-G contributions to the processed data, frozen conditions, annotations, splits, statistics,
+metadata and documentation use **CC BY-NC 4.0**, to the extent the project holds the relevant
+rights. See [LICENSE-DATA-WEIGHTS](../LICENSE-DATA-WEIGHTS) and [licensing scope](LICENSING.md).
+BEAT2-derived source content retains its applicable upstream terms and attribution; G1 rendering
+assets retain BSD-3-Clause. The dataset includes source and modification notices.
+Code remains under PolyForm Noncommercial 1.0.0. Public release remains pending; the pinned
+dataset revision is recorded in the [dataset manifest](../manifests/dataset.json).
