@@ -180,8 +180,14 @@
     "scope": "Earlier standalone inference implementation with fixed frozen conditions; this is not a validation result of the new src/echo_g package."
   },
   "current_branch_full_set_benchmark": {
-    "status": "not_run",
-    "report": null
+    "status": "completed",
+    "source_commit": "06055037f2bbdbf89a09868ad27d0c586d088a73",
+    "date": "2026-09-29",
+    "report": "../validation/common3242_acceptance.json",
+    "FGD": 2.2783108333534123,
+    "clips": 3242,
+    "frames": 891351,
+    "MM20": "not_rerun"
   },
   "raw_input_limitations": "Earlier raw feature re-extraction did not meet historical audio-cache tolerance. Exact source-cache audio reproduction is not claimed."
 }

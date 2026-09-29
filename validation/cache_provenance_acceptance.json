@@ -1,0 +1,20 @@
+{
+  "status": "pass",
+  "manifest_sha256": "c4cc2b25a00483cf93fc06741cd1424ce5c14b53af9c72a02a9a7d91c72c7417",
+  "entries": 18229,
+  "source_release_version_sha256": "610339f317ad3aa72a007cda14062cbdc39ca655930df14de1a1cb4b4007f4ad",
+  "token_time_audit_sha256": "17baab99180499b1f333cf0c85988e8cd1daccf465b7d8bddf22d5235d60dd0e",
+  "maximum_full_token_count": 247,
+  "integrity_checks": "Each source file hash, full tokenizer count, text tensor hash and FP16 token-time hash; counts and times matched independent original token_time_plan.",
+  "targeted_tests": {
+    "status": "pass",
+    "count": 32,
+    "files": [
+      "tests/test_condition_provenance.py",
+      "tests/test_v2_conditions.py",
+      "tests/test_v2_inputs_inference.py",
+      "tests/test_data.py"
+    ]
+  },
+  "ruff": "passed on modified core files and provenance tests"
+}

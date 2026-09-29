@@ -13,19 +13,21 @@
       "role": "learned_FGD_encoder",
       "reference_filename": "g1_aeskconv_full_pure2_w192.bin",
       "url": null,
-      "sha256": null,
-      "status": "pending_public_asset_identity",
+      "sha256": "466b18af663156637b3dac8ce5fc074487e287b0c5d2749744fb4580ce00909a",
+      "status": "source_file_identity_verified_public_upload_pending",
       "suggested_local_path": "weights/g1_aeskconv_full_pure2_w192.bin",
       "reference_sha256": "466b18af663156637b3dac8ce5fc074487e287b0c5d2749744fb4580ce00909a",
-      "reference_sha256_source": "audited V2 text-only step025000 evaluation contract, same G1 encoder"
+      "reference_sha256_source": "audited V2 text-only step025000 evaluation contract, same G1 encoder",
+      "verified_in": "../validation/common3242_acceptance.json"
     },
     {
       "role": "BA_mean_velocity_normalization",
       "reference_filename": "g1_mean_vel_30body.npy",
       "url": null,
-      "sha256": null,
-      "status": "pending_public_asset_identity",
-      "suggested_local_path": "data/benchmark/g1_mean_vel_30body.npy"
+      "sha256": "0f763e6d54ca7bb33e49b0336ba2cc3359f9e9d5942e7f475c85c74b4b66e880",
+      "status": "source_file_identity_verified_public_upload_pending",
+      "suggested_local_path": "data/benchmark/g1_mean_vel_30body.npy",
+      "verified_in": "../validation/common3242_acceptance.json"
     },
     {
       "role": "SRGR_semantic_cache",

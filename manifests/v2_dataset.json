@@ -63,8 +63,12 @@
       "training_frames": 3537311
     },
     "audit/condition/per_clip_condition_motion_audit.csv": {
+      "sha256": "af76c470398e4d63404e095d7d93637c4860e07a91229bc476227afcdeb7bbb2",
+      "hash_scope": "actual per-clip condition/motion length CSV verified 2026-09-29"
+    },
+    "source_full_text_work/audit/final_condition_audit.csv": {
       "sha256": "be4feba6a494d7175d5fc1243d17f4aa41d55d88fe9aa1a48866088b88130eb2",
-      "hash_scope": "original_source_audit_before_public_packaging"
+      "hash_scope": "original experiment condition_audit_sha256; full-text condition readiness audit, not the length CSV"
     }
   },
   "public_packaging": {

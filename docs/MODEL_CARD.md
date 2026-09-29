@@ -38,13 +38,18 @@ The packaged V2 implementation passed [five real-checkpoint parity canaries](BRA
 against the original runtime, including 600 frames and 247 tokens; maximum absolute difference
 was zero for model inputs, flow outputs, and sampled physical motion.
 
+The new package completed common3242 on 2026-09-29: **FGD 2.278311**, 3,242 clips and
+891,351 frames. Three real raw inputs matched the same-environment reference exactly, and
+one real G1 clip was rendered with audio. Historical frozen-feature-cache agreement remains
+unmet; see [raw acceptance](RAW_ENCODER_ACCEPTANCE.md).
+
 Historical common3242 results are FGD 2.278349 (seed000) and MM20 1.785556 (seeds 0–19).
 The complete historical table, metric definitions, and distinction from current-branch validation
 are in [REPRODUCIBILITY.md](REPRODUCIBILITY.md#historical-results).
 
 The model is conditioned on curated data and the specific frozen encoders. Different text
 construction, timestamps, feature extraction stacks, or model assets can change outputs.
-Tokenizer states are not word-pooled, and raw audio feature re-extraction is not guaranteed to
+Tokenizer states are not word-pooled, and raw audio/text feature re-extraction is not guaranteed to
 match the historical cache numerically. Evaluation on these held-out speakers does not establish
 performance across arbitrary voices, languages, robots, or physical robot control settings.
 MuJoCo visualization is a rendering of reference motion, not a closed-loop tracking validation.

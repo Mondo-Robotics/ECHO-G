@@ -1,0 +1,361 @@
+{
+  "status": "pass",
+  "scope": "Five clips with the largest historical prediction differences; matched runtime, identical batch/input/noise; combined batch and five singletons.",
+  "checkpoint_sha256": "c1e7e863e28b76b710bc18f9e9029836771fc86c1bb9fca42aa9d7655f74a616",
+  "condition_manifest_sha256": "c4cc2b25a00483cf93fc06741cd1424ce5c14b53af9c72a02a9a7d91c72c7417",
+  "selection": [
+    {
+      "stem": "english_1_wayne_1_12_12_utt_0016",
+      "frames": 326,
+      "exact": false,
+      "allclose_1e6": false,
+      "max_abs": 6.038695573806763e-06,
+      "mean_abs": 3.129843051397074e-08,
+      "prediction_sha256": "47d6d6033f014b12d60c7fddddc4ce59fa782c2d7b24c222ddd09048e608b73a",
+      "source_condition_sha256": "631595e34cf9c82e4fe86014b3e70a0bc99c178d2a98deef0a1edeb590507d22"
+    },
+    {
+      "stem": "english_3_solomon_1_4_4_utt_0028",
+      "frames": 152,
+      "exact": false,
+      "allclose_1e6": false,
+      "max_abs": 4.544854164123535e-06,
+      "mean_abs": 3.313747143351975e-08,
+      "prediction_sha256": "3fd7236e50fe503990c454c9ccb3e577b854415d03fecef42c863305bc9c372a",
+      "source_condition_sha256": "b7aa2330851f287a1de30f949c76bc87ed04619608293e3c38c035733ce4e2c2"
+    },
+    {
+      "stem": "english_1_wayne_0_47_47_utt_0002",
+      "frames": 366,
+      "exact": false,
+      "allclose_1e6": false,
+      "max_abs": 4.0531158447265625e-06,
+      "mean_abs": 3.7656381124406835e-08,
+      "prediction_sha256": "91d66127c8cb38864696618ab03a3038924b83ac9246e4f472688081e3fea244",
+      "source_condition_sha256": "a3af1b076edcd885106a3f9a7aa4d2f7ba8fc5b11699a6db05a51f4270ef4db6"
+    },
+    {
+      "stem": "english_3_solomon_0_95_95_utt_0002",
+      "frames": 541,
+      "exact": false,
+      "allclose_1e6": false,
+      "max_abs": 4.0084123611450195e-06,
+      "mean_abs": 3.86074141545123e-08,
+      "prediction_sha256": "b70b3d2e48688874674c29f588687e847a031e9527f7a0082a933649a145605a",
+      "source_condition_sha256": "74d8a142d80493c607b3eba08af7ef5791fdf91a73ccb31c9c0e1d26cbdfe985"
+    },
+    {
+      "stem": "english_1_wayne_1_2_2_utt_0032",
+      "frames": 427,
+      "exact": false,
+      "allclose_1e6": false,
+      "max_abs": 3.829598426818848e-06,
+      "mean_abs": 3.7570039523870946e-08,
+      "prediction_sha256": "cdf13a491f2c6ff93336f6bcb60a31093e24d78efa68a8c6d44cd2b8dc0b77d2",
+      "source_condition_sha256": "57280b783ab7c2f81ffd986d9ccbd4b545765e10943e4574efbdd82ac8cb6762"
+    }
+  ],
+  "strict_state_dict_exact": true,
+  "runtime": {
+    "python": "3.11.14 | packaged by conda-forge | (main, Jan 26 2026, 23:48:32) [GCC 14.3.0]",
+    "torch": "2.7.0+cu128",
+    "cuda": "12.8",
+    "gpu": "NVIDIA A800-SXM4-80GB",
+    "float32_matmul_precision": "highest",
+    "cuda_matmul_allow_tf32": false,
+    "cudnn_allow_tf32": false
+  },
+  "sampling": {
+    "steps": 8,
+    "seed": 0,
+    "guidance_scale": 1.0
+  },
+  "matched_batches": [
+    {
+      "batch_size": 5,
+      "stems": [
+        "english_1_wayne_1_12_12_utt_0016",
+        "english_3_solomon_1_4_4_utt_0028",
+        "english_1_wayne_0_47_47_utt_0002",
+        "english_3_solomon_0_95_95_utt_0002",
+        "english_1_wayne_1_2_2_utt_0032"
+      ],
+      "frames": [
+        326,
+        152,
+        366,
+        541,
+        427
+      ],
+      "padded_frames": 541,
+      "padded_tokens": 49,
+      "inputs_exact": {
+        "audio": true,
+        "text": true,
+        "motion_mask": true,
+        "text_padding_mask": true,
+        "time_distance": true
+      },
+      "noise_exact": true,
+      "velocity": {
+        "exact": true,
+        "max_abs": 0.0,
+        "mean_abs": 0.0
+      },
+      "normalized_euler8": {
+        "exact": true,
+        "max_abs": 0.0,
+        "mean_abs": 0.0
+      },
+      "physical_euler8": {
+        "exact": true,
+        "max_abs": 0.0,
+        "mean_abs": 0.0
+      }
+    },
+    {
+      "batch_size": 1,
+      "stems": [
+        "english_1_wayne_1_12_12_utt_0016"
+      ],
+      "frames": [
+        326
+      ],
+      "padded_frames": 326,
+      "padded_tokens": 33,
+      "inputs_exact": {
+        "audio": true,
+        "text": true,
+        "motion_mask": true,
+        "text_padding_mask": true,
+        "time_distance": true
+      },
+      "noise_exact": true,
+      "velocity": {
+        "exact": true,
+        "max_abs": 0.0,
+        "mean_abs": 0.0
+      },
+      "normalized_euler8": {
+        "exact": true,
+        "max_abs": 0.0,
+        "mean_abs": 0.0
+      },
+      "physical_euler8": {
+        "exact": true,
+        "max_abs": 0.0,
+        "mean_abs": 0.0
+      }
+    },
+    {
+      "batch_size": 1,
+      "stems": [
+        "english_3_solomon_1_4_4_utt_0028"
+      ],
+      "frames": [
+        152
+      ],
+      "padded_frames": 152,
+      "padded_tokens": 14,
+      "inputs_exact": {
+        "audio": true,
+        "text": true,
+        "motion_mask": true,
+        "text_padding_mask": true,
+        "time_distance": true
+      },
+      "noise_exact": true,
+      "velocity": {
+        "exact": true,
+        "max_abs": 0.0,
+        "mean_abs": 0.0
+      },
+      "normalized_euler8": {
+        "exact": true,
+        "max_abs": 0.0,
+        "mean_abs": 0.0
+      },
+      "physical_euler8": {
+        "exact": true,
+        "max_abs": 0.0,
+        "mean_abs": 0.0
+      }
+    },
+    {
+      "batch_size": 1,
+      "stems": [
+        "english_1_wayne_0_47_47_utt_0002"
+      ],
+      "frames": [
+        366
+      ],
+      "padded_frames": 366,
+      "padded_tokens": 37,
+      "inputs_exact": {
+        "audio": true,
+        "text": true,
+        "motion_mask": true,
+        "text_padding_mask": true,
+        "time_distance": true
+      },
+      "noise_exact": true,
+      "velocity": {
+        "exact": true,
+        "max_abs": 0.0,
+        "mean_abs": 0.0
+      },
+      "normalized_euler8": {
+        "exact": true,
+        "max_abs": 0.0,
+        "mean_abs": 0.0
+      },
+      "physical_euler8": {
+        "exact": true,
+        "max_abs": 0.0,
+        "mean_abs": 0.0
+      }
+    },
+    {
+      "batch_size": 1,
+      "stems": [
+        "english_3_solomon_0_95_95_utt_0002"
+      ],
+      "frames": [
+        541
+      ],
+      "padded_frames": 541,
+      "padded_tokens": 49,
+      "inputs_exact": {
+        "audio": true,
+        "text": true,
+        "motion_mask": true,
+        "text_padding_mask": true,
+        "time_distance": true
+      },
+      "noise_exact": true,
+      "velocity": {
+        "exact": true,
+        "max_abs": 0.0,
+        "mean_abs": 0.0
+      },
+      "normalized_euler8": {
+        "exact": true,
+        "max_abs": 0.0,
+        "mean_abs": 0.0
+      },
+      "physical_euler8": {
+        "exact": true,
+        "max_abs": 0.0,
+        "mean_abs": 0.0
+      }
+    },
+    {
+      "batch_size": 1,
+      "stems": [
+        "english_1_wayne_1_2_2_utt_0032"
+      ],
+      "frames": [
+        427
+      ],
+      "padded_frames": 427,
+      "padded_tokens": 43,
+      "inputs_exact": {
+        "audio": true,
+        "text": true,
+        "motion_mask": true,
+        "text_padding_mask": true,
+        "time_distance": true
+      },
+      "noise_exact": true,
+      "velocity": {
+        "exact": true,
+        "max_abs": 0.0,
+        "mean_abs": 0.0
+      },
+      "normalized_euler8": {
+        "exact": true,
+        "max_abs": 0.0,
+        "mean_abs": 0.0
+      },
+      "physical_euler8": {
+        "exact": true,
+        "max_abs": 0.0,
+        "mean_abs": 0.0
+      }
+    }
+  ],
+  "same_implementation_batch_vs_singleton": [
+    {
+      "stem": "english_1_wayne_1_12_12_utt_0016",
+      "exact": false,
+      "max_abs": 5.960464477539062e-07,
+      "mean_abs": 3.716230523309605e-08
+    },
+    {
+      "stem": "english_3_solomon_1_4_4_utt_0028",
+      "exact": false,
+      "max_abs": 1.8030405044555664e-06,
+      "mean_abs": 4.159554123361886e-08
+    },
+    {
+      "stem": "english_1_wayne_0_47_47_utt_0002",
+      "exact": false,
+      "max_abs": 5.5655837059021e-06,
+      "mean_abs": 4.128075659082242e-08
+    },
+    {
+      "stem": "english_3_solomon_0_95_95_utt_0002",
+      "exact": false,
+      "max_abs": 1.2665987014770508e-06,
+      "mean_abs": 3.711586415988677e-08
+    },
+    {
+      "stem": "english_1_wayne_1_2_2_utt_0032",
+      "exact": false,
+      "max_abs": 8.940696716308594e-07,
+      "mean_abs": 4.3197346144552284e-08
+    }
+  ],
+  "original_archive_metadata": {
+    "checkpoint_sha256": "c1e7e863e28b76b710bc18f9e9029836771fc86c1bb9fca42aa9d7655f74a616",
+    "archive_export_recipe_sha256": "f92d86ecb7b2d00e1762f62fe85aa77a4d3cd40ed728b99b13dade6f85880e5c",
+    "documented_batch_size": 3,
+    "sampling_steps": 8,
+    "seed": 0,
+    "guidance_scale": 1.0,
+    "documented_device": "cuda",
+    "gpu_model_in_inspected_archive_records": null,
+    "inspected_archive_records": [
+      "export_recipe.json",
+      "export.log",
+      "predictions/val_common/inference_complete.json",
+      "one prediction payload metadata"
+    ],
+    "limitation": "The inspected original export records do not identify GPU model, PyTorch version, backend flags or exact batch membership; no hardware cause is assigned."
+  },
+  "source_sha256": {
+    "package/echo_g/__init__.py": "c6606cbf7c59525dab3b88644baea5ba98ca2feda35b3bbf02d81df48e3d757f",
+    "package/echo_g/condition_provenance.py": "f698bf77dfb19c573ddfcb85b37867b291c2150381a3c15c10dac14366ec5f5f",
+    "package/echo_g/conditions.py": "bc55a508579fd3eb2d846a11bb3080b04bbdde0317b4075fc112def7c64c55d4",
+    "package/echo_g/config.py": "2f344a2b0aaae845c86f54db193a41c114fdaa81df479fc74b3b50af9834dcaa",
+    "package/echo_g/data.py": "4a4c9839e5028d1241a4b3b77daca853a3a79a515630316626eb2095551f772b",
+    "package/echo_g/flow.py": "859a6adcf279808fcebf05e0e3874d69b0eff064ee33faacfe6020c3bc411b19",
+    "package/echo_g/inference.py": "bac44c5c60d884680d633450a9882ffa98225d9ec44e933d94e3972e1f3090bb",
+    "package/echo_g/model.py": "2bc8e701b613c24c5bc5328d5f10aed3a5346f87ba10139b81b4d5ac44b0dc91",
+    "package/echo_g/training.py": "513a730b5d9b4823452dc86547fe867c7be98a738eb24e3cedee1b006b9cd92c",
+    "package/echo_g/utils.py": "06db14db2ee088f7f6cf4f7985c30c6da912b3444878b2e72a12c4ba2b1be8ce",
+    "package/echo_g/v2_attention.py": "8f600b09de789b47b8d187b592a98505f19784d77bac3540cdd15272d8dc4385",
+    "package/echo_g/validate_data.py": "677bdd411e19f675304e6d6d874c8c12e30db4e2b8656857304d4c39d9fa05ba",
+    "reference/infer_echo_g_sgdit.py": "61d53e24dae17905601b7f09784184cc4d0b3c1f10586360941bad0dc91dd162",
+    "reference/model_profiles.py": "7f49b25a0c592bd06ebb8edd00869f799728f4edfcd8416a589c482a7fe96880",
+    "reference/raw_condition_common.py": "a0c648e84673633f2e58b8d82a341d1116d3385f58a47a15e42d053eefc44bdd",
+    "reference/v2_attention.py": "ce263f5159d90649d8a644cbef4829a8ccebb2623f47e3850d7598e2f3963868"
+  },
+  "conclusion": "The current package and validated reference are bitwise identical on the same inputs, noise, batches and GPU for the tested clips.",
+  "historical_difference_attribution": "Not uniquely isolated. Batch-dependent differences, if present in the controlled experiment, establish one numerical sensitivity but do not prove the original archive discrepancy had that cause.",
+  "not_claimed": [
+    "Full historical-archive bitwise equality",
+    "Hardware as the proven historical discrepancy cause",
+    "An additional full 3242-clip reference rerun"
+  ]
+}

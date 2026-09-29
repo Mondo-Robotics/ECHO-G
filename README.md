@@ -48,8 +48,10 @@ the data release. Seedance is not included.
 - [Benchmark asset manifest](manifests/benchmark_assets.json)
 
 The commands below require locally provisioned assets until the Hugging Face links are filled in.
-The new package has passed [real-checkpoint parity on five clips](docs/BRANCH_VALIDATION.md),
-including 600 frames and 247 tokens, with zero numerical difference from the original V2 runtime.
+The new package completed [common3242 and real-input acceptance](docs/BRANCH_VALIDATION.md)
+on 2026-09-29: FGD **2.278311**, three raw-input reference comparisons, and a real G1 video.
+Same-input reference outputs are exact; historical frozen raw-feature-cache agreement remains
+unmet. Use the frozen conditions for benchmark reproduction.
 
 ## Installation
 
@@ -235,7 +237,7 @@ split, truncate, or stitch them. See [the timing and length rules](docs/DATA_FOR
 
 Use frozen conditions for historical benchmark reproduction. Fresh encoder outputs can vary
 with encoder revisions, decoding, hardware, and backend; exact agreement with the historical
-audio cache is not claimed.
+audio or text cache is not claimed.
 
 ## Benchmark and visualization
 
@@ -246,7 +248,7 @@ audio cache is not claimed.
 
 Historical V2 best15k scores on common3242 were **FGD 2.278349** (seed000) and
 **MM20 1.785556** (seeds 0–19). These are reference results from the original validated model,
-not a new full-set measurement of this package with the current evaluator.
+and remain separate from this package's new **FGD 2.278311** measurement. MM20 was not rerun in this acceptance.
 [Reproduction scope and reference results](docs/REPRODUCIBILITY.md#historical-results)
 explain the distinction.
 

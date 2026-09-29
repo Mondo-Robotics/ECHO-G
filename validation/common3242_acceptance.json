@@ -1,0 +1,346 @@
+{
+  "schema": "echo-g-v2-public-package-common3242-acceptance-v1",
+  "date": "2026-09-29",
+  "status": "completed",
+  "source_commit": "06055037f2bbdbf89a09868ad27d0c586d088a73",
+  "source_files_sha256": {
+    "src/echo_g/__init__.py": "c6606cbf7c59525dab3b88644baea5ba98ca2feda35b3bbf02d81df48e3d757f",
+    "src/echo_g/condition_provenance.py": "f698bf77dfb19c573ddfcb85b37867b291c2150381a3c15c10dac14366ec5f5f",
+    "src/echo_g/conditions.py": "bc55a508579fd3eb2d846a11bb3080b04bbdde0317b4075fc112def7c64c55d4",
+    "src/echo_g/config.py": "2f344a2b0aaae845c86f54db193a41c114fdaa81df479fc74b3b50af9834dcaa",
+    "src/echo_g/data.py": "4a4c9839e5028d1241a4b3b77daca853a3a79a515630316626eb2095551f772b",
+    "src/echo_g/evaluation/__init__.py": "87465aa0479feb1247df2d5c6c84d52ec7c169ef16cc292ff3a5546611e73930",
+    "src/echo_g/evaluation/g1_kinematics.py": "bd2bd562784bc354ee16b3baa7e1753fae3fd899f208241093875078325b8448",
+    "src/echo_g/evaluation/g1_motion_cls.py": "f949a0b800c97a40a93e76695f0557234c643aaad45fb4305550712f5145e303",
+    "src/echo_g/evaluation/robot_fgd/__init__.py": "87465aa0479feb1247df2d5c6c84d52ec7c169ef16cc292ff3a5546611e73930",
+    "src/echo_g/evaluation/robot_fgd/decoders.py": "9af5b6344f79d8019688522a3a729f53ca0fca24328976fc024bfbb8b71bea55",
+    "src/echo_g/evaluation/robot_fgd/featurize.py": "1876b507c44faa6c3cddd8a3ff9fc7916641aa89a2ac30fe01e271d318793ba4",
+    "src/echo_g/evaluation/robot_fgd/motion_encoder.py": "ba1280b746c3f84391d1ed827b9520d21265a53feea852ddb44bef14242ea683",
+    "src/echo_g/evaluation/robot_fgd/skeleton.py": "18b9920e51a432a14cb1640c3cf475983d952d483310d24aad8b6f42f3c196cb",
+    "src/echo_g/evaluation/robot_fgd/skeleton_DME.py": "6f19d2f9d8be213c27cd9c887c4ed21708f05cb4dba15a766608b4c60bf1eca3",
+    "src/echo_g/evaluation/robot_repr.py": "f71a942d7c716f36bbebddf26ea8b61a27a7692d7839437a2be5c98c68824e85",
+    "src/echo_g/evaluation/rotation.py": "da50cb6d0b73fc4ca2a25d843df994829cc743260b0eb0c6ac0524f62939b715",
+    "src/echo_g/flow.py": "859a6adcf279808fcebf05e0e3874d69b0eff064ee33faacfe6020c3bc411b19",
+    "src/echo_g/inference.py": "bac44c5c60d884680d633450a9882ffa98225d9ec44e933d94e3972e1f3090bb",
+    "src/echo_g/model.py": "2bc8e701b613c24c5bc5328d5f10aed3a5346f87ba10139b81b4d5ac44b0dc91",
+    "src/echo_g/training.py": "513a730b5d9b4823452dc86547fe867c7be98a738eb24e3cedee1b006b9cd92c",
+    "src/echo_g/utils.py": "06db14db2ee088f7f6cf4f7985c30c6da912b3444878b2e72a12c4ba2b1be8ce",
+    "src/echo_g/v2_attention.py": "8f600b09de789b47b8d187b592a98505f19784d77bac3540cdd15272d8dc4385",
+    "src/echo_g/validate_data.py": "677bdd411e19f675304e6d6d874c8c12e30db4e2b8656857304d4c39d9fa05ba",
+    "src/echo_g/visualization/__init__.py": "87465aa0479feb1247df2d5c6c84d52ec7c169ef16cc292ff3a5546611e73930",
+    "src/echo_g/visualization/export.py": "769d8bf74cc8edfcefa42ebb9d5f64c270cf55954696edef68b13568bda7f02b",
+    "src/echo_g/visualization/mujoco_export.py": "ea3f4c23f4580aec88be1d977bbb99d5056245fb70c7097e68c442903ec4d6d6",
+    "src/echo_g/visualization/render.py": "d7c6d1b48f70da880cfa1e75019c225e88f666c609a33cb35d3ea67256ad89e5"
+  },
+  "runtime": {
+    "python": "3.11.14 | packaged by conda-forge | (main, Jan 26 2026, 23:48:32) [GCC 14.3.0]",
+    "torch": "2.7.0+cu128",
+    "gpu": "NVIDIA A800-SXM4-80GB"
+  },
+  "sampling": {
+    "checkpoint_sha256": "c1e7e863e28b76b710bc18f9e9029836771fc86c1bb9fca42aa9d7655f74a616",
+    "weights": "EMA",
+    "step": 15000,
+    "seed": 0,
+    "euler_steps": 8,
+    "cfg": 1.0,
+    "batch_size": 3
+  },
+  "condition_manifest_sha256": "c4cc2b25a00483cf93fc06741cd1424ce5c14b53af9c72a02a9a7d91c72c7417",
+  "asset_identities": {
+    "checkpoint": {
+      "sha256": "c1e7e863e28b76b710bc18f9e9029836771fc86c1bb9fca42aa9d7655f74a616",
+      "bytes": 655753425
+    },
+    "val_split": {
+      "sha256": "36a960134a321f7b2c47c1b24aabfdf1fa8ee213ea59a8570740be196ba7d83b",
+      "bytes": 108124
+    },
+    "stats": {
+      "sha256": "9378214e1033a7fb309532a040b07f87a9010fbd484a30b8b9962cc75704aac8",
+      "bytes": 3693
+    },
+    "length_audit": {
+      "sha256": "af76c470398e4d63404e095d7d93637c4860e07a91229bc476227afcdeb7bbb2",
+      "bytes": 1384133
+    },
+    "fgd_encoder": {
+      "sha256": "466b18af663156637b3dac8ce5fc074487e287b0c5d2749744fb4580ce00909a",
+      "bytes": 5554532
+    },
+    "ba_mean_velocity": {
+      "sha256": "0f763e6d54ca7bb33e49b0336ba2cc3359f9e9d5942e7f475c85c74b4b66e880",
+      "bytes": 248
+    }
+  },
+  "reference_preparation": {
+    "clips": 3242,
+    "frames": 891351,
+    "source_gt_clips_longer_than_audited_prefix": 433,
+    "policy": "Separate references clipped to original audited aligned_frames, at most600; no resampling or time shift, originals unchanged. Strict equal pred/GT lengths and all-stem coverage required."
+  },
+  "benchmark": {
+    "tag": "v2_public_package_best15k_acceptance_20260929",
+    "n_clips": 3242,
+    "fps": 30.0,
+    "params": {
+      "root_index": 0,
+      "up_axis": 2,
+      "num_bodies": 30,
+      "fgd_feature": "map2latent(ckpt=g1_aeskconv_full_pure2_w192.bin, mode=pure2, vae_length=192, input_norm=none, input_norm_protocol=none, checkpoint_fps=30); learned FGD \u2014 COMPARABLE ONLY across runs with the SAME encoder ckpt; NOT EMAGE-paper-comparable",
+      "fgd_samples": "52596/52596 latent samples",
+      "fgd_distance": "EMAGE FGD.frechet_distance: eps=1e-6 offset only inside sqrtm; unmodified covariance traces; no clamp",
+      "div_metric": "Div = EMAGE L1div logic in G1 space: within-clip per-frame position MAD, pred and corresponding GT, frame-weighted; identity root orientation and zero translation; pred/GT common-prefix aligned before FK; primary comparison is abs(Div-Div_GT), lower is better.",
+      "multimodality_metric": "Audio2Gestures repeated-sampling protocol in G1 space: for each audio/stem, average per-frame L1 FK-position distance over every unordered pair of independent samples; all 30 G1 BFS bodies; identity root orientation and zero translation; then equal-weight average over complete stems.",
+      "multimodality_paper": "https://arxiv.org/abs/2108.06720",
+      "multimodality_root": null,
+      "multimodality_expected_runs": 20,
+      "multimodality_pair_normalization": "C(N,2) for Multimodality; paper Eq.16 printed N*ceil(N/2) is also reported as a diagnostic",
+      "multimodality_temporal_policy": "all runs for a stem must have exactly equal T; no GT crop, resampling, padding, or tail-drop",
+      "multimodality_coverage": "0/3242 evaluated clips",
+      "multimodality_status": "SKIPPED_NO_MULTIRUN",
+      "srgr_metric": "SRGR mass on G1 FK positions: numerator=sum(hit*semantic), denominator=30*sum(semantic) over all evaluated clips; per-frame, per-body Euclidean-distance hit; all 30 G1 BFS bodies; identity root orientation and zero translation; dynamic normalization guarantees a perfect-prediction score of 1 on every nonzero-semantic test set.",
+      "srgr_variant": "semantic_mass",
+      "srgr_threshold_m": 0.1,
+      "srgr_semantic_dir": "external_asset:beat2_official_first_match_30fps_val_common_v1",
+      "srgr_semantic_fps": 30.0,
+      "srgr_semantic_protocol": "beat2_official_first_match_30fps_v1",
+      "srgr_coverage": "3242/3242 clips, 891351 frames",
+      "srgr_semantic_mass": 155915.20113579184,
+      "srgr_semantic_mass_source": "dynamic_sum_after_pred_gt_common_prefix_crop",
+      "srgr_semantic_mean_diagnostic": 0.17492009448106507,
+      "srgr_expected_frames": 891351,
+      "temporal_alignment": "All paired metrics, including Jerk-to-GT, use the common prefix: t=min(T_pred,T_gt), pred=pred[:t], gt=gt[:t]; no temporal resampling/padding and no fixed-duration crop.",
+      "jerk_metric": "OMG body_jerk_mean adapted to Hermes G1: full world-space FK with stored root rotation and root translation reconstructed from yaw_delta + base_vel_local; all 30 bodies; m/s^3; both the historical clip-equal mean and a length-weighted mean with per-clip weight T-3 are reported; prediction and GT use the same common temporal prefix; primary comparison is abs(Jerk-Jerk_GT), lower is better; no valid mask.",
+      "jerk_coverage": "pred=3242/3242 clips, gt=3242/3242 clips",
+      "require_equal_lengths": true,
+      "ba_convention": "audio_to_motion (sigma=0.30s, order=7, upper-body, identity root orientation); common-prefix audio/motion duration; cross-clip FRAME-WEIGHTED mean (EMAGE/GestureLSM); NO head/tail trim; NOT OMG music->motion",
+      "ba_gt_comparison": "prediction and corresponding GT use the same audio, common prefix, MMAE, FK, and frame weighting; primary comparison is abs(BA-BA_GT), lower is better.",
+      "ba_coverage": "pred=3242/3242 clips, gt=3242/3242 clips",
+      "mmae_file": "external_asset:g1_mmae_30body_30fps.npy",
+      "stem_selection": {
+        "val_split": "external_asset:splits/val_common.txt",
+        "exclude_stems_file": null,
+        "require_all_stems": true
+      },
+      "foot_metrics_enabled": true,
+      "foot_anchor": "canonical-grounded-stance"
+    },
+    "metrics": {
+      "FGD": 2.2783108333534123,
+      "Div": 0.8402629083807719,
+      "Div_GT": 1.1597175934725334,
+      "Div_signed_gap": -0.31945468509176156,
+      "Div_gap": 0.31945468509176156,
+      "Div_relative_gap": 0.2754590314830189,
+      "Multimodality": null,
+      "Multimodality_eq16_literal": null,
+      "Multimodality_status": "SKIPPED_NO_MULTIRUN",
+      "Multimodality_clips": 0,
+      "Multimodality_runs_per_clip": 0,
+      "Multimodality_pairs_per_clip": 0,
+      "Multimodality_frames": 0,
+      "SRGR": 0.7488323998625017,
+      "SRGR_numerator": 3502630.6272467896,
+      "SRGR_denominator": 4677456.034073755,
+      "SRGR_semantic_mass": 155915.20113579184,
+      "SRGR_frames": 891351,
+      "BA": {
+        "mean": 0.4713657540363291,
+        "std": 0.14316837034617988,
+        "min": 0.0,
+        "max": 0.7767299552734128,
+        "n": 3242,
+        "mean_unweighted": 0.45640038804194216
+      },
+      "BA_GT": {
+        "mean": 0.5344117589875796,
+        "std": 0.1456949351917425,
+        "min": 0.0,
+        "max": 0.8210771052229192,
+        "n": 3242,
+        "mean_unweighted": 0.5273153737839774
+      },
+      "BA_signed_gap": -0.06304600495125057,
+      "BA_gap": 0.06304600495125057,
+      "BA_relative_gap": 0.11797271278365683,
+      "Jerk": {
+        "mean": 50.68345969485908,
+        "std": 16.442126868059642,
+        "min": 28.33633112606924,
+        "max": 174.18287591809062,
+        "n": 3242
+      },
+      "Jerk_GT": {
+        "mean": 38.61603495422704,
+        "std": 24.312826089231805,
+        "min": 6.5389986215680915,
+        "max": 119.85628628771406,
+        "n": 3242
+      },
+      "Jerk_signed_gap": 12.067424740632042,
+      "Jerk_gap": 12.067424740632042,
+      "Jerk_relative_gap": 0.31249776821820235,
+      "Jerk_ratio": 1.3124977682182024,
+      "Jerk_length_weighted": {
+        "mean": 48.32275411327881,
+        "std": 13.655843535218214,
+        "min": 28.33633112606924,
+        "max": 174.18287591809062,
+        "n": 3242,
+        "weight_sum": 881625
+      },
+      "Jerk_GT_length_weighted": {
+        "mean": 39.28395519409566,
+        "std": 24.45331850520345,
+        "min": 6.5389986215680915,
+        "max": 119.85628628771406,
+        "n": 3242,
+        "weight_sum": 881625
+      },
+      "Jerk_length_weighted_signed_gap": 9.03879891918315,
+      "Jerk_length_weighted_gap": 9.03879891918315,
+      "Jerk_length_weighted_relative_gap": 0.230088820601793,
+      "Jerk_length_weighted_ratio": 1.230088820601793,
+      "jerk_generated": {
+        "mean": 50.68345969485908,
+        "std": 16.442126868059642,
+        "min": 28.33633112606924,
+        "max": 174.18287591809062,
+        "n": 3242
+      },
+      "jerk_reference": {
+        "mean": 38.61603495422704,
+        "std": 24.312826089231805,
+        "min": 6.5389986215680915,
+        "max": 119.85628628771406,
+        "n": 3242
+      },
+      "jerk_generated_length_weighted": {
+        "mean": 48.32275411327881,
+        "std": 13.655843535218214,
+        "min": 28.33633112606924,
+        "max": 174.18287591809062,
+        "n": 3242,
+        "weight_sum": 881625
+      },
+      "jerk_reference_length_weighted": {
+        "mean": 39.28395519409566,
+        "std": 24.45331850520345,
+        "min": 6.5389986215680915,
+        "max": 119.85628628771406,
+        "n": 3242,
+        "weight_sum": 881625
+      },
+      "foot_ground_error": {
+        "mean": 0.008434687820454595,
+        "std": 0.00424979340590013,
+        "min": 0.0009277407070736825,
+        "max": 0.029455596477302736,
+        "n": 3242
+      },
+      "contact_sliding_speed": {
+        "mean": 0.051900707748888046,
+        "std": 0.019878838762616487,
+        "min": 0.025531910359859467,
+        "max": 0.4245620369911194,
+        "n": 3242
+      }
+    }
+  },
+  "comparison_to_historical_metrics": [
+    {
+      "metric": "FGD",
+      "new": 2.2783108333534123,
+      "historical": 2.2783488876001456,
+      "delta": -3.805424673331004e-05
+    },
+    {
+      "metric": "Div",
+      "new": 0.8402629083807719,
+      "historical": 0.8402629311262025,
+      "delta": -2.274543065006185e-08
+    },
+    {
+      "metric": "Div_GT",
+      "new": 1.1597175934725334,
+      "historical": 1.1597175934725334,
+      "delta": 0.0
+    },
+    {
+      "metric": "Div_gap",
+      "new": 0.31945468509176156,
+      "historical": 0.3194546623463309,
+      "delta": 2.274543065006185e-08
+    },
+    {
+      "metric": "BA",
+      "new": 0.4713657540363291,
+      "historical": 0.4713691178275428,
+      "delta": -3.363791213739642e-06
+    },
+    {
+      "metric": "BA_GT",
+      "new": 0.5344117589875796,
+      "historical": 0.5344117589875796,
+      "delta": 0.0
+    },
+    {
+      "metric": "BA_gap",
+      "new": 0.06304600495125057,
+      "historical": 0.06304264116003683,
+      "delta": 3.363791213739642e-06
+    },
+    {
+      "metric": "SRGR",
+      "new": 0.7488323998625017,
+      "historical": 0.7488324639999308,
+      "delta": -6.413742903443875e-08
+    },
+    {
+      "metric": "Jerk_length_weighted",
+      "new": 48.32275411327881,
+      "historical": 48.32277587780043,
+      "delta": -2.1764521619616062e-05
+    },
+    {
+      "metric": "Jerk_GT_length_weighted",
+      "new": 39.28395519409566,
+      "historical": 39.28395519409566,
+      "delta": 0.0
+    },
+    {
+      "metric": "Jerk_length_weighted_gap",
+      "new": 9.03879891918315,
+      "historical": 9.03882068370477,
+      "delta": -2.1764521619616062e-05
+    },
+    {
+      "metric": "foot_ground_error",
+      "new": 0.008434687820454595,
+      "historical": 0.00843468832701421,
+      "delta": -5.065596154346652e-10
+    },
+    {
+      "metric": "contact_sliding_speed",
+      "new": 0.051900707748888046,
+      "historical": 0.05190072521650078,
+      "delta": -1.746761273124786e-08
+    }
+  ],
+  "prediction_comparison": {
+    "clips": 3242,
+    "frames": 891351,
+    "exact_clips": 0,
+    "allclose_1e6_clips": 3183,
+    "max_abs": 6.038695573806763e-06,
+    "comparison": "New packaged best15k EMA outputs versus original frozen V2 best15k seed000, same audited conditions and lengths; batch=3, Euler8, CFG1"
+  },
+  "comparison_interpretation": "No bitwise agreement claim versus historical archived outputs. Matched runtime/input/batch comparison is exact in matched_runtime_parity.json; batch sensitivity is observed but is not a unique explanation of the archive differences.",
+  "raw_benchmark_report_sha256": "3fc0d101674a7bdc92bcfe185c3ca924c2bc4f21f2cb81f2604db70706c946c2",
+  "full_prediction_comparison_report_sha256": "bbe6a5fe27c941af88cdb46993109b37966d378e6f33bd7904554b2754c7d1fc",
+  "validation_limits": [
+    "single-seed full set; MM20 not rerun",
+    "frozen-condition benchmark, not a fresh-raw full-set benchmark"
+  ]
+}

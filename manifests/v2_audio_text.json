@@ -95,31 +95,43 @@
     "note": "Original source hashes are historical identities, not hashes of the current packaged implementation."
   },
   "current_branch_validation": {
-    "scope": "five_real_checkpoint_frozen_condition_canaries",
-    "report": "../validation/real_checkpoint_parity.json",
-    "status": "passed",
-    "max_abs": 0.0,
-    "frames": [
-      60,
-      312,
-      591,
-      600,
-      588
-    ],
-    "text_tokens": [
-      8,
-      40,
-      73,
-      52,
-      247
-    ],
-    "full_benchmark_run": false,
-    "raw_encoder_parity_run": false,
+    "scope": "full_common3242_frozen_conditions_and_three_raw_inputs_plus_real_G1_render",
+    "source_commit": "06055037f2bbdbf89a09868ad27d0c586d088a73",
+    "status": "completed_with_documented_historical_raw_cache_limit",
+    "initial_five_canaries": {
+      "scope": "five_real_checkpoint_frozen_condition_canaries",
+      "report": "../validation/real_checkpoint_parity.json",
+      "status": "passed",
+      "max_abs": 0.0,
+      "frames": [
+        60,
+        312,
+        591,
+        600,
+        588
+      ],
+      "text_tokens": [
+        8,
+        40,
+        73,
+        52,
+        247
+      ]
+    },
+    "full_benchmark_run": true,
+    "full_benchmark_report": "../validation/common3242_acceptance.json",
+    "matched_runtime_report": "../validation/matched_runtime_parity.json",
+    "raw_encoder_parity_run": true,
+    "same_input_raw_reference_parity": "pass",
+    "historical_frozen_raw_cache_parity": "fail",
+    "raw_report": "../validation/raw_encoder_acceptance.json",
+    "real_mujoco_report": "../validation/real_mujoco_acceptance.json",
+    "MM20_rerun": false,
     "package_checks": {
-      "tests_passed": 42,
+      "tests_passed": 52,
       "tests_skipped": 1,
       "tests_failed": 0,
-      "skip_reason": "MuJoCo absent from CPU suite environment; separate MuJoCo 3.10.0 synthetic three-frame render passed",
+      "skip_reason": "MuJoCo absent from CPU suite environment; separate real G1 render passed",
       "ruff": "passed",
       "training_math_report": "../validation/training_math_reference_parity.json",
       "model_port_report": "../validation/model_port_reference_parity.json",

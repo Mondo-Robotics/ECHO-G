@@ -91,7 +91,8 @@ using unbiased variance. It excludes validation. Audio and text encoders remain 
 | `splits/train_drop.txt` | `18c9d6abdc1eabc79889d2d2cfc6620e75cb2781db9e0824473411b8dbdfe66a` |
 | `splits/val_common.txt` | `36a960134a321f7b2c47c1b24aabfdf1fa8ee213ea59a8570740be196ba7d83b` |
 | `stats/drop_train.pt` | `9378214e1033a7fb309532a040b07f87a9010fbd484a30b8b9962cc75704aac8` |
-| Source condition/motion audit | `be4feba6a494d7175d5fc1243d17f4aa41d55d88fe9aa1a48866088b88130eb2` |
+| Full-text readiness audit (`final_condition_audit.csv`) | `be4feba6a494d7175d5fc1243d17f4aa41d55d88fe9aa1a48866088b88130eb2` |
+| Per-clip condition/motion length CSV | `af76c470398e4d63404e095d7d93637c4860e07a91229bc476227afcdeb7bbb2` |
 
 These identify the model's original inputs. The source VERSION hash is not a hash of a future
 Hugging Face archive or of this Markdown card. Repackaging must retain these identities and add

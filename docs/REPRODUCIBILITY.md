@@ -2,8 +2,9 @@
 
 This document distinguishes the original V2 experiment, its previously validated standalone
 inference implementation, and the new `src/echo_g` package on this release branch. Historical
-full-set results are reference targets, not proof that this branch has been rerun on the full
-benchmark. Public data/weight downloads remain pending.
+results are retained separately from the new package acceptance on 2026-09-29. The new package
+completed common3242, three real raw-input comparisons, and a real G1 render; see
+[BRANCH_VALIDATION.md](BRANCH_VALIDATION.md). Public data/weight downloads remain pending.
 
 ## Frozen model and recipe
 
@@ -60,7 +61,8 @@ hashes identify the historical implementation, not the current package files.
 | `splits/train_drop.txt` | `18c9d6abdc1eabc79889d2d2cfc6620e75cb2781db9e0824473411b8dbdfe66a` |
 | `splits/val_common.txt` | `36a960134a321f7b2c47c1b24aabfdf1fa8ee213ea59a8570740be196ba7d83b` |
 | `stats/drop_train.pt` | `9378214e1033a7fb309532a040b07f87a9010fbd484a30b8b9962cc75704aac8` |
-| Source condition/motion audit CSV | `be4feba6a494d7175d5fc1243d17f4aa41d55d88fe9aa1a48866088b88130eb2` |
+| Full-text readiness audit (`final_condition_audit.csv`) | `be4feba6a494d7175d5fc1243d17f4aa41d55d88fe9aa1a48866088b88130eb2` |
+| Per-clip condition/motion length CSV | `af76c470398e4d63404e095d7d93637c4860e07a91229bc476227afcdeb7bbb2` |
 
 The source VERSION hash is not the hash of a future public archive. Public packaging will add
 its own inventory, shard hashes, and Hugging Face revision. Counts and source identities come
@@ -100,10 +102,11 @@ clips across 20 seeds; a seed000 run alone does not reproduce it. Generated jerk
 be compared with GT rather than interpreted as monotonically better when smaller. Learned G1
 FGD is comparable only under the same encoder and protocol, not directly to EMAGE paper scores.
 
-This branch packages the latest `eval_g1_motion_cls.py`, with provenance recorded separately.
-It has **not yet produced a new full common3242 benchmark with this packaged implementation**.
-Use [BENCHMARK.md](BENCHMARK.md) for the current command and required assets. Retain the evaluator
-and asset hashes beside future reports rather than relabeling this historical table as a new run.
+This branch completed a new common3242 run with the latest packaged evaluator on 2026-09-29:
+**FGD 2.278311**, 3,242 clips / 891,351 frames.
+[The acceptance report](../validation/common3242_acceptance.json) retains full precision,
+source/asset identities, and differences from the historical table above. MM20 was not rerun.
+Use [BENCHMARK.md](BENCHMARK.md) for the command and audited reference-length policy.
 
 ## Validation scope
 
@@ -111,7 +114,9 @@ The new package passed five real-checkpoint canaries against the frozen original
 tensors, nonzero flow velocities, eight-step Euler outputs, and physical denormalization were
 exactly equal (maximum absolute difference 0), including 600 frames and 247 tokens. See
 [BRANCH_VALIDATION.md](BRANCH_VALIDATION.md) for runtime, coverage, and the machine-readable report.
-This branch has not rerun the full benchmark or raw encoder parity.
+The current package also completed the full frozen-condition benchmark and three real raw
+inputs. Same-input/raw-reference outputs are exact; reproducing the historical frozen feature
+cache did not pass the retained thresholds. See [raw acceptance](RAW_ENCODER_ACCEPTANCE.md).
 
 The earlier standalone V2 port reproduced all 3,242 predictions / 891,351 frames exactly against
 the original model under identical frozen conditions and seed000. That is a historical result
@@ -124,6 +129,9 @@ used the same newly extracted conditions. However, re-extracted audio differed f
 cache by 0.001343–0.004639 maximum absolute error, exceeding the retained 0.001 tolerance on all
 five canaries. Exact historical audio-cache reproduction is therefore not claimed. The full-set
 reference scores above use frozen conditions; there was no full-set fresh-audio benchmark.
+The new A800 raw acceptance on 2026-09-29 also observed nonzero historical text-feature errors,
+including maximum 3.0 for the 247-token clip. Encoder asset hashes match the earlier record,
+but the specific numerical cause has not been isolated. Use frozen conditions for score reproduction.
 
 Fresh training can differ across PyTorch/CUDA/GPU environments. Use checkpoint/data identities,
 recorded configuration, controlled input parity, and downstream scores to assess reproduction;
