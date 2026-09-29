@@ -1,8 +1,8 @@
 {
   "schema": "echo-g-v2-dataset-manifest-v1",
-  "release_candidate_date": "2026-09-28",
+  "release_candidate_date": "2026-09-29",
   "name": "ECHO-G V2 BEAT2 G1 direct30 full-text drop split",
-  "publication_status": "source_identity_frozen_public_archives_pending",
+  "publication_status": "validated_archives_prepared_pending_destination_and_new_contribution_license",
   "hugging_face": {
     "status": "planned_not_uploaded",
     "repo_id": null,
@@ -17,14 +17,18 @@
     "word_time_annotations",
     "splits",
     "train_only_statistics",
-    "audits_and_checksums"
+    "audits_and_checksums",
+    "segmented_audio",
+    "transcripts",
+    "word_token_mapping"
   ],
   "excluded_from_first_release": [
     "Seedance",
     "HumanRetarget_targets",
-    "legacy_all_status_training_split"
+    "legacy_all_status_training_split",
+    "SRGR_semantic_caches"
   ],
-  "raw_source_policy": "Raw speech, transcript text and third-party assets use separate fetch/reconstruction instructions under their own terms.",
+  "raw_source_policy": "Segmented audio and transcripts accompany the public dataset under the applicable upstream terms; independent third-party model and robot assets remain external.",
   "representation_schema": "projecthermes-g1-39d-standard-v2",
   "motion_dimension": 39,
   "fps": 30,
@@ -72,9 +76,126 @@
     }
   },
   "public_packaging": {
-    "inventory_sha256": null,
-    "word_time_annotation_schema": null,
-    "shards": []
+    "inventory_sha256": "4eb8ac38f2daf5b696a73998d4ee2b1b189dfcfd30545075983bb75d2e662d89",
+    "word_time_annotation_schema": "echo-g-word-token-annotations-v1",
+    "shards": [
+      {
+        "all_member_hashes_verified": true,
+        "bytes": 742318080,
+        "expanded_bytes": 728474045,
+        "files": 18229,
+        "path": "data/motion_39d_30fps-00000-of-00001.tar",
+        "sha256": "baa8b6b73d0e45b2c8bf5299eb3c0f5fc2626b990c65567329b38fbc9511e0c0"
+      },
+      {
+        "all_member_hashes_verified": true,
+        "bytes": 2146928640,
+        "expanded_bytes": 2145073803,
+        "files": 2503,
+        "path": "data/condition_30fps-00000-of-00006.tar",
+        "sha256": "4da1e2ccb28fa2dbd558f82b199d9947fbd2db87abe2ba5602c7074a4ab460ea"
+      },
+      {
+        "all_member_hashes_verified": true,
+        "bytes": 2147266560,
+        "expanded_bytes": 2144917415,
+        "files": 3603,
+        "path": "data/condition_30fps-00001-of-00006.tar",
+        "sha256": "8d885e11fca9f2131bca77ab713f071279bd329990c8773a0af8f65ba2c896e5"
+      },
+      {
+        "all_member_hashes_verified": true,
+        "bytes": 2147348480,
+        "expanded_bytes": 2145182395,
+        "files": 3319,
+        "path": "data/condition_30fps-00002-of-00006.tar",
+        "sha256": "42c5d45b96a9df7e028d58083ac5bb60a9e3a204634ce4672b1bbf32e2571dfb"
+      },
+      {
+        "all_member_hashes_verified": true,
+        "bytes": 2147399680,
+        "expanded_bytes": 2145248546,
+        "files": 3210,
+        "path": "data/condition_30fps-00003-of-00006.tar",
+        "sha256": "8a1443a718af57bb0c172e6437e436d7509482aaa74cf0a429f5bfddc0a5086c"
+      },
+      {
+        "all_member_hashes_verified": true,
+        "bytes": 2147307520,
+        "expanded_bytes": 2145068223,
+        "files": 3403,
+        "path": "data/condition_30fps-00004-of-00006.tar",
+        "sha256": "fe162492a8a06af6b98a435277be01939b7333412195d31262876e1a312e016c"
+      },
+      {
+        "all_member_hashes_verified": true,
+        "bytes": 1386659840,
+        "expanded_bytes": 1385189939,
+        "files": 2191,
+        "path": "data/condition_30fps-00005-of-00006.tar",
+        "sha256": "774e1c2efc543e429eb0846249f554fe2a262f1aead5c721e1bcdd3398c8bdba"
+      },
+      {
+        "all_member_hashes_verified": true,
+        "bytes": 2147389440,
+        "expanded_bytes": 2141725122,
+        "files": 7460,
+        "path": "data/audio-00000-of-00003.tar",
+        "sha256": "5924e25b8e16a7333385772d294c4c98e039df29b392e95114b5337443024787"
+      },
+      {
+        "all_member_hashes_verified": true,
+        "bytes": 2147461120,
+        "expanded_bytes": 2142623318,
+        "files": 6347,
+        "path": "data/audio-00001-of-00003.tar",
+        "sha256": "cc8211697b294949b2d15723ab1f15764b623e9269d0de7def5e58ba1c07112c"
+      },
+      {
+        "all_member_hashes_verified": true,
+        "bytes": 1236572160,
+        "expanded_bytes": 1233217874,
+        "files": 4422,
+        "path": "data/audio-00002-of-00003.tar",
+        "sha256": "741e1dfdd766573c08009dcee9a39b099b60b838ebf06c180d050a9fd7fc8a6c"
+      },
+      {
+        "all_member_hashes_verified": true,
+        "bytes": 18667520,
+        "expanded_bytes": 2191723,
+        "files": 18229,
+        "path": "data/transcripts-00000-of-00001.tar",
+        "sha256": "9eeb5e457f47b3bad89d3ee9c1258eaaf1b68fe86fa2b4bdb3c2e3b2fcdc9cd1"
+      },
+      {
+        "all_member_hashes_verified": true,
+        "bytes": 108410880,
+        "expanded_bytes": 94424006,
+        "files": 18229,
+        "path": "data/annotations-00000-of-00001.tar",
+        "sha256": "46b227b48570d976ee5a677a2f17c29f4a11aa925f3449c11affec79d60d30d3"
+      }
+    ],
+    "condition_manifest_sha256": "81e0b1197821f9014d147c8d17970ac9143a7d7f72c529d74e891a944d692b01",
+    "stats_drop_train_sha256": "dc57d8f9fa5b74d644c7daeb219d2dad656ad4a24910bdbcd9d3d9f559b05ec6",
+    "media_source_summary_sha256": "8442a108c5b220a9297699ba555ea050e4f7c799f4e26a902bd55a502d83b5ac",
+    "validation": "All 18,229 tensor/word/token/media and strict-loader checks passed. Five distinct public-input inference canaries passed exact equivalence. Re-evaluation of existing common3242 predictions on public GT/audio matched every retained metric; MM20 was not rerun. Real G1 MuJoCo smoke passed.",
+    "inventory_path": "checksums/SHA256SUMS",
+    "inventory_files": 91174,
+    "archive_index_sha256": "96931d7dd0fdf34fa60aedd719659946e03e5df57d1ea56569d0e8d7c9f4e77d",
+    "archive_index_path": "data_archives.json",
+    "archive_bytes": 18523729920,
+    "acceptance_summary_sha256": "994b37e8da20e06882cf71e311ce5940b4768df8bfb359c46b21e89a5c6a412a",
+    "acceptance_summary_path": "audit/acceptance_summary.json",
+    "archive_roundtrip": {
+      "status": "pass",
+      "shards": 12,
+      "members": 91145,
+      "global_checksum_verified_files": 91174,
+      "report": "validation/dataset_archive_roundtrip.json",
+      "report_sha256": "375ae2a2536dc8e98a10747eda49646d0e0a821b5d7ceab0275adce8dc8098f5",
+      "source": "local HF candidate; no HF upload/download yet"
+    }
   },
   "provenance": {
     "source_kind": "audited_original_v2_experiment_metadata",
@@ -84,7 +205,7 @@
   "condition_cache_integrity": {
     "identity_manifest": "manifests/v2_frozen_conditions.json",
     "frozen_condition_manifest_path": "audit/condition/frozen_conditions.json",
-    "frozen_condition_manifest_sha256": "c4cc2b25a00483cf93fc06741cd1424ce5c14b53af9c72a02a9a7d91c72c7417",
+    "frozen_condition_manifest_sha256": "81e0b1197821f9014d147c8d17970ac9143a7d7f72c529d74e891a944d692b01",
     "frozen_condition_manifest_entries": 18229,
     "raw_text_provenance_schema": "echo-g-complete-text-provenance-v1",
     "legacy_cache_policy": "Reject without a matching audited condition-file identity under the externally pinned manifest."

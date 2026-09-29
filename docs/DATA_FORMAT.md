@@ -10,6 +10,11 @@ The data card describes the exact [V2 split and its source lineage](DATASET_CARD
 DATA_ROOT/
 ├── motion_39d_30fps/<stem>.pt
 ├── condition_30fps/<stem>.pt
+├── audio/<stem>.wav
+├── transcripts/<stem>.txt
+├── annotations/words/<stem>.json
+├── raw_inputs.jsonl
+├── eval_assets/mmae/g1_mmae_30body_30fps.npy
 ├── splits/train_drop.txt
 ├── splits/val_common.txt
 ├── stats/drop_train.pt
@@ -18,10 +23,25 @@ DATA_ROOT/
 ```
 
 The audited `frozen_conditions.json` is required when loading the historical frozen V2 files.
-It will accompany the Hugging Face dataset; that upload is still pending. The package will
-additionally contain standalone word-time annotations and archive checksum manifests, whose
-packaged formats and shard hashes are pending. Raw transcripts and source media have separate
-distribution terms.
+It will accompany the Hugging Face dataset; that upload is still pending. The prepared package
+additionally contains paired audio, source transcripts and standalone word-time annotations.
+Archive shard identities are recorded in [the dataset manifest](../manifests/v2_dataset.json).
+Included BEAT2-derived audio/text retain the applicable upstream terms and attribution.
+
+### Audio, transcripts and word times
+
+`audio/<stem>.wav` preserves the packaged waveform and its sample rate without further cropping
+or stretching. `transcripts/<stem>.txt` preserves the original packaged text bytes. The paired
+`annotations/words/<stem>.json` records `canonical_transcript`, `words` entries with `text`,
+`start`, and `end`, and `tokenization` metadata including token IDs and character offsets.
+Word times are in seconds relative to the start of that clip's WAV. The original transcript and
+canonical tokenization text are distinct identities even when their visible wording matches.
+The word-to-token mapping follows the frozen V2 convention below.
+
+`raw_inputs.jsonl` supplies the corresponding audio path, transcript and words to
+`echo-g-extract-conditions`. Use the released canonical lengths for cached benchmark inference;
+the untrimmed waveform duration is not a replacement for the audited common-prefix length.
+The benchmark reads `--wav-dir DATA_ROOT/audio` and uses the frozen MMAE array above.
 
 ## Physical motion
 
@@ -94,20 +114,23 @@ counts and tensor digests. These fields audit the extraction contract; an encode
 is not a claim of cross-hardware numerical equality or a hash of every encoder weight file.
 The token features, FP16 storage boundary, and signed-distance computation are unchanged.
 
-**Historical frozen conditions** require the official audited condition manifest and its
+**Published frozen conditions** require the official audited condition manifest and its
 externally pinned SHA256:
 
 ```text
 Dataset path: audit/condition/frozen_conditions.json
-SHA256: c4cc2b25a00483cf93fc06741cd1424ce5c14b53af9c72a02a9a7d91c72c7417
+SHA256: 81e0b1197821f9014d147c8d17970ac9143a7d7f72c529d74e891a944d692b01
 Entries: 18229
 ```
 
 [The small identity manifest](../manifests/v2_frozen_conditions.json) records its source and
 independent full-token timing audit. The complete 18,229-entry file will ship with the data,
 not inside the Python package. Its entries bind each condition file and its text/time tensors
-to the independent full tokenizer count. The original cache files must remain byte-for-byte
-unchanged; reserializing a `.pt` file changes its file identity even when tensors are equal.
+to the independent full tokenizer count. The public files remove internal path metadata and therefore have new file identities.
+Every retained tensor and numerical field was verified against the original frozen inputs;
+complete token IDs and FP16 intervals were independently checked against the original word audit.
+The manifest above pins these public files. Original experiment file identities are retained
+separately in the dataset provenance; future reserialization requires a new audited identity.
 
 Paired training, validation and sampling use `data.condition_manifest` and
 `data.condition_manifest_sha256` from YAML. Relative manifest paths resolve against `data_root`;

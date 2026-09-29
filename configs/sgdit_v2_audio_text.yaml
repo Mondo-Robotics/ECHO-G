@@ -18,7 +18,7 @@ data:
   stats_file: stats/drop_train.pt
   aligned_lengths_file: audit/condition/per_clip_condition_motion_audit.csv
   condition_manifest: audit/condition/frozen_conditions.json
-  condition_manifest_sha256: c4cc2b25a00483cf93fc06741cd1424ce5c14b53af9c72a02a9a7d91c72c7417
+  condition_manifest_sha256: 81e0b1197821f9014d147c8d17970ac9143a7d7f72c529d74e891a944d692b01
   representation_schema: projecthermes-g1-39d-standard-v2
 
 model:

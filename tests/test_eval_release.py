@@ -8,6 +8,9 @@
 
 from __future__ import annotations
 
+import json
+import sys
+import wave
 from itertools import combinations
 from pathlib import Path
 from types import SimpleNamespace
@@ -16,6 +19,7 @@ import numpy as np
 import pytest
 import torch
 
+from echo_g.evaluation import g1_motion_cls as evaluator
 from echo_g.evaluation.g1_kinematics import G1_BFS_PARENTS
 from echo_g.evaluation.g1_motion_cls import (
     Jerk,
@@ -87,7 +91,8 @@ def test_physical_motion_metadata_is_enforced(tmp_path: Path) -> None:
         load_repr(str(path), 30)
 
 
-def test_fgd_checkpoint_load_and_feature_path_need_no_parent_repository(tmp_path: Path) -> None:
+@pytest.fixture
+def synthetic_encoder(tmp_path: Path) -> Path:
     config = SimpleNamespace(
         vae_layer=4,
         vae_grow=[2, 2, 2, 2],
@@ -112,7 +117,13 @@ def test_fgd_checkpoint_load_and_feature_path_need_no_parent_repository(tmp_path
         },
         checkpoint,
     )
-    loaded, loaded_config = load_g1_ae(str(checkpoint), "cpu", 30)
+    return checkpoint
+
+
+def test_fgd_checkpoint_load_and_feature_path_need_no_parent_repository(
+    synthetic_encoder: Path,
+) -> None:
+    loaded, loaded_config = load_g1_ae(str(synthetic_encoder), "cpu", 30)
     motion = torch.zeros(64, 39)
     motion[:, :6] = matrix_to_rotation_6d(torch.eye(3))
     features = map2latent_feature(loaded, loaded_config, motion.numpy(), "cpu")
@@ -120,3 +131,121 @@ def test_fgd_checkpoint_load_and_feature_path_need_no_parent_repository(tmp_path
     assert features.shape[1] == 192
     assert np.isfinite(features).all()
     assert not loaded.training
+
+
+def test_public_benchmark_without_semantics_preserves_other_metrics(
+    tmp_path: Path,
+    synthetic_encoder: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    pytest.importorskip("librosa")
+    monkeypatch.setattr(torch.cuda, "is_available", lambda: False)
+    for directory in ["pred", "ref", "audio", "sem"]:
+        (tmp_path / directory).mkdir()
+    mmae = tmp_path / "mmae.npy"
+    np.save(mmae, np.full(30, 0.1, dtype=np.float32))
+    random = np.random.default_rng(42)
+    for index, frames in enumerate([64, 96]):
+        stem = f"clip_{index}"
+        times = torch.arange(frames) / 30
+        motion = torch.zeros(frames, 39)
+        motion[:, :6] = matrix_to_rotation_6d(torch.eye(3))
+        motion[:, 10:] = 0.15 * torch.sin(times[:, None] * torch.arange(1, 30)[None, :])
+        prediction = motion.clone()
+        prediction[:, 10:] *= 0.9
+        for directory, values in [("ref", motion), ("pred", prediction)]:
+            torch.save(
+                {"robot_repr": values, "representation_units": "physical", "fps": 30},
+                tmp_path / directory / f"{stem}.pt",
+            )
+        for run in range(20):
+            run_dir = tmp_path / "mm20" / f"run_{run:03d}"
+            run_dir.mkdir(parents=True, exist_ok=True)
+            sampled = prediction.clone()
+            sampled[:, 10:] += torch.from_numpy(
+                random.normal(0, 0.005, (frames, 29)).astype(np.float32)
+            )
+            torch.save({"robot_repr": sampled, "fps": 30}, run_dir / f"{stem}.pt")
+        waveform = np.zeros(round(frames / 30 * 16000), dtype=np.int16)
+        for offset in range(3200, len(waveform) - 1600, 6400):
+            waveform[offset : offset + 800] = (
+                20000 * np.sin(np.arange(800) * 2 * np.pi * 880 / 16000)
+            ).astype(np.int16)
+        with wave.open(str(tmp_path / "audio" / f"{stem}.wav"), "wb") as handle:
+            handle.setnchannels(1)
+            handle.setsampwidth(2)
+            handle.setframerate(16000)
+            handle.writeframes(waveform.tobytes())
+        torch.save(
+            {
+                "stem": stem,
+                "fps": 30,
+                "num_frames": frames,
+                "protocol": "beat2_official_first_match_30fps_v1",
+                "sem": torch.full((frames,), 0.5),
+            },
+            tmp_path / "sem" / f"{stem}.pt",
+        )
+
+    args = [
+        "echo-g-eval",
+        "--pred-dir",
+        str(tmp_path / "pred"),
+        "--ref-dir",
+        str(tmp_path / "ref"),
+        "--wav-dir",
+        str(tmp_path / "audio"),
+        "--mmae-file",
+        str(mmae),
+        "--g1-ae-ckpt",
+        str(synthetic_encoder),
+        "--require-all-stems",
+        "--require-equal-lengths",
+        "--enable-foot-metrics",
+        "--multimodality-root",
+        str(tmp_path / "mm20"),
+        "--require-all-multimodality",
+        "--out",
+        str(tmp_path / "result.json"),
+    ]
+    monkeypatch.setattr(sys, "argv", args)
+    evaluator.main()
+    public = json.loads((tmp_path / "result.json").read_text())
+    assert public["n_clips"] == 2
+    assert not any(key.lower().startswith("srgr") for key in public["params"])
+    assert not any(key.startswith("SRGR") for key in public["metrics"])
+    metrics = public["metrics"]
+    assert np.isfinite(metrics["FGD"])
+    assert metrics["BA"]["n"] == 2
+    assert metrics["Jerk_length_weighted"]["mean"] > 0
+    assert metrics["Multimodality"] > 0
+    assert metrics["Multimodality_status"] == "COMPLETE"
+    assert metrics["foot_ground_error"]["n"] == 2
+    assert metrics["contact_sliding_speed"]["n"] == 2
+
+    legacy_args = args + ["--sem-dir", str(tmp_path / "sem"), "--expected-srgr-frames", "160"]
+    monkeypatch.setattr(sys, "argv", legacy_args)
+    evaluator.main()
+    legacy = json.loads((tmp_path / "result.json").read_text())
+    assert legacy["metrics"]["SRGR_frames"] == 160
+    assert 0 <= legacy["metrics"]["SRGR"] <= 1
+    assert metrics == {
+        key: value for key, value in legacy["metrics"].items() if not key.startswith("SRGR")
+    }
+    assert public["params"] == {
+        key: value for key, value in legacy["params"].items() if not key.startswith("srgr")
+    }
+
+    (tmp_path / "sem" / "clip_0.pt").unlink()
+    with pytest.raises(SystemExit, match="strict semantic coverage"):
+        evaluator.main()
+    monkeypatch.setattr(sys, "argv", args + ["--sem-dir", str(tmp_path / "missing")])
+    with pytest.raises(SystemExit, match="explicit --sem-dir does not exist"):
+        evaluator.main()
+    monkeypatch.setattr(sys, "argv", args + ["--expected-srgr-frames", "160"])
+    with pytest.raises(ValueError, match="requires --sem-dir"):
+        evaluator.main()
+    monkeypatch.setattr(sys, "argv", args)
+    (tmp_path / "audio" / "clip_0.wav").unlink()
+    with pytest.raises(FileNotFoundError, match="BA audio is missing"):
+        evaluator.main()

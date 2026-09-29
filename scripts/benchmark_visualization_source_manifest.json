@@ -70,8 +70,8 @@
       "source": "scripts/eval_g1_motion_cls.py",
       "source_sha256": "a3b43627143b10336805d63b07b0e0cedd1f45c37061b0c2fbe4929625a2929e",
       "target": "src/echo_g/evaluation/g1_motion_cls.py",
-      "target_sha256": "f949a0b800c97a40a93e76695f0557234c643aaad45fb4305550712f5145e303",
-      "adaptation": "Metric math unchanged. Package imports adapted; internal asset defaults replaced with required explicit CLI paths; public documentation references updated."
+      "target_sha256": "528630849ab575735cc6717e580c746e519abf59b04cc8b18ce3e1042e595d9c",
+      "adaptation": "Metric math unchanged. Package imports adapted; internal asset defaults replaced with explicit CLI paths. SRGR is historical opt-in via --sem-dir; omitted semantic labels do not block or alter the public metrics."
     },
     {
       "source": "scripts/export_robot_repr_mujoco_npz.py",
@@ -88,5 +88,9 @@
       "adaptation": "Preserves camera, physical poses, frame resampling and libx264 settings. Explicit XML path, named canonical joint mapping, schema checks, lazy optional imports, streaming frames and renderer cleanup added."
     }
   ],
-  "formatting_note": "Ruff formatting/import sorting applied. Narrow file-level exceptions preserve archived object/super/format/zip/loop syntax. Numerical function/class AST verified after excluding imports and docstrings."
+  "formatting_note": "Ruff formatting/import sorting applied. Narrow file-level exceptions preserve archived object/super/format/zip/loop syntax. Numerical function/class AST verified after excluding imports and docstrings.",
+  "public_dataset_adaptation": {
+    "date": "2026-09-29",
+    "scope": "SRGR CLI, orchestration and report fields are explicit opt-in. All metric/helper ASTs are unchanged from the prior packaged evaluator; original source identity remains recorded."
+  }
 }

@@ -1,9 +1,9 @@
 # ECHO-G V2 dataset card
 
-Status: **release candidate, 2026-09-28; Hugging Face upload pending**.
+Status: **release candidate, 2026-09-29; Hugging Face upload pending**.
 This card describes the data used by V2 audio+text. Its source counts and identities are frozen;
-public archive names, sizes, revisions, per-shard hashes, and final distribution terms remain to
-be completed when the dataset is packaged. [Machine-readable manifest](../manifests/v2_dataset.json).
+twelve archives and their per-file/per-shard checksums are prepared. The HF destination,
+publication revision and new-contribution license remain pending. [Machine-readable manifest](../manifests/v2_dataset.json).
 
 ## Scope and population
 
@@ -30,26 +30,33 @@ units; the audited full-text release has at most 247, and common3242 at most 73.
 not a word-count limit. The split, normalization, and text cache differ from older 64-token or
 multi-rate releases.
 
-## What will be distributed
+## Prepared distribution
 
-| Component | Planned content |
+| Component | Prepared content |
 |---|---|
 | Processed robot motion | Per-clip physical 39D G1 motion and valid lengths |
 | Frozen conditions | Aligned 1,024D acoustic features; complete 2,560D token features; token intervals |
-| Word-time annotations | Clip-relative word intervals and reconstruction/provenance identifiers; text-bearing fields follow source terms |
+| Clip-aligned audio | `audio/<stem>.wav`, original packaged waveform bytes and sample rate; no additional motion-length crop or time stretch |
+| Source transcripts | `transcripts/<stem>.txt`, original packaged transcript bytes |
+| Word-time and tokenizer annotations | `annotations/words/<stem>.json`, canonical transcript, clip-relative `words[text,start,end]`, token IDs/offsets and provenance |
+| Raw-input manifest | `raw_inputs.jsonl`, paired waveform, transcript and word times for feature extraction |
+| BA normalization | Frozen `eval_assets/mmae/g1_mmae_30body_30fps.npy`; shared reference for every compared model |
 | Splits and statistics | Exact train/validation stem lists and `drop_train.pt` |
 | Audits and checksums | Alignment/quality provenance and packaged file/shard identities |
 
-Raw speech, transcript text, source human-body assets, encoder weights, and robot assets are
-separate dependencies. Their download or reconstruction instructions will be supplied according
-to their distribution terms; they are not implicitly relicensed by the processed package.
-Cached-condition training and motion inference do not require loading the raw waveform. BA
-benchmark evaluation does require the corresponding waveform, and SRGR requires semantic labels.
-See [benchmark requirements](BENCHMARK.md).
+The clip-aligned audio, transcripts and word annotations are included in the dataset under their
+applicable BEAT2 source terms, with attribution and modification notices. They are not implicitly
+relicensed as project-owned content. Original transcript bytes and the canonical text used for
+tokenization are identified separately; do not substitute one silently for the other.
+Source human-body models, encoder weights, and robot assets remain separate dependencies with
+asset-specific download instructions. Cached-condition training and inference do not load the
+waveform. BA evaluation uses the included audio and frozen normalization array. Semantic labels
+are outside this release and are not needed for its [benchmark](BENCHMARK.md).
 
 ## Processing lineage
 
-The source production chain starts with BEAT2 SMPL-X/AMASS-format motion at native 30 FPS:
+The source production chain starts with BEAT2 SMPL-X motion at native 30 FPS, converted into
+an AMASS-compatible input format; this is not a claim that the source is the AMASS dataset:
 
 1. GMR retargeting to 29-DoF G1 with the `posture_mild` setup.
 2. Y-up to Z-up conversion; root stabilization where root translation J30 exceeds 80.
@@ -95,8 +102,21 @@ using unbiased variance. It excludes validation. Audio and text encoders remain 
 | Per-clip condition/motion length CSV | `af76c470398e4d63404e095d7d93637c4860e07a91229bc476227afcdeb7bbb2` |
 
 These identify the model's original inputs. The source VERSION hash is not a hash of a future
-Hugging Face archive or of this Markdown card. Repackaging must retain these identities and add
-separate archive inventories/checksums. No archive checksum is claimed before packaging.
+Hugging Face archive or of this Markdown card. The public package retains those source identities
+and separately records the new public files and archives in the dataset manifest.
+
+## Verified public-copy identities
+
+The public copy removes only internal paths from tensor metadata. All retained numerical values
+are bitwise equal to the source. Its frozen-condition manifest SHA256 is
+`81e0b1197821f9014d147c8d17970ac9143a7d7f72c529d74e891a944d692b01`; `stats/drop_train.pt` now has file SHA256
+`dc57d8f9fa5b74d644c7daeb219d2dad656ad4a24910bdbcd9d3d9f559b05ec6`.
+The source identities in the table above intentionally remain unchanged as lineage evidence.
+
+All 18,229 segmented WAVs and word/transcript annotations were checked against 1,856 official
+BEAT2 recordings. The audio sample values, words, and clip-relative word times matched exactly.
+All WAVs are 16 kHz mono; 14,580 use PCM16 and 3,649 use floating-point encoding. Public audio
+retains the source file bytes. The release has 15,850 English and 2,379 Chinese clips.
 
 ## Limitations and publication checklist
 
@@ -105,8 +125,9 @@ pipeline, a particular robot, and held-out speakers from that corpus. They do no
 coverage of every speaker, language, gesture style, robot, or physical execution setting.
 Generated references and MuJoCo renders are not a robot-control validation.
 
-Before publishing data, fill in the Hugging Face repository/revision, shard inventories and
-hashes, word-time annotation package schema, source retrieval/reconstruction instructions, and
-component-specific terms. The code branch retains its existing license; the final publication
-license discussion is deferred. These pending packaging items do not change the frozen V2
-sample lists or reference experiment counts.
+The public package now contains the data card, source and modification notices, upstream
+license evidence, external-asset references, source mappings, and per-file/per-shard inventories.
+All source, strict-loader, selected inference, benchmark and MuJoCo checks passed; see
+[packaging acceptance](DATASET_RELEASE.md). The benchmark reused existing predictions and MM20
+was not rerun. The HF repository/revision and license for new contributions are still needed
+before publication. The code branch retains its existing license.

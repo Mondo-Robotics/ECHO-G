@@ -29,18 +29,26 @@ release candidate yet.
 
 | Asset | Hugging Face location | Status |
 |---|---|---|
-| V2 processed robot-motion dataset | **To be added** | Packaging pending |
+| V2 processed robot-motion dataset | **To be added** | 12 validated local shards prepared; destination and new-contribution license pending |
 | V2 audio+text `best.pt` (15k, EMA) | **To be added** | Upload pending |
-| Benchmark assets: FGD encoder, BA normalization, semantic cache | **To be added** | Packaging and asset-specific distribution review pending |
+| Benchmark FGD encoder | **To be added** | Weight upload pending; identity recorded |
+| Frozen BA normalization | With dataset | Included in prepared dataset |
 
-The planned dataset contains processed robot motions, frozen audio/text conditions, word-time
-annotations, frozen splits, and training statistics. The V2 split is **14,987 training clips +
-3,242 validation clips**. Raw speech, transcripts, encoder weights, and robot/other third-party
-assets follow their own distribution terms; fetch or reconstruction instructions will accompany
-the data release. Seedance is not included.
+The prepared dataset contains processed robot motions, frozen audio/text conditions, clip-aligned
+audio, source transcripts, word-time annotations, frozen splits, training statistics, and the
+frozen BA normalization array. The V2 split is **14,987 training clips + 3,242 validation clips**.
+Audio is stored as `audio/<stem>.wav`, source text as `transcripts/<stem>.txt`, and canonical text,
+word times, and tokenizer mapping as `annotations/words/<stem>.json`. `raw_inputs.jsonl` provides
+inputs for feature extraction. BEAT2-derived audio/text retain their applicable source license
+and attribution, with clipping/text reconstruction documented. Encoder weights and robot assets
+remain separate downloads with their own terms. Seedance is not included.
+
+The public benchmark reports FGD, Div, BA, weighted jerk, foot metrics, and optional MM20. It does
+not require or distribute semantic labels. See [the benchmark protocol](docs/BENCHMARK.md).
 
 - [V2 model card](docs/MODEL_CARD.md)
 - [V2 dataset card](docs/DATASET_CARD.md)
+- [Dataset packaging and download procedure](docs/DATASET_RELEASE.md)
 - [Data format and timing contract](docs/DATA_FORMAT.md)
 - [Dataset asset manifest](manifests/v2_dataset.json)
 - [Frozen-condition manifest identity](manifests/v2_frozen_conditions.json)
@@ -52,7 +60,9 @@ The new package completed [common3242 and real-input acceptance](docs/BRANCH_VAL
 on 2026-09-29: FGD **2.278311**, three raw-input reference comparisons, and a real G1 video.
 The tested matched-runtime and raw-input reference comparisons are exact; historical
 frozen raw-feature-cache agreement remains
-unmet. Use the frozen conditions for benchmark reproduction.
+unmet. Use the frozen conditions for benchmark reproduction. The separate public-data packaging
+acceptance passed all 18,229 clips and re-evaluated existing common3242 predictions with exactly
+the same retained metrics; [scope and evidence](docs/DATASET_RELEASE.md).
 
 ## Installation
 
@@ -116,7 +126,7 @@ DATA_ROOT/
 ```
 
 The supplied V2 YAMLs require the audited frozen-condition manifest at the path above and pin
-its SHA256 to `c4cc2b25a00483cf93fc06741cd1424ce5c14b53af9c72a02a9a7d91c72c7417`.
+its SHA256 to `81e0b1197821f9014d147c8d17970ac9143a7d7f72c529d74e891a944d692b01`.
 The full manifest will accompany the Hugging Face dataset; its upload remains pending.
 See [the manifest identity](manifests/v2_frozen_conditions.json) and
 [complete-text provenance rules](docs/DATA_FORMAT.md#complete-text-provenance). Older caches
@@ -178,7 +188,7 @@ echo-g-infer \
   --config configs/sgdit_v2_audio_text.yaml \
   --condition-dir /path/to/v2_data/condition_30fps \
   --condition-manifest /path/to/v2_data/audit/condition/frozen_conditions.json \
-  --condition-manifest-sha256 c4cc2b25a00483cf93fc06741cd1424ce5c14b53af9c72a02a9a7d91c72c7417 \
+  --condition-manifest-sha256 81e0b1197821f9014d147c8d17970ac9143a7d7f72c529d74e891a944d692b01 \
   --output-dir outputs/v2_frozen_conditions \
   --device cuda
 ```
@@ -193,7 +203,8 @@ sequence supplies the output frame count. Predictions are denormalized physical 
 
 ### Raw audio and word-timed text
 
-Create `utterances.jsonl`; paths are relative to that manifest:
+The dataset includes `raw_inputs.jsonl` for its released clips. For your own inputs, create
+`utterances.jsonl` with paths relative to that manifest:
 
 ```json
 {"stem":"example_0001","audio_path":"audio/example.wav","transcript":"Hello world","words":[{"text":"Hello","start":0.10,"end":0.42},{"text":"world","start":0.55,"end":0.91}]}

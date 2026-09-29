@@ -64,9 +64,13 @@ hashes identify the historical implementation, not the current package files.
 | Full-text readiness audit (`final_condition_audit.csv`) | `be4feba6a494d7175d5fc1243d17f4aa41d55d88fe9aa1a48866088b88130eb2` |
 | Per-clip condition/motion length CSV | `af76c470398e4d63404e095d7d93637c4860e07a91229bc476227afcdeb7bbb2` |
 
-The source VERSION hash is not the hash of a future public archive. Public packaging will add
-its own inventory, shard hashes, and Hugging Face revision. Counts and source identities come
-from the original V2 experiment, not the old sinusoidal `train_all` experiment.
+The source VERSION hash is not a public archive hash. The prepared public package has its own
+inventory and shard hashes in [the dataset manifest](../manifests/v2_dataset.json); its HF
+repository/revision remain pending. Public metadata sanitization changes the serialized stats
+SHA256 to `dc57d8f9fa5b74d644c7daeb219d2dad656ad4a24910bdbcd9d3d9f559b05ec6`
+and requires condition manifest `81e0b1197821f9014d147c8d17970ac9143a7d7f72c529d74e891a944d692b01`.
+All retained values are exact; see [packaging acceptance](DATASET_RELEASE.md). Counts and source
+identities come from the original V2 experiment.
 
 For inference, use complete frozen text states and the audited canonical lengths. V2 time
 input is signed `frame_seconds - token_center_seconds`. Preserve the FP16 storage boundary for
@@ -88,7 +92,6 @@ previous standalone inference port on 2026-09-19 using the historical frozen eva
 | Absolute Div gap | 0.319455 |
 | BA, frame weighted / GT | 0.471369 / 0.534412 |
 | Absolute BA gap | 0.063043 |
-| SRGR, semantic-mass normalized | 0.748832 |
 | Jerk, clip-equal (m/s³) / GT | 50.683479 / 38.616035 |
 | Jerk, weighted by T−3 (m/s³) / GT | 48.322776 / 39.283955 |
 | Absolute weighted jerk gap (m/s³) | 9.038821 |
@@ -96,6 +99,10 @@ previous standalone inference port on 2026-09-19 using the historical frozen eva
 | Contact sliding speed (m/s) | 0.051901 |
 | MM20, separate seeds 0–19 run | 1.785556 |
 
+The table lists historical values for metric types retained in the release, including a separate
+historical MM20 run; it is not a new packaging measurement. Archived reports also recorded SRGR; that metric
+and its semantic cache are outside the current public release. Historical JSON evidence remains
+unchanged, including any SRGR values; it is not a requirement to run the public benchmark.
 Full precision, source report checksums, and separate single-seed/MM20 identities are preserved
 in [v2_reference_results.json](../manifests/v2_reference_results.json). MM20 uses 64,840 generated
 clips across 20 seeds; a seed000 run alone does not reproduce it. Generated jerk and Div should

@@ -22,30 +22,20 @@
     },
     {
       "role": "BA_mean_velocity_normalization",
-      "reference_filename": "g1_mean_vel_30body.npy",
+      "reference_filename": "g1_mmae_30body_30fps.npy",
       "url": null,
       "sha256": "0f763e6d54ca7bb33e49b0336ba2cc3359f9e9d5942e7f475c85c74b4b66e880",
-      "status": "source_file_identity_verified_public_upload_pending",
-      "suggested_local_path": "data/benchmark/g1_mean_vel_30body.npy",
+      "status": "included_in_verified_public_dataset_candidate",
+      "suggested_local_path": "data/v2/eval_assets/mmae/g1_mmae_30body_30fps.npy",
       "verified_in": "../validation/common3242_acceptance.json"
-    },
-    {
-      "role": "SRGR_semantic_cache",
-      "reference_name": "beat2_official_first_match_30fps_val_common_v1",
-      "url": null,
-      "inventory_sha256": null,
-      "required_clips": 3242,
-      "required_frames": 891351,
-      "status": "pending_public_asset_identity",
-      "suggested_local_path": "data/benchmark/semantics_30fps",
-      "payload_protocol": "beat2_official_first_match_30fps_v1"
     },
     {
       "role": "raw_audio_for_BA",
       "url": null,
-      "status": "source_fetch_or_reconstruction_instructions_pending",
+      "status": "included_in_verified_public_dataset_candidate",
       "distribution": "source_terms_apply",
-      "suggested_local_path": "data/beat2_audio/<stem>/audio.wav"
+      "suggested_local_path": "data/v2/audio/<stem>.wav",
+      "verification": "All 18229 source WAV slices match official recording samples exactly; packaged WAV bytes preserved."
     },
     {
       "role": "G1_robot_XML_and_meshes_for_MuJoCo",
@@ -56,5 +46,8 @@
       "suggested_local_path": "assets_external/unitree_g1/g1_mocap_29dof.xml"
     }
   ],
-  "note": "Null fields are intentional placeholders. Original model benchmark scores do not establish equivalence of arbitrary substitute metric assets."
+  "note": "Null fields are intentional placeholders. Original model benchmark scores do not establish equivalence of arbitrary substitute metric assets.",
+  "excluded_metrics": [
+    "SRGR"
+  ]
 }

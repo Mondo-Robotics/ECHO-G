@@ -3,7 +3,8 @@
 The release uses the current `eval_g1_motion_cls.py` implementation captured on
 2026-09-28. Run it as `scripts/eval_g1_motion_cls.py` or `echo-g-eval`; both call
 `echo_g.evaluation.g1_motion_cls`. Metric computations are preserved from the
-research script. Internal paths have been replaced by explicit asset arguments.
+research script. Internal paths have been replaced by explicit asset arguments. The public
+dataset protocol omits semantic labels; their historical metric is now opt-in.
 Source and packaged-file SHA-256 hashes are in
 [`scripts/benchmark_visualization_source_manifest.json`](../scripts/benchmark_visualization_source_manifest.json).
 
@@ -14,8 +15,11 @@ python -m pip install -e '.[benchmark]'
 python -c "import librosa, scipy, soundfile; print(librosa.__version__, scipy.__version__, soundfile.__version__)"
 ```
 
-Dataset and model weights will be distributed on Hugging Face. Links and release
-checksums are **pending**; this branch contains code and protocols, not these assets.
+Dataset and model weights will be distributed on Hugging Face. Uploads and final links are
+**pending**. Dataset archive and FGD/MMAE asset hashes are already recorded in the
+[dataset manifest](../manifests/v2_dataset.json) and
+[benchmark asset manifest](../manifests/benchmark_assets.json); this branch contains code,
+protocols and identity records, not the large assets.
 Use the same pinned asset revisions for every model in a comparison.
 
 | Required input | Expected content | Distribution |
@@ -24,15 +28,20 @@ Use the same pinned asset revisions for every model in a comparison.
 | References | Released V2 robot motion files, same stems and coordinate system | Hugging Face dataset link: **pending** |
 | Split | Released `splits/val_common.txt`; any formal exclusion list must be frozen and shared across methods | Hugging Face dataset link: **pending** |
 | FGD encoder | Trained G1 skeleton-convolution AE `g1_aeskconv_full_pure2_w192.bin`, with its configuration/state | Hugging Face evaluation weights link: **pending** |
-| BA normalization | `g1_mean_vel_30body.npy`, finite array of shape `(30,)` | Hugging Face evaluation assets link: **pending** |
-| Audio | `<stem>/audio.wav` or `<stem>.wav`, matching the start of the released motion | Obtain/reconstruct from authorized upstream BEAT2 audio; instructions/link **pending** |
-| SRGR semantics | Canonical 30 FPS cache, one `<stem>.pt` per clip | Hugging Face evaluation assets or reconstruction instructions: **pending** |
+| BA normalization | `eval_assets/mmae/g1_mmae_30body_30fps.npy`, finite array of shape `(30,)` | Included in the dataset; Hugging Face link: **pending** |
+| Audio | `audio/<stem>.wav`, matching the start of the released motion | Included in the dataset under its source terms; Hugging Face link: **pending** |
 
-The latest evaluator requires semantic relevance data as well as audio. Each
-semantic payload contains `stem`, `fps=30`, `num_frames`, `sem` (values in `[0,1]`),
-and `protocol="beat2_official_first_match_30fps_v1"`. The cache must cover the full
-evaluated prefix. It is never padded or resampled by the evaluator. Frozen text
-conditioning features do not substitute for this semantic cache or the audio.
+BA reads the included clip-aligned waveform, not the frozen acoustic feature tensor. The
+loader accepts both `<wav-dir>/<stem>.wav` and the legacy `<wav-dir>/<stem>/audio.wav` layout.
+Do not shift the audio start, stretch it, or trim the stored file to the motion length; BA uses
+the common evaluated prefix internally. Transcripts and word annotations accompany the data
+but are not additional inputs to this motion evaluator.
+
+The MMAE file is the frozen frame-weighted per-body central-difference speed normalization,
+computed from the original 20,790-clip reference corpus (5,014,146 frames). It is a shared
+benchmark reference, not the training split's 39D normalization statistics. Its SHA256 is
+`0f763e6d54ca7bb33e49b0336ba2cc3359f9e9d5942e7f475c85c74b4b66e880`.
+Do not recompute it on the 18,229 released clips: that would change the BA protocol.
 
 Prediction payloads should include `representation_units="physical"` and `fps=30`.
 Normalized network outputs must be de-normalized with the checkpoint's released
@@ -41,16 +50,15 @@ normalization of the 39D motion representation.
 
 ## Evaluate one prediction per clip
 
-Set the paths below to locally downloaded/reconstructed assets:
+Set the paths below to the downloaded dataset and external FGD encoder:
 
 ```bash
 python scripts/eval_g1_motion_cls.py \
   --pred-dir results/v2_audio_text/seed_000 \
   --ref-dir data/v2/motion_39d_30fps \
   --val-split data/v2/splits/val_common.txt \
-  --wav-dir data/beat2_audio \
-  --sem-dir data/benchmark/semantics_30fps \
-  --mmae-file data/benchmark/g1_mean_vel_30body.npy \
+  --wav-dir data/v2/audio \
+  --mmae-file data/v2/eval_assets/mmae/g1_mmae_30body_30fps.npy \
   --g1-ae-ckpt weights/g1_aeskconv_full_pure2_w192.bin \
   --fps 30 --ba-direction audio_to_motion \
   --enable-foot-metrics --require-all-stems \
@@ -115,22 +123,25 @@ Audio2Gestures Eq. 16. Without repeated samples, the status is
 | `FGD` | Learned G1 gesture distribution distance; lower is better. Released pure2 encoder uses joints, excluding root motion. |
 | `Div`, `Div_GT`, `Div_gap` | Within-clip position mean absolute deviation, frame weighted; compare absolute gap to GT. |
 | `BA`, `BA_GT`, `BA_gap` | Audio-to-motion beat alignment; upper bodies, Gaussian width 0.3 s, frame weighted, no two-second head/tail trim. |
-| `SRGR` | Semantic-mass-normalized positional recall at 0.1 m; a perfect prediction on a nonzero-semantic set scores 1. |
 | `Jerk_length_weighted`, `Jerk_GT_length_weighted`, `Jerk_length_weighted_gap` | World-space jerk in m/s³, weighted by each clip's `T-3` valid third differences; compare gap to GT. |
 | `Jerk`, `Jerk_GT` | Historical clip-equal jerk, retained separately for compatibility. |
 | `foot_ground_error` | Mean absolute lowest sole-bottom height in meters, first-frame grounded anchor. |
 | `contact_sliding_speed` | Horizontal stance-foot sliding speed in m/s. |
 | `Multimodality` | MM20 diversity under the protocol above; interpret alongside quality metrics. |
 
-BA, Div, SRGR and MM20 use identity root orientation and zero translation. Jerk
+BA, Div and MM20 use identity root orientation and zero translation. Jerk
 uses stored root orientation and the trajectory integrated from local velocity and
 yaw increments. Foot metrics use the same physical trajectory with an initial sole
 grounding offset. Lower raw BA, Div or jerk is not automatically better: compare the
 corresponding GT gap as well as the raw value.
 
-**Historical results:** this latest script includes semantic-mass-normalized SRGR
-and length-weighted jerk. Do not attach an older table to a new evaluation protocol
-without checking its metric definitions, encoder, selection and frame coverage.
+**Historical compatibility:** archived reports may contain SRGR. It is outside the current
+public dataset and metric list; no semantic cache is distributed or required. The evaluator
+retains an explicit legacy `--sem-dir` option for reproducing those archived reports. When it
+is omitted, no semantic cache is loaded and no SRGR fields are written. Supplying an invalid
+or incomplete cache still fails the legacy checks; other metric computations are unchanged.
+Do not attach an older table to a new evaluation protocol without checking metric definitions,
+encoder, selection and frame coverage.
 
 ## Source provenance
 

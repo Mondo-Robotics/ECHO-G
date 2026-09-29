@@ -1,10 +1,10 @@
 {
   "schema": "echo-g-v2-frozen-condition-manifest-identity-v1",
-  "publication_status": "audited_identity_frozen_public_dataset_upload_pending",
+  "publication_status": "public_copy_verified_hugging_face_upload_pending",
   "manifest": {
     "relative_dataset_path": "audit/condition/frozen_conditions.json",
     "schema": "echo-g-frozen-condition-manifest-v1",
-    "sha256": "c4cc2b25a00483cf93fc06741cd1424ce5c14b53af9c72a02a9a7d91c72c7417",
+    "sha256": "81e0b1197821f9014d147c8d17970ac9143a7d7f72c529d74e891a944d692b01",
     "entries": 18229,
     "maximum_full_token_count": 247,
     "distribution": "To accompany the Hugging Face dataset; not embedded in the code repository."
@@ -15,7 +15,9 @@
     "The independent original full-token audit contains exactly the train_drop and val_common union.",
     "Every stored token count equals the independently audited untruncated tokenizer count.",
     "Every FP16 token-time tensor matches the independent word-derived timing audit.",
-    "Every condition file, text tensor and token-time tensor is bound by SHA256."
+    "Every condition file, text tensor and token-time tensor is bound by SHA256.",
+    "Public condition files remove only internal path fields; every retained tensor and numerical field is bitwise equal to the frozen source.",
+    "Every public word annotation was retokenized without truncation; token IDs and FP16 times match the original independent audit."
   ],
   "loader_policy": "New raw conditions require echo-g-complete-text-provenance-v1; historical frozen conditions require the manifest and this externally pinned SHA256. An explicitly supplied manifest always requires matching file identity.",
   "not_a_public_archive_hash": true,
@@ -25,5 +27,6 @@
     "revision": null,
     "url": null,
     "repo_type": "dataset"
-  }
+  },
+  "source_condition_manifest_sha256": "c4cc2b25a00483cf93fc06741cd1424ce5c14b53af9c72a02a9a7d91c72c7417"
 }

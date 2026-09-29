@@ -2,7 +2,10 @@
 
 Inference/cache implementation commit: `06055037f2bbdbf89a09868ad27d0c586d088a73` on
 `release/v2-20260928`. The rendering snapshot is identified separately below.
-This report concerns the packaged implementation. Historical results are retained separately.
+This report is historical acceptance evidence for the packaged implementation at the commit
+above. Its original measurements are preserved below. It predates the public dataset decision
+to omit SRGR and its semantic labels; those historical entries are not current release metrics
+or required inputs. See [the current benchmark protocol](BENCHMARK.md).
 
 ## Cache completeness and package checks
 

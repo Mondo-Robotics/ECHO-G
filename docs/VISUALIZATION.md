@@ -62,18 +62,32 @@ rounded output frame count, preserving duration to the output-frame precision.
 
 ## Add the corresponding audio
 
-The renderer produces a silent MP4. To add authorized source audio that starts at
-the same clip boundary, use a local FFmpeg installation:
+The renderer produces a silent MP4. The dataset includes the matching clip-aligned audio at
+`DATA_ROOT/audio/<stem>.wav`. To add it, set the duration to the actual output frame count divided
+by its FPS (312 / 30 = 10.4 seconds in this example) and use a local FFmpeg installation:
 
 ```bash
 ffmpeg -i results/v2_audio_text/mujoco/example.mp4 \
-  -i data/beat2_audio/example/audio.wav \
-  -map 0:v:0 -map 1:a:0 -c:v copy -c:a aac -shortest \
+  -i data/v2/audio/example.wav \
+  -map 0:v:0 -map 1:a:0 -c:v copy -c:a aac \
+  -af 'atrim=start=0:end=10.4,asetpts=PTS-STARTPTS' -t 10.4 \
   results/v2_audio_text/mujoco/example_with_audio.mp4
 ```
 
-Use the clip-aligned audio, not an uncropped recording. Keep the silent source if
-its exact frame count is needed for frame extraction.
+Use the clip-aligned audio, not an uncropped recording. The explicit audio interval starts at
+zero and preserves the copied video stream. Check output stream durations with `ffprobe`; do
+not use `-shortest` to silently remove video frames. Keep the silent source for frame extraction.
+
+## Smoke check after dataset packaging
+
+Select one released validation stem, generate its prediction from the new audited frozen
+condition identity, and run the export/render commands above with the same external G1 XML and
+meshes used in [the previous real render acceptance](BRANCH_VALIDATION.md). Use the new package's
+audio for the mux step. Record the source dataset revision, condition/prediction hashes, robot
+asset hashes, frame count, FPS, audio/video durations and output hashes. The clip
+`english_1_wayne_0_100_100_utt_0000` has a frozen benchmark prefix of 312 frames at 30 FPS and is
+suitable for this check. This is a packaging smoke test; the earlier render evidence does not
+establish that a newly packaged dataset has passed it.
 
 ## Validation boundary
 
