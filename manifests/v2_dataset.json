@@ -76,5 +76,13 @@
     "source_kind": "audited_original_v2_experiment_metadata",
     "experiment_json_sha256": "ba5ce14ba11974fd7e875125bad9e328d3563c551fea6556baadc85f789e93af",
     "source_name": "release30_wordtime_v2_20260913_v1/qknorm_wordtime/experiment.json"
+  },
+  "condition_cache_integrity": {
+    "identity_manifest": "manifests/v2_frozen_conditions.json",
+    "frozen_condition_manifest_path": "audit/condition/frozen_conditions.json",
+    "frozen_condition_manifest_sha256": "c4cc2b25a00483cf93fc06741cd1424ce5c14b53af9c72a02a9a7d91c72c7417",
+    "frozen_condition_manifest_entries": 18229,
+    "raw_text_provenance_schema": "echo-g-complete-text-provenance-v1",
+    "legacy_cache_policy": "Reject without a matching audited condition-file identity under the externally pinned manifest."
   }
 }

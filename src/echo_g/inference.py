@@ -50,10 +50,18 @@ def parse_args(condition_only: bool = False) -> argparse.Namespace:
         parser.add_argument("--condition-dir", type=Path, required=True)
         parser.add_argument("--stem-list", type=Path)
         parser.add_argument("--lengths-csv", type=Path)
+        parser.add_argument("--condition-manifest", type=Path)
+        parser.add_argument("--condition-manifest-sha256")
         parser.set_defaults(data_root=None)
     else:
         parser.add_argument("--data-root", type=Path, required=True)
-        parser.set_defaults(condition_dir=None, stem_list=None, lengths_csv=None)
+        parser.set_defaults(
+            condition_dir=None,
+            stem_list=None,
+            lengths_csv=None,
+            condition_manifest=None,
+            condition_manifest_sha256=None,
+        )
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument(
         "--config",
@@ -170,6 +178,8 @@ def export_predictions(
     condition_dir: Path | None = None,
     stem_list: Path | None = None,
     lengths_csv: Path | None = None,
+    condition_manifest: Path | None = None,
+    condition_manifest_sha256: str | None = None,
 ) -> Path:
     if batch_size < 1 or num_workers < 0 or limit < 0:
         raise ValueError("Invalid batch size, worker count, or limit")
@@ -198,7 +208,15 @@ def export_predictions(
         if limit:
             stems = stems[:limit]
         lengths = load_aligned_lengths(lengths_csv) if lengths_csv else None
-        dataset = ConditionDataset(condition_dir, stems, config.data, config.model, lengths)
+        dataset = ConditionDataset(
+            condition_dir,
+            stems,
+            config.data,
+            config.model,
+            lengths,
+            condition_manifest,
+            condition_manifest_sha256,
+        )
     else:
         if data_root is None:
             raise ValueError("A data root or condition directory is required")
@@ -368,6 +386,8 @@ def main(condition_only: bool = False) -> None:
         args.condition_dir,
         args.stem_list,
         args.lengths_csv,
+        args.condition_manifest,
+        args.condition_manifest_sha256,
     )
 
 

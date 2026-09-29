@@ -43,6 +43,7 @@ the data release. Seedance is not included.
 - [V2 dataset card](docs/DATASET_CARD.md)
 - [Data format and timing contract](docs/DATA_FORMAT.md)
 - [Dataset asset manifest](manifests/v2_dataset.json)
+- [Frozen-condition manifest identity](manifests/v2_frozen_conditions.json)
 - [Model asset manifest](manifests/v2_audio_text.json)
 - [Benchmark asset manifest](manifests/benchmark_assets.json)
 
@@ -107,8 +108,18 @@ DATA_ROOT/
 ├── splits/train_drop.txt
 ├── splits/val_common.txt
 ├── stats/drop_train.pt
-└── audit/condition/per_clip_condition_motion_audit.csv
+├── audit/condition/per_clip_condition_motion_audit.csv
+└── audit/condition/frozen_conditions.json
 ```
+
+The supplied V2 YAMLs require the audited frozen-condition manifest at the path above and pin
+its SHA256 to `c4cc2b25a00483cf93fc06741cd1424ce5c14b53af9c72a02a9a7d91c72c7417`.
+The full manifest will accompany the Hugging Face dataset; its upload remains pending.
+See [the manifest identity](manifests/v2_frozen_conditions.json) and
+[complete-text provenance rules](docs/DATA_FORMAT.md#complete-text-provenance). Older caches
+without verified provenance are rejected, including caches truncated to 64 tokens that report
+`n_tokens=64`. Regenerate them or obtain the audited full-text release; changing counts or
+rehashing unverified caches does not establish completeness.
 
 ```bash
 echo-g-validate-data \
@@ -144,6 +155,9 @@ echo-g-sample \
 
 ### Cached conditions without ground-truth motion
 
+For new conditions produced by the current raw extractor, use the embedded complete-text
+provenance:
+
 ```bash
 echo-g-infer \
   --checkpoint /path/to/v2_best015000.pt \
@@ -152,6 +166,23 @@ echo-g-infer \
   --output-dir outputs/v2_new_clips \
   --device cuda
 ```
+
+For the historical frozen V2 dataset, supply its audited manifest and pinned SHA explicitly:
+
+```bash
+echo-g-infer \
+  --checkpoint /path/to/v2_best015000.pt \
+  --config configs/sgdit_v2_audio_text.yaml \
+  --condition-dir /path/to/v2_data/condition_30fps \
+  --condition-manifest /path/to/v2_data/audit/condition/frozen_conditions.json \
+  --condition-manifest-sha256 c4cc2b25a00483cf93fc06741cd1424ce5c14b53af9c72a02a9a7d91c72c7417 \
+  --output-dir outputs/v2_frozen_conditions \
+  --device cuda
+```
+
+Both manifest options are required together. Independent inference does not infer a dataset
+root from the YAML. An explicitly supplied manifest always verifies condition-file identity,
+even if a file also has raw provenance.
 
 Use `--stem-list /path/to/stems.txt` to select clips. For canonical lengths, also provide
 `--lengths-csv /path/to/per_clip_condition_motion_audit.csv`. Otherwise the cached acoustic
@@ -193,6 +224,10 @@ echo-g-infer \
   --output-dir outputs/v2_raw \
   --device cuda
 ```
+
+The extractor writes `echo-g-complete-text-provenance-v1` metadata: the full tokenizer count,
+complete IDs/offsets, encoder and word-time provenance, and text/time tensor digests. These new
+conditions can be loaded without the frozen-dataset manifest.
 
 Output duration comes from the audio, with `T = max(2, round(duration_seconds * 30))`.
 Raw clips over 20 seconds or 256 text tokens are rejected; the pipeline does not automatically

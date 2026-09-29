@@ -20,6 +20,11 @@ from typing import Any
 import torch
 import torch.nn.functional as F
 
+from echo_g.condition_provenance import (
+    make_text_provenance,
+    token_time_spans,
+    validate_text_provenance,
+)
 from echo_g.utils import atomic_torch_save, sha256
 
 LOGGER = logging.getLogger(__name__)
@@ -106,38 +111,6 @@ def load_manifest(path: Path, limit: int = 0) -> list[Utterance]:
     return utterances
 
 
-def token_time_spans(
-    transcript: str,
-    offsets: list[tuple[int, int]] | list[list[int]],
-    words: tuple[dict[str, Any], ...],
-) -> torch.Tensor:
-    if not words:
-        raise ValueError("V2 requires word timestamps")
-    canonical = " ".join(str(word.get("text", word.get("word", ""))) for word in words)
-    if transcript != canonical:
-        raise ValueError("Token offsets must refer to the canonical space-joined word transcript")
-    character_times: list[tuple[float, float]] = []
-    for index, word in enumerate(words):
-        text = str(word.get("text", word.get("word", "")))
-        start, end = float(word["start"]), float(word["end"])
-        if not math.isfinite(start) or not math.isfinite(end) or start < 0 or end < start:
-            raise ValueError("Invalid word timestamp")
-        character_times.extend((start, end) for _ in text)
-        if index != len(words) - 1:
-            character_times.append((end, end))
-    spans: list[list[float]] = []
-    for low, high in offsets:
-        low, high = int(low), min(int(high), len(character_times))
-        if low < 0:
-            raise ValueError("Negative tokenizer character offset")
-        covered = character_times[low:high]
-        if high <= low or not covered:
-            spans.append([0.0, 0.0])
-        else:
-            spans.append([min(value[0] for value in covered), max(value[1] for value in covered)])
-    return torch.tensor(spans, dtype=torch.float32)
-
-
 def interpolate_features(features: torch.Tensor, output_frames: int) -> torch.Tensor:
     if features.ndim != 3 or features.shape[0] != 1:
         raise ValueError(f"expected [1, frames, channels], got {features.shape}")
@@ -187,6 +160,7 @@ def validate_text_component(payload: dict[str, Any], stem: str) -> None:
         or bool((times[:, 1] < times[:, 0]).any())
     ):
         raise ValueError(f"{stem}: invalid or truncated text/timestamp features")
+    validate_text_provenance(payload, stem)
     pooled = payload.get("text_pooled")
     if pooled is not None and (
         not isinstance(pooled, torch.Tensor)
@@ -327,6 +301,7 @@ def extract_text_conditions(
             raise ValueError(
                 f"{utterance.stem}: {count} tokens exceed capacity {max_tokens}; split explicitly"
             )
+        full_token_ids = encoded["input_ids"][0].tolist()
         offsets = encoded.pop("offset_mapping")[0].tolist()
         times = token_time_spans(utterance.transcript, offsets, utterance.words)
         if skip_existing and output_path.is_file():
@@ -369,6 +344,17 @@ def extract_text_conditions(
             "text_dim": token_features.shape[-1],
             "n_tokens": token_features.shape[0],
         }
+        payload["text_provenance"] = make_text_provenance(
+            payload,
+            full_token_ids,
+            offsets,
+            {
+                "model": model_name,
+                "model_class": type(model).__name__,
+                "tokenizer_class": type(tokenizer).__name__,
+                "resolved_revision": getattr(getattr(model, "config", None), "_commit_hash", None),
+            },
+        )
         validate_text_component(payload, utterance.stem)
         atomic_torch_save(payload, output_path)
         if index <= 5 or index % 25 == 0:

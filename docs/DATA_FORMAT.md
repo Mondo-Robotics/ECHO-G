@@ -13,12 +13,15 @@ DATA_ROOT/
 ├── splits/train_drop.txt
 ├── splits/val_common.txt
 ├── stats/drop_train.pt
-└── audit/condition/per_clip_condition_motion_audit.csv
+├── audit/condition/per_clip_condition_motion_audit.csv
+└── audit/condition/frozen_conditions.json
 ```
 
-The Hugging Face package will additionally contain word-time annotations and provenance/checksum
-manifests. Their packaged filenames and shard hashes are pending; they are not required by the
-cached-condition model loader. Raw transcript text and source media have separate distribution terms.
+The audited `frozen_conditions.json` is required when loading the historical frozen V2 files.
+It will accompany the Hugging Face dataset; that upload is still pending. The package will
+additionally contain standalone word-time annotations and archive checksum manifests, whose
+packaged formats and shard hashes are pending. Raw transcripts and source media have separate
+distribution terms.
 
 ## Physical motion
 
@@ -66,11 +69,62 @@ Text is produced by Qwen3.5-4B hidden layer −2. Acoustic features use Wav2Vec2
 16 kHz mono input, native encoder time sequence, FP32 linear interpolation to the target frame
 count with `align_corners=True`, then FP16 storage. The audio key name does not denote a 4 Hz rate.
 
-Full token features and an integer `n_tokens` equal to the stored token count are required for
-V2. A historical 64-token cache is invalid if the transcript
-actually contains more than 64 tokens. Do not pad such a cache to 256 or change its metadata to
-make it appear complete. Historical frozen caches can lack new encoder/source identity fields, but must retain the
-required count and timing fields. Release identity and audits establish their provenance.
+### Complete-text provenance
+
+`n_tokens == len(text_tokens)` alone does not prove completeness: the older extractor wrote the
+count after truncating to 64. The loader now requires one of the following verified paths.
+
+**New raw conditions** include a `text_provenance` mapping with schema
+`echo-g-complete-text-provenance-v1`, produced automatically by `echo-g-extract-conditions`:
+
+| Field | Purpose |
+|---|---|
+| `full_token_count` | Count from the tokenizer with `truncation=False`, independent of the stored feature-row count |
+| `tokenizer_truncation` | Must be `False` |
+| `token_ids`, `token_offsets` | Complete token IDs and character offsets, each with `full_token_count` entries |
+| `encoder_identity` | Model identifier, encoder/tokenizer classes, and resolved revision when supplied by the encoder |
+| `token_time_mapping` | `character_offset_union_with_spaces_at_previous_word_end` |
+| `canonical_transcript_sha256` | Binds the exact canonical transcript |
+| `text_tokens_sha256`, `token_times_sha256` | Bind the stored text features and token intervals |
+
+The condition payload retains `canonical_transcript`, `word_timestamps`, `source_text_model`,
+`hidden_layer=-2`, and `encoder_dtype=bfloat16`. Loading recomputes word-derived token intervals
+from the stored canonical transcript and offsets, checks the encoder metadata, and verifies
+counts and tensor digests. These fields audit the extraction contract; an encoder identifier
+is not a claim of cross-hardware numerical equality or a hash of every encoder weight file.
+The token features, FP16 storage boundary, and signed-distance computation are unchanged.
+
+**Historical frozen conditions** require the official audited condition manifest and its
+externally pinned SHA256:
+
+```text
+Dataset path: audit/condition/frozen_conditions.json
+SHA256: c4cc2b25a00483cf93fc06741cd1424ce5c14b53af9c72a02a9a7d91c72c7417
+Entries: 18229
+```
+
+[The small identity manifest](../manifests/v2_frozen_conditions.json) records its source and
+independent full-token timing audit. The complete 18,229-entry file will ship with the data,
+not inside the Python package. Its entries bind each condition file and its text/time tensors
+to the independent full tokenizer count. The original cache files must remain byte-for-byte
+unchanged; reserializing a `.pt` file changes its file identity even when tensors are equal.
+
+Paired training, validation and sampling use `data.condition_manifest` and
+`data.condition_manifest_sha256` from YAML. Relative manifest paths resolve against `data_root`;
+absolute paths are also supported. Both fields must be supplied together. The provided V2 YAMLs
+pin the official path and SHA above. Independent `echo-g-infer` uses the explicit
+`--condition-manifest PATH --condition-manifest-sha256 SHA256` options; it does not infer a data
+root or silently reuse the YAML's relative manifest path.
+
+When a manifest is explicitly supplied, file identity is checked even if the payload also
+contains new raw provenance. Without either valid raw provenance or an audited file identity,
+the loader rejects the cache. This includes older 64-token caches whose `n_tokens` also equals
+64. A genuinely complete 64-token input remains valid through either verified path.
+
+Do not pad truncated features, edit counts, or recompute a manifest from unverified caches to
+make them pass. Regenerate raw conditions with the current extractor, or use the official
+frozen data and its published manifest identity. A newly packaged or reserialized frozen
+release requires a separately audited identity before its SHA is updated.
 
 ## Time and length
 
@@ -90,8 +144,8 @@ replace this mapping with word pooling or a new alignment algorithm.
 
 | Entry point | Frame policy | Text policy |
 |---|---|---|
-| Paired training/validation Dataset | Audited common audio/motion prefix, at most 600 frames | Complete stored tokens, at most 256; reject known truncated caches |
-| Independent cached inference | Acoustic sequence length, or supplied canonical audited length; at most 600 | Reject oversized or known truncated conditions |
+| Paired training/validation Dataset | Audited common audio/motion prefix, at most 600 frames | Complete stored tokens, at most 256; require verified provenance or manifest identity |
+| Independent cached inference | Acoustic sequence length, or supplied canonical audited length; at most 600 | Reject oversized conditions or missing/invalid complete-text provenance |
 | Raw audio extraction → inference | `T = max(2, round(audio_seconds * 30))`; reject audio longer than 20 seconds | Require word timing; reject more than 256 tokens |
 
 There is no automatic segmentation or stitching. For longer inputs, create shorter audio clips

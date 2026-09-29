@@ -53,13 +53,23 @@ python scripts/eval_g1_motion_cls.py \
   --mmae-file data/benchmark/g1_mean_vel_30body.npy \
   --g1-ae-ckpt weights/g1_aeskconv_full_pure2_w192.bin \
   --fps 30 --ba-direction audio_to_motion \
-  --enable-foot-metrics --require-all-stems --require-equal-lengths \
+  --enable-foot-metrics --require-all-stems \
   --tag v2_audio_text_best --out results/v2_audio_text/benchmark.json
 ```
 
-Do not use `--limit` for a full benchmark. Strict coverage flags fail on missing or
-invalid clips, mismatched pred/GT lengths, or incomplete valid BA/jerk coverage.
-Without `--require-equal-lengths`, paired metrics use the common temporal prefix.
+Do not use `--limit` for a full benchmark. `--require-all-stems` fails on missing or
+invalid clips or incomplete valid BA/jerk coverage. The archived source motion tensors
+can be longer than the audited common audio/motion prefix used for prediction: this
+affects 433 of the 3,242 source validation clips. The command above preserves the
+historical common-prefix evaluation and must cover 891,351 frames. It does not resample
+motion or shift the start time.
+
+For strict `--require-equal-lengths`, first create a separate reference directory whose
+`robot_repr` tensors and `real_num_frames` are clipped to the frozen audit CSV
+`aligned_frames` (at most 600). Keep the original files and their identities. Then use
+that directory as `--ref-dir` and add the flag; do not apply it directly to the longer
+source tensors. The 2026-09-29 package acceptance uses this explicit audited-prefix
+reference preparation and checks every prediction length before evaluation.
 The FGD encoder additionally uses complete multiples of 32 frames internally and
 skips shorter clips for its features, matching the research implementation.
 Store the command, checkpoint SHA, split SHA, evaluator source SHA and all evaluation

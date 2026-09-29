@@ -20,6 +20,11 @@ from typing import Any
 import torch
 from torch.utils.data import Dataset, Sampler
 
+from echo_g.condition_provenance import (
+    FrozenConditionManifest,
+    load_condition_manifest,
+    validate_condition_provenance,
+)
 from echo_g.config import DataConfig, ModelConfig
 
 
@@ -92,6 +97,9 @@ def decode_condition(
     config: DataConfig,
     model_config: ModelConfig,
     frames: int | None = None,
+    *,
+    condition_path: Path | None = None,
+    condition_manifest: FrozenConditionManifest | None = None,
 ) -> dict[str, Any]:
     audio = _audio_features(payload)
     if audio.ndim != 2 or audio.shape[1] != model_config.audio_dim:
@@ -127,6 +135,7 @@ def decode_condition(
         raise ValueError(f"{stem}: invalid token timestamps")
     if not torch.isfinite(text).all():
         raise ValueError(f"{stem}: non-finite text features")
+    validate_condition_provenance(payload, stem, condition_path, condition_manifest)
     audio = audio[:frames]
     if config.conditioning == "text-only":
         audio = torch.zeros_like(audio)
@@ -151,8 +160,13 @@ class ConditionDataset(Dataset[dict[str, Any]]):
         config: DataConfig,
         model_config: ModelConfig,
         lengths: dict[str, int] | None = None,
+        condition_manifest: Path | None = None,
+        condition_manifest_sha256: str | None = None,
     ) -> None:
         self.condition_root = condition_dir
+        self.condition_manifest = load_condition_manifest(
+            condition_manifest, condition_manifest_sha256
+        )
         self.stems = stems
         self.config = config
         self.model_config = model_config
@@ -166,7 +180,15 @@ class ConditionDataset(Dataset[dict[str, Any]]):
                 condition_dir / f"{stem}.pt", map_location="cpu", weights_only=True
             )
             frames = None if lengths is None else min(lengths[stem], config.max_frames)
-            sample = decode_condition(payload, stem, config, model_config, frames)
+            sample = decode_condition(
+                payload,
+                stem,
+                config,
+                model_config,
+                frames,
+                condition_path=condition_dir / f"{stem}.pt",
+                condition_manifest=self.condition_manifest,
+            )
             self.lengths.append(sample["frames"])
 
     def __len__(self) -> int:
@@ -178,7 +200,13 @@ class ConditionDataset(Dataset[dict[str, Any]]):
             self.condition_root / f"{stem}.pt", map_location="cpu", weights_only=True
         )
         sample = decode_condition(
-            payload, stem, self.config, self.model_config, self.lengths[index]
+            payload,
+            stem,
+            self.config,
+            self.model_config,
+            self.lengths[index],
+            condition_path=self.condition_root / f"{stem}.pt",
+            condition_manifest=self.condition_manifest,
         )
         # The shared batch allocator uses this tensor; sampling never consumes it.
         sample["motion"] = torch.zeros(sample["frames"], self.model_config.motion_dim)
@@ -205,6 +233,9 @@ class RobotSpeechDataset(Dataset[dict[str, Any]]):
         self.mean = mean.float()
         self.std = std.float().clamp_min(1e-6)
         self.condition_root = root / config.condition_dir
+        self.condition_manifest = load_condition_manifest(
+            config.condition_manifest, config.condition_manifest_sha256, root
+        )
         self.motion_root = root / config.motion_dir
         relative_split = config.train_split if split == "train" else config.val_split
         self.split_path = root / relative_split
@@ -287,7 +318,15 @@ class RobotSpeechDataset(Dataset[dict[str, Any]]):
         normalized_motion = (motion - self.mean) / self.std
         if not torch.isfinite(normalized_motion).all():
             raise ValueError(f"{stem}: normalized motion contains non-finite values")
-        sample = decode_condition(condition, stem, self.config, self.model_config, frames)
+        sample = decode_condition(
+            condition,
+            stem,
+            self.config,
+            self.model_config,
+            frames,
+            condition_path=self.condition_root / f"{stem}.pt",
+            condition_manifest=self.condition_manifest,
+        )
         sample["motion"] = normalized_motion
         return sample
 

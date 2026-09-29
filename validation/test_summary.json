@@ -1,11 +1,12 @@
 {
   "status": "pass",
-  "tests": 43,
-  "passed": 42,
+  "tests": 53,
+  "passed": 52,
   "skipped": 1,
   "failures": 0,
   "errors": 0,
   "skip_reason": "MuJoCo is not installed in the Hermes CPU test environment",
   "ruff": "pass",
-  "scope": "CPU unit and regression tests; independent synthetic MuJoCo render validated separately"
+  "scope": "CPU unit and regression tests after complete-text cache provenance hardening; separate real-data acceptance reports cover GPU inference, raw encoders and MuJoCo",
+  "date": "2026-09-29"
 }

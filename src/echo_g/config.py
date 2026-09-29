@@ -28,6 +28,8 @@ class DataConfig:
     aligned_lengths_file: str | None = "audit/condition/per_clip_condition_motion_audit.csv"
     representation_schema: str = "projecthermes-g1-39d-standard-v2"
     conditioning: str = "audio-text"
+    condition_manifest: str | None = None
+    condition_manifest_sha256: str | None = None
 
     def validate(self) -> None:
         if self.fps <= 0:
@@ -38,6 +40,10 @@ class DataConfig:
             raise ValueError("data.max_text_tokens must be in [1, 256]")
         if self.max_frames > 600:
             raise ValueError("V2 data.max_frames cannot exceed 600")
+        if (self.condition_manifest is None) != (self.condition_manifest_sha256 is None):
+            raise ValueError(
+                "condition_manifest and condition_manifest_sha256 are required together"
+            )
         if self.conditioning not in {"audio-text", "text-only"}:
             raise ValueError("data.conditioning must be audio-text or text-only")
 

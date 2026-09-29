@@ -17,6 +17,8 @@ data:
   val_split: splits/val_common.txt
   stats_file: stats/drop_train.pt
   aligned_lengths_file: audit/condition/per_clip_condition_motion_audit.csv
+  condition_manifest: audit/condition/frozen_conditions.json
+  condition_manifest_sha256: c4cc2b25a00483cf93fc06741cd1424ce5c14b53af9c72a02a9a7d91c72c7417
   representation_schema: projecthermes-g1-39d-standard-v2
 
 model:

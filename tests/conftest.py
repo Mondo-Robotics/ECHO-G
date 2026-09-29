@@ -14,6 +14,7 @@ from pathlib import Path
 import pytest
 import torch
 
+from echo_g.condition_provenance import make_text_provenance
 from echo_g.config import (
     DataConfig,
     ExperimentConfig,
@@ -42,17 +43,30 @@ def synthetic_release(tmp_path: Path) -> tuple[Path, ExperimentConfig]:
         frames = 5 + index
         lengths[stem] = frames
         generator = torch.Generator().manual_seed(index)
-        torch.save(
-            {
-                "audio_features": torch.randn(frames, 8, generator=generator),
-                "text_tokens": torch.randn(3, 12, generator=generator),
-                "text_pooled": torch.randn(12, generator=generator),
-                "token_times": torch.tensor([[0.0, 0.1], [0.1, 0.2], [0.2, 0.3]]),
-                "has_word_timing": True,
-                "n_tokens": 3,
-            },
-            condition_root / f"{stem}.pt",
+        payload = {
+            "audio_features": torch.randn(frames, 8, generator=generator),
+            "text_tokens": torch.randn(3, 12, generator=generator),
+            "text_pooled": torch.randn(12, generator=generator),
+            "token_times": torch.tensor([[0.0, 0.1], [0.1, 0.2], [0.2, 0.3]]),
+            "has_word_timing": True,
+            "n_tokens": 3,
+            "canonical_transcript": "a b c",
+            "word_timestamps": [
+                {"text": "a", "start": 0.0, "end": 0.1},
+                {"text": "b", "start": 0.1, "end": 0.2},
+                {"text": "c", "start": 0.2, "end": 0.3},
+            ],
+            "source_text_model": "synthetic-model",
+            "hidden_layer": -2,
+            "encoder_dtype": "bfloat16",
+        }
+        payload["text_provenance"] = make_text_provenance(
+            payload,
+            [1, 2, 3],
+            [[0, 1], [2, 3], [4, 5]],
+            {"model": "synthetic-model"},
         )
+        torch.save(payload, condition_root / f"{stem}.pt")
         torch.save(
             {
                 "robot_repr": torch.randn(frames, 5, generator=generator),
