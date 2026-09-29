@@ -1,4 +1,4 @@
-# V2 reproduction protocol
+# ECHO-G reproduction protocol
 
 Use the released checkpoint, frozen conditions and sampling settings below to reproduce the
 reference benchmark. Fresh raw feature extraction and independent training can produce different
@@ -6,8 +6,8 @@ numerical results across environments.
 
 ## Frozen model and recipe
 
-The release model is **V2 audio+text, direct robot39, learned positions, QKNorm with global/local
-Gaussian token attention**. Configuration: `configs/sgdit_v2_audio_text.yaml`.
+The release model is **ECHO-G audio+text, direct robot39, learned positions, QKNorm with global/local
+Gaussian token attention**. Configuration: `configs/sgdit_audio_text.yaml`.
 
 | Setting | Reference value |
 |---|---|
@@ -37,32 +37,31 @@ FGD-selected checkpoint. Historical validation used `drop_last=True` and batch 3
 
 ## Checkpoint identity
 
-Reference filename: `best.pt` (suggested local name: `v2_best015000.pt`).
+Reference filename: `best.pt`.
 
 ```text
 SHA256: c1e7e863e28b76b710bc18f9e9029836771fc86c1bb9fca42aa9d7655f74a616
 step: 15000
 weights: EMA
-wordtime schema: release30-bounded-qk-global-local-wordtime-v2.1
 ```
 
-[The model manifest](../manifests/v2_audio_text.json) records the checkpoint and pending
+[The model manifest](../manifests/audio_text.json) records the checkpoint and pending
 Hugging Face location. Dataset details and download instructions are in the
 [data card](DATASET_CARD.md) and [download guide](DATASET.md).
 
 ## Data and timing
 
 Use the supplied `train_drop` / `val_common` splits and `stats/drop_train.pt` without recomputing
-them. The V2 configurations already select the released condition metadata and training stats.
+them. The ECHO-G configurations already select the released condition metadata and training stats.
 
-For inference, use complete frozen text states and the canonical frame lengths. V2 time
+For inference, use complete frozen text states and the canonical frame lengths. ECHO-G time
 input is signed `frame_seconds - token_center_seconds`. Preserve the FP16 storage boundary for
-token intervals before their FP32 center calculation. Do not substitute old 64-token caches,
-absolute distances, B1 fixed priors, or a different normalization file.
+token intervals before their FP32 center calculation. Use the complete token sequence, signed
+time distances, learned prior parameters, and supplied normalization statistics.
 
-## Historical results
+## Reference results
 
-The following scores are from the original V2 best15k model on common3242, 30 FPS, 891,351 frames,
+The following scores are from the reference checkpoint on common3242, 30 FPS, 891,351 frames,
 EMA, 8 Euler steps and CFG=1. Single-sample metrics use seed000.
 
 | Metric | Historical value |

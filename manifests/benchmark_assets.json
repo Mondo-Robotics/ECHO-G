@@ -1,17 +1,19 @@
 {
-  "schema": "echo-g-v2-benchmark-assets-v1",
-  "status": "dataset_uploaded_private_preview_fgd_and_external_robot_assets_pending",
+  "schema": "echo-g-benchmark-assets-v1",
+  "status": "dataset_and_robot_assets_uploaded_private_preview_fgd_pending",
   "hugging_face": {
     "status": "dataset_uploaded_private_preview",
     "repo_id": "gaopusen/ECHO-G",
-    "revision": "6abf2ddc129de54e2d950775023492f34fc71ac5",
+    "revision": "2026-09-29",
     "url": "https://huggingface.co/datasets/gaopusen/ECHO-G",
     "repo_type": "dataset",
     "private": true,
     "applies_to": [
       "BA_mean_velocity_normalization",
-      "raw_audio_for_BA"
-    ]
+      "raw_audio_for_BA",
+      "G1_robot_XML_and_meshes_for_MuJoCo"
+    ],
+    "commit_sha": "fd0fa719143df8e2e7afd40968660922ab93f59e"
   },
   "evaluator": "scripts/eval_g1_motion_cls.py",
   "assets": [
@@ -26,14 +28,14 @@
     {
       "role": "BA_mean_velocity_normalization",
       "reference_filename": "g1_mmae_30body_30fps.npy",
-      "url": "https://huggingface.co/datasets/gaopusen/ECHO-G/resolve/6abf2ddc129de54e2d950775023492f34fc71ac5/eval_assets/mmae/g1_mmae_30body_30fps.npy",
+      "url": "https://huggingface.co/datasets/gaopusen/ECHO-G/resolve/2026-09-29/eval_assets/mmae/g1_mmae_30body_30fps.npy",
       "sha256": "0f763e6d54ca7bb33e49b0336ba2cc3359f9e9d5942e7f475c85c74b4b66e880",
       "status": "included_in_uploaded_private_dataset_preview",
       "suggested_local_path": "data/echo-g/eval_assets/mmae/g1_mmae_30body_30fps.npy"
     },
     {
       "role": "raw_audio_for_BA",
-      "url": "https://huggingface.co/datasets/gaopusen/ECHO-G/tree/6abf2ddc129de54e2d950775023492f34fc71ac5/data",
+      "url": "https://huggingface.co/datasets/gaopusen/ECHO-G/tree/2026-09-29/data",
       "status": "included_in_uploaded_private_dataset_preview",
       "distribution": "source_terms_apply",
       "suggested_local_path": "data/echo-g/audio/<stem>.wav",
@@ -45,14 +47,20 @@
     },
     {
       "role": "G1_robot_XML_and_meshes_for_MuJoCo",
-      "url": null,
-      "status": "third_party_fetch_instructions_pending",
-      "distribution": "third_party_terms_apply",
+      "url": "https://huggingface.co/datasets/gaopusen/ECHO-G/resolve/2026-09-29/robot_assets/unitree_g1.tar",
+      "status": "included_in_uploaded_private_dataset_preview",
+      "distribution": "BSD-3-Clause; copyright and license included in the archive",
       "reference_filename": "g1_mocap_29dof.xml",
-      "suggested_local_path": "assets_external/unitree_g1/g1_mocap_29dof.xml"
+      "suggested_local_path": "data/echo-g/assets/unitree_g1/g1_mocap_29dof.xml",
+      "archive_path": "robot_assets/unitree_g1.tar",
+      "archive_sha256": "790ab1ef4d65c99a6028ee804b8a1aed9a6493133d98d65fbd7cdc4e01d3c7c9",
+      "archive_bytes": 19732480,
+      "archive_files": 38,
+      "xml_sha256": "85a25128d42ad3cc8dd071c089806a2773a59ee0689edcc646aeb0201ae8f4c8",
+      "license_path": "assets/unitree_g1/LICENSE"
     }
   ],
-  "note": "The private dataset preview contains BA audio and normalization. The FGD encoder and model checkpoints are not uploaded; robot assets remain external. Use the listed SHA256 values and pinned dataset revision.",
+  "note": "The private dataset preview contains BA audio and normalization and the G1 MuJoCo XML/meshes. The FGD encoder and model checkpoints are not uploaded. Use the listed SHA256 values and pinned dataset revision.",
   "excluded_metrics": [
     "SRGR"
   ]

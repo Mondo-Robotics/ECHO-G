@@ -1,16 +1,17 @@
 {
-  "schema": "echo-g-v2-dataset-manifest-v1",
+  "schema": "echo-g-dataset-manifest-v1",
   "release_candidate_date": "2026-09-29",
   "name": "ECHO-G BEAT2 G1 motion dataset",
   "publication_status": "uploaded_private_preview_public_release_terms_pending",
   "hugging_face": {
     "status": "uploaded_private_preview",
     "repo_id": "gaopusen/ECHO-G",
-    "revision": "6abf2ddc129de54e2d950775023492f34fc71ac5",
+    "revision": "2026-09-29",
     "url": "https://huggingface.co/datasets/gaopusen/ECHO-G",
     "repo_type": "dataset",
     "private": true,
-    "access": "authorized_accounts_only"
+    "access": "authorized_accounts_only",
+    "commit_sha": "fd0fa719143df8e2e7afd40968660922ab93f59e"
   },
   "license_status": "final_distribution_terms_pending",
   "scope": [
@@ -22,15 +23,11 @@
     "checksums",
     "segmented_audio",
     "transcripts",
-    "word_token_mapping"
+    "word_token_mapping",
+    "G1_robot_XML_and_meshes_for_MuJoCo",
+    "robot_rendering_assets"
   ],
-  "excluded_from_first_release": [
-    "Seedance",
-    "HumanRetarget_targets",
-    "legacy_all_status_training_split",
-    "SRGR_semantic_caches"
-  ],
-  "raw_source_policy": "Segmented audio and transcripts accompany the public dataset under the applicable upstream terms; independent third-party model and robot assets remain external.",
+  "raw_source_policy": "Segmented audio and transcripts accompany the dataset under applicable upstream terms; G1 rendering assets retain their included BSD-3-Clause license. Encoder and human-body model weights remain external.",
   "representation_schema": "projecthermes-g1-39d-standard-v2",
   "motion_dimension": 39,
   "fps": 30,
@@ -53,7 +50,7 @@
     "english_3_solomon_"
   ],
   "public_packaging": {
-    "inventory_sha256": "0a827e2a267f6db7945506d930c4a881cb834d0a11d7d73eda01fec5dea220b9",
+    "inventory_sha256": "f56f52ddd556348f4c9f1179d2b34267ad224a4e6795a5719b9be80542e580df",
     "word_time_annotation_schema": "echo-g-word-token-annotations-v1",
     "shards": [
       {
@@ -144,20 +141,28 @@
     "condition_manifest_sha256": "81e0b1197821f9014d147c8d17970ac9143a7d7f72c529d74e891a944d692b01",
     "stats_drop_train_sha256": "dc57d8f9fa5b74d644c7daeb219d2dad656ad4a24910bdbcd9d3d9f559b05ec6",
     "inventory_path": "checksums/SHA256SUMS",
-    "inventory_files": 91163,
+    "inventory_files": 91201,
     "archive_index_sha256": "96931d7dd0fdf34fa60aedd719659946e03e5df57d1ea56569d0e8d7c9f4e77d",
     "archive_index_path": "data_archives.json",
     "archive_bytes": 18523729920,
-    "download_bytes": 18612178897,
-    "download_files": 33
+    "download_bytes": 18631918664,
+    "download_files": 34,
+    "archive_checksum_manifest_sha256": "fe25eef237b1ec3ae91857184685e37e94fb46010cbec5201ce69799f5e8d9fa",
+    "robot_assets": {
+      "path": "robot_assets/unitree_g1.tar",
+      "bytes": 19732480,
+      "sha256": "790ab1ef4d65c99a6028ee804b8a1aed9a6493133d98d65fbd7cdc4e01d3c7c9",
+      "files": 38,
+      "expanded_bytes": 19696089
+    }
   },
   "condition_cache_integrity": {
-    "identity_manifest": "manifests/v2_frozen_conditions.json",
+    "identity_manifest": "manifests/frozen_conditions.json",
     "frozen_condition_manifest_path": "audit/condition/frozen_conditions.json",
     "frozen_condition_manifest_sha256": "81e0b1197821f9014d147c8d17970ac9143a7d7f72c529d74e891a944d692b01",
     "frozen_condition_manifest_entries": 18229,
     "raw_text_provenance_schema": "echo-g-complete-text-provenance-v1",
-    "legacy_cache_policy": "Frozen condition files must match the externally pinned identity manifest."
+    "cache_policy": "Frozen condition files must match the externally pinned identity manifest."
   },
   "dataset_files": {
     "splits/train_drop.txt": {

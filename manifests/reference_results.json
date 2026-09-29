@@ -1,5 +1,5 @@
 {
-  "schema": "echo-g-v2-historical-reference-results-v1",
+  "schema": "echo-g-historical-reference-results-v1",
   "status": "historical_model_scores_and_current_package_reference_scores",
   "checkpoint_sha256": "c1e7e863e28b76b710bc18f9e9029836771fc86c1bb9fca42aa9d7655f74a616",
   "weights": "ema",

@@ -122,9 +122,9 @@ def decode_condition(
         )
     token_count = payload.get("n_tokens")
     if type(token_count) is not int or token_count != len(text):
-        raise ValueError(f"{stem}: text cache was truncated; regenerate full V2 conditions")
+        raise ValueError(f"{stem}: text cache was truncated; regenerate complete text conditions")
     if not payload.get("has_word_timing") or "token_times" not in payload:
-        raise ValueError(f"{stem}: V2 requires word-derived token timestamps")
+        raise ValueError(f"{stem}: ECHO-G requires word-derived token timestamps")
     times = torch.as_tensor(payload["token_times"]).float()
     if (
         times.shape != (len(text), 2)

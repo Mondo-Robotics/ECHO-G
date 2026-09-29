@@ -1,11 +1,9 @@
 # MuJoCo visualization
 
-This is the previous G1 MuJoCo pipeline: **physical 39D prediction → motion NPZ →
+The G1 MuJoCo pipeline is: **physical 39D prediction → motion NPZ →
 MuJoCo MP4**. It consumes a model prediction directly and does not require GT motion.
-The original physical export calculations, root trajectory reconstruction, camera
-conventions and duration-preserving frame selection are retained. The public
-renderer requires an explicit robot XML path and validates joint names instead of
-assuming an installation-specific location or silently accepting another skeleton.
+It reconstructs the physical root trajectory, uses duration-preserving frame selection, and
+validates the joint names in the supplied robot XML.
 
 ## Install and robot assets
 
@@ -13,10 +11,9 @@ assuming an installation-specific location or silently accepting another skeleto
 python -m pip install -e '.[visualization]'
 ```
 
-Obtain the G1 29-DoF MuJoCo model (`g1_mocap_29dof.xml`) and all referenced meshes
-from the project's approved upstream robot asset distribution. Asset location and
-revision instructions are **pending**. Robot XML/meshes are external inputs and are
-not bundled in this branch. Preserve their relative directory layout. The model
+Follow [the dataset download guide](DATASET.md) to extract the robot-asset archive alongside
+the data. It supplies `assets/unitree_g1/g1_mocap_29dof.xml`, the referenced meshes and the
+BSD-3-Clause license. Preserve their relative directory layout. The model
 must have a floating base, a `pelvis` body and the 29 canonical G1 hinge joints;
 `left_hip_pitch_joint` and `left_hip_pitch` naming variants are accepted. The release
 checks the expected 36 position coordinates and 35 velocity coordinates.
@@ -32,13 +29,13 @@ The prediction must already be in physical units at 30 FPS. It should contain
 
 ```bash
 python scripts/export_robot_repr_mujoco_npz.py \
-  --input results/v2_audio_text/seed_000/example.pt \
-  --output results/v2_audio_text/mujoco/example.npz
+  --input results/audio_text/seed_000/example.pt \
+  --output results/audio_text/mujoco/example.npz
 
 python scripts/render_g1_motion.py \
-  --npz results/v2_audio_text/mujoco/example.npz \
-  --mjcf assets_external/unitree_g1/g1_mocap_29dof.xml \
-  --out results/v2_audio_text/mujoco/example.mp4 \
+  --npz results/audio_text/mujoco/example.npz \
+  --mjcf data/echo-g/assets/unitree_g1/g1_mocap_29dof.xml \
+  --out results/audio_text/mujoco/example.mp4 \
   --fps 30 --width 960 --height 720 \
   --azimuth 180 --elevation -15 --distance 3
 ```
@@ -67,11 +64,11 @@ The renderer produces a silent MP4. The dataset includes the matching clip-align
 by its FPS (312 / 30 = 10.4 seconds in this example) and use a local FFmpeg installation:
 
 ```bash
-ffmpeg -i results/v2_audio_text/mujoco/example.mp4 \
-  -i data/v2/audio/example.wav \
+ffmpeg -i results/audio_text/mujoco/example.mp4 \
+  -i data/echo-g/audio/example.wav \
   -map 0:v:0 -map 1:a:0 -c:v copy -c:a aac \
   -af 'atrim=start=0:end=10.4,asetpts=PTS-STARTPTS' -t 10.4 \
-  results/v2_audio_text/mujoco/example_with_audio.mp4
+  results/audio_text/mujoco/example_with_audio.mp4
 ```
 
 Use the clip-aligned audio, not an uncropped recording. The explicit audio interval starts at

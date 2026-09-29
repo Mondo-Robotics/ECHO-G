@@ -1,9 +1,8 @@
-# V2 audio+text architecture
+# ECHO-G audio+text architecture
 
-V2 is the direct-robot `qknorm_wordtime` model with schema
-`release30-bounded-qk-global-local-wordtime-v2.1`. It retains tokenizer-level text keys and learns
-a global/local attention mixture. It is distinct from fixed-prior B1, human-latent models, and
-later experiments with word-pooled local keys.
+ECHO-G generates robot motion directly from audio and a word-timed transcript. It retains
+tokenizer-level text keys and learns a global/local attention mixture with a directional
+Gaussian time prior.
 
 ## Backbone and acoustic alignment
 
@@ -66,8 +65,7 @@ There is one raw scalar for each parameter, layer, and head:
 
 The checkpoint supplies trained values; initialization values are not inference constants.
 Support decreases the local contribution when no token is near the frame. Global attention can
-still read the entire transcript. Missing historical timing is represented by zero distances,
-so local/global attention coincide mathematically; raw timed inference requires actual timestamps.
+still read the entire transcript. Input conditions require word-derived token timestamps.
 
 ## Learning and sampling
 

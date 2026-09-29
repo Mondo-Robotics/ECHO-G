@@ -40,7 +40,7 @@ LOGGER = logging.getLogger(__name__)
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Train the ECHO-G V2 SGDiT")
+    parser = argparse.ArgumentParser(description="Train the ECHO-G speech-grounded transformer")
     parser.add_argument("--config", type=Path, required=True)
     parser.add_argument("--data-root", type=Path, required=True)
     parser.add_argument("--output-dir", type=Path, required=True)

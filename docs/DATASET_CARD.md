@@ -9,8 +9,7 @@ This card describes the BEAT2-derived data used by ECHO-G.
 ## Scope and population
 
 The release targets co-speech motion generation in the Unitree G1 robot representation. It uses
-processed BEAT2-derived motion and aligned frozen speech/text conditions. The first release
-includes robot motion and excludes Seedance and human-motion targets.
+processed BEAT2-derived motion and aligned frozen speech/text conditions.
 
 | Split | File | Clips |
 |---|---|---:|
@@ -34,7 +33,7 @@ Token capacity is not a word-count limit.
 | Component | Content |
 |---|---|
 | Processed robot motion | Per-clip physical 39D G1 motion and valid lengths |
-| Frozen conditions | Aligned 1,024D acoustic features; complete 2,560D token features; token intervals |
+| Frozen conditions | Aligned 1,024D acoustic features; 2,560D token features for each clip's canonical transcript; token intervals |
 | Clip-aligned audio | `audio/<stem>.wav`, original packaged waveform bytes and sample rate; no additional motion-length crop or time stretch |
 | Source transcripts | `transcripts/<stem>.txt`, original packaged transcript bytes |
 | Word-time and tokenizer annotations | `annotations/words/<stem>.json`, canonical transcript, clip-relative `words[text,start,end]`, token IDs/offsets and provenance |
@@ -42,13 +41,14 @@ Token capacity is not a word-count limit.
 | BA normalization | Frozen `eval_assets/mmae/g1_mmae_30body_30fps.npy`; shared reference for every compared model |
 | Splits and statistics | Exact train/validation stem lists and `drop_train.pt` |
 | Condition metadata | Canonical frame lengths and complete-text condition manifest used by the data loader |
+| Robot rendering assets | G1 MuJoCo XML and referenced meshes, with the BSD-3-Clause license |
 
 The clip-aligned audio, transcripts and word annotations are included in the dataset under their
 applicable BEAT2 source terms, with attribution and modification notices. They are not implicitly
 relicensed as project-owned content. Original transcript bytes and the canonical text used for
 tokenization are identified separately; do not substitute one silently for the other.
-Source human-body models, encoder weights, and robot assets remain separate dependencies with
-asset-specific download instructions. Cached-condition training and inference do not load the
+Source human-body models and encoder weights remain separate dependencies with asset-specific
+terms. G1 XML and meshes are included for rendering under their BSD-3-Clause license. Cached-condition training and inference do not load the
 waveform. BA evaluation uses the included audio and frozen normalization array. Semantic labels
 are outside this release and are not needed for its [benchmark](BENCHMARK.md).
 
@@ -104,4 +104,4 @@ BEAT2-derived audio/text retain their applicable upstream terms and attribution.
 includes source and modification notices. The license for new contributions will be finalized
 before public release; private preview access does not grant additional distribution rights.
 The code branch retains its existing license. The pinned dataset revision is recorded in the
-[dataset manifest](../manifests/v2_dataset.json).
+[dataset manifest](../manifests/dataset.json).

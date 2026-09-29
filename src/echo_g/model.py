@@ -187,7 +187,7 @@ class SpeechGroundedDiT(nn.Module):
             unknown = sorted(payload.keys() - allowed)
             if missing or unknown or payload.get("pos_enc") != "learned":
                 raise ValueError(
-                    f"invalid original V2 model_config: missing={missing}, unknown={unknown}; "
+                    f"invalid checkpoint model_config: missing={missing}, unknown={unknown}; "
                     "pos_enc must be learned"
                 )
             config = ModelConfig(

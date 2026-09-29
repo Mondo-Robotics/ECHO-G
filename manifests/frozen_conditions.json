@@ -1,5 +1,5 @@
 {
-  "schema": "echo-g-v2-frozen-condition-manifest-identity-v1",
+  "schema": "echo-g-frozen-condition-manifest-identity-v1",
   "publication_status": "uploaded_private_preview",
   "manifest": {
     "relative_dataset_path": "audit/condition/frozen_conditions.json",
@@ -13,10 +13,11 @@
   "hugging_face": {
     "status": "uploaded_private_preview",
     "repo_id": "gaopusen/ECHO-G",
-    "revision": "6abf2ddc129de54e2d950775023492f34fc71ac5",
-    "url": "https://huggingface.co/datasets/gaopusen/ECHO-G/resolve/6abf2ddc129de54e2d950775023492f34fc71ac5/audit/condition/frozen_conditions.json",
+    "revision": "2026-09-29",
+    "url": "https://huggingface.co/datasets/gaopusen/ECHO-G/resolve/2026-09-29/audit/condition/frozen_conditions.json",
     "repo_type": "dataset",
     "private": true,
-    "access": "authorized_accounts_only"
+    "access": "authorized_accounts_only",
+    "commit_sha": "fd0fa719143df8e2e7afd40968660922ab93f59e"
   }
 }

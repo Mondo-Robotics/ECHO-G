@@ -34,7 +34,7 @@ def token_time_spans(
     words: tuple[dict[str, Any], ...] | list[dict[str, Any]],
 ) -> torch.Tensor:
     if not words:
-        raise ValueError("V2 requires word timestamps")
+        raise ValueError("ECHO-G requires word timestamps")
     canonical = " ".join(str(word.get("text", word.get("word", ""))) for word in words)
     if transcript != canonical:
         raise ValueError("Token offsets must refer to the canonical space-joined word transcript")

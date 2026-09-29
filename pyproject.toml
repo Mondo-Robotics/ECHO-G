@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "echo-g"
 version = "0.2.0.dev0"
-description = "V2 speech-grounded robot motion with global/local word-time attention"
+description = "ECHO-G speech-grounded robot motion with global/local word-time attention"
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "PolyForm-Noncommercial-1.0.0" }

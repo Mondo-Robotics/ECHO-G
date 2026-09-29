@@ -1,8 +1,8 @@
 {
-  "schema": "echo-g-v2-model-manifest-v1",
+  "schema": "echo-g-model-manifest-v1",
   "release_candidate_date": "2026-09-28",
-  "name": "ECHO-G V2 audio+text direct robot",
-  "config": "configs/sgdit_v2_audio_text.yaml",
+  "name": "ECHO-G audio+text direct robot",
+  "config": "configs/sgdit_audio_text.yaml",
   "hugging_face": {
     "status": "planned_not_uploaded",
     "repo_id": null,
@@ -12,7 +12,7 @@
   },
   "license_status": "final_distribution_terms_pending",
   "checkpoint": {
-    "suggested_local_filename": "v2_best015000.pt",
+    "suggested_local_filename": "best.pt",
     "sha256": "c1e7e863e28b76b710bc18f9e9029836771fc86c1bb9fca42aa9d7655f74a616",
     "global_step": 15000,
     "weights": "ema",
@@ -84,6 +84,6 @@
       19
     ]
   },
-  "dataset_manifest": "v2_dataset.json",
-  "historical_results_manifest": "v2_reference_results.json"
+  "dataset_manifest": "dataset.json",
+  "historical_results_manifest": "reference_results.json"
 }

@@ -66,7 +66,7 @@ def parse_args(condition_only: bool = False) -> argparse.Namespace:
     parser.add_argument(
         "--config",
         type=Path,
-        help="Required for original V2 checkpoints without an embedded package config",
+        help="Required for checkpoints without an embedded package config",
     )
     parser.add_argument("--split", choices=["train", "val"], default="val")
     parser.add_argument("--seeds", type=int, nargs="+", default=[0])
@@ -104,11 +104,11 @@ def load_model_and_config(
         model = SpeechGroundedDiT(config.model)
     else:
         if config_path is None:
-            raise ValueError("--config is required for a original V2 checkpoint")
+            raise ValueError("--config is required when the checkpoint has no package config")
         config = ExperimentConfig.from_yaml(config_path)
         model_config = checkpoint.get("model_config")
         if not isinstance(model_config, dict):
-            raise ValueError(f"{checkpoint_path}: missing V2 model_config")
+            raise ValueError(f"{checkpoint_path}: missing model_config")
         expected = {
             "wordtime_schema": V2_SCHEMA,
             "wordtime_mode": "qknorm_wordtime",
@@ -122,10 +122,10 @@ def load_model_and_config(
         }
         for name, value in expected.items():
             if experiment.get(name) != value:
-                raise ValueError(f"Original checkpoint experiment.{name} differs from V2 config")
+                raise ValueError(f"Checkpoint experiment.{name} differs from the configuration")
         model = SpeechGroundedDiT.from_checkpoint_config(model_config)
         if model.config != config.model:
-            raise ValueError("V2 checkpoint architecture does not match --config")
+            raise ValueError("checkpoint architecture does not match --config")
     model.load_state_dict(checkpoint["ema"], strict=True)
     model.to(device).eval()
     mean = torch.as_tensor(checkpoint["motion_mean"]).float().reshape(-1)

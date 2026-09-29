@@ -1,12 +1,12 @@
-# ECHO-G V2 audio+text model card
+# ECHO-G audio+text model card
 
 Status: **release candidate; weights upload to Hugging Face pending**.
-[Model manifest](../manifests/v2_audio_text.json) · [Data card](DATASET_CARD.md) ·
-[Architecture](V2_ARCHITECTURE.md) · [Reproduction protocol](REPRODUCIBILITY.md).
+[Model manifest](../manifests/audio_text.json) · [Data card](DATASET_CARD.md) ·
+[Architecture](ARCHITECTURE.md) · [Reproduction protocol](REPRODUCIBILITY.md).
 
 ## Intended use and interface
 
-V2 generates co-speech G1 robot motion for research, evaluation, and offline visualization.
+ECHO-G generates co-speech G1 robot motion for research, evaluation, and offline visualization.
 Inputs are a complete audio clip plus word-timed transcript, or frozen features representing
 those inputs. Outputs are 30 FPS, unnormalized physical39 robot references. Each input supports
 at most 20 seconds / 600 frames and 256 tokenizer units. Word timing must use clip-relative
@@ -28,16 +28,14 @@ c1e7e863e28b76b710bc18f9e9029836771fc86c1bb9fca42aa9d7655f74a616
 ```
 
 Training uses the 14,987-clip BEAT2-derived G1 full-text drop split; evaluation uses 3,242 held-out
-clips. Data and normalization hashes are part of the release manifest. The earlier sinusoidal
-model on the old main branch is not this model; HumanRetarget, text-only, and Seedance are outside
-this first model release.
+clips. Data and normalization hashes are part of the release manifest.
 
 ## Evaluation and limitations
 
 The packaged implementation scores **FGD 2.278311** on common3242 (3,242 clips,
-891,351 frames). Original V2 best15k results are FGD 2.278349 (seed000) and
+891,351 frames). The reference checkpoint results are FGD 2.278349 (seed000) and
 MM20 1.785556 (seeds 0–19). The full reference table and sampling settings are in
-[REPRODUCIBILITY.md](REPRODUCIBILITY.md#historical-results).
+[REPRODUCIBILITY.md](REPRODUCIBILITY.md#reference-results).
 
 The model is conditioned on curated data and the specific frozen encoders. Different text
 construction, timestamps, feature extraction stacks, or model assets can change outputs.
@@ -49,5 +47,6 @@ MuJoCo visualization is a rendering of reference motion, not a closed-loop track
 ## Distribution
 
 The model's Hugging Face URL and immutable revision will be added after upload. Source speech,
-transcript, encoder, and robot assets have separate terms and are not bundled in this code branch.
+transcript and encoder assets have separate terms. G1 XML and meshes are included with the
+dataset under BSD-3-Clause; they are not embedded in this code repository.
 Final release licensing remains to be discussed; the existing repository license is unchanged.

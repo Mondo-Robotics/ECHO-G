@@ -1,8 +1,8 @@
-# V2 dataset and inference format
+# ECHO-G dataset and inference format
 
-The V2 release uses stable clip stems to pair conditions and physical robot references.
+The ECHO-G release uses stable clip stems to pair conditions and physical robot references.
 The split lists, not directory enumeration, determine the training and validation population.
-The data card describes the exact [V2 split and its source lineage](DATASET_CARD.md).
+The data card describes the exact [ECHO-G split and its source lineage](DATASET_CARD.md).
 
 ## Core layout
 
@@ -15,6 +15,9 @@ DATA_ROOT/
 ├── annotations/words/<stem>.json
 ├── raw_inputs.jsonl
 ├── eval_assets/mmae/g1_mmae_30body_30fps.npy
+├── assets/unitree_g1/g1_mocap_29dof.xml
+├── assets/unitree_g1/meshes/
+├── assets/unitree_g1/LICENSE
 ├── splits/train_drop.txt
 ├── splits/val_common.txt
 ├── stats/drop_train.pt
@@ -22,7 +25,7 @@ DATA_ROOT/
 └── audit/condition/frozen_conditions.json
 ```
 
-The supplied V2 configurations read the length CSV and condition manifest automatically.
+The supplied ECHO-G configurations read the length CSV and condition manifest automatically.
 Both files are included with the dataset. See [download instructions](DATASET.md).
 
 ### Audio, transcripts and word times
@@ -33,7 +36,7 @@ or stretching. `transcripts/<stem>.txt` preserves the original packaged text byt
 `start`, and `end`, and `tokenization` metadata including token IDs and character offsets.
 Word times are in seconds relative to the start of that clip's WAV. The original transcript and
 canonical tokenization text are distinct identities even when their visible wording matches.
-The word-to-token mapping follows the frozen V2 convention below.
+The word-to-token mapping follows the frozen ECHO-G convention below.
 
 `raw_inputs.jsonl` supplies the corresponding audio path, transcript and words to
 `echo-g-extract-conditions`. Use the released canonical lengths for cached benchmark inference;
@@ -88,8 +91,8 @@ count with `align_corners=True`, then FP16 storage. The audio key name does not 
 
 ### Complete-text provenance
 
-`n_tokens == len(text_tokens)` alone does not prove completeness: the older extractor wrote the
-count after truncating to 64. The loader now requires one of the following verified paths.
+`n_tokens == len(text_tokens)` alone does not prove that the full transcript was encoded.
+The loader requires one of the following verified paths.
 
 **New raw conditions** include a `text_provenance` mapping with schema
 `echo-g-complete-text-provenance-v1`, produced automatically by `echo-g-extract-conditions`:
@@ -119,19 +122,19 @@ Entries: 18229
 ```
 
 The dataset manifest records each frozen condition file, its text/time tensors and complete
-tokenizer count. The provided V2 configurations already select this manifest.
+tokenizer count. The provided ECHO-G configurations already select this manifest.
 
 Paired training, validation and sampling use `data.condition_manifest` and
 `data.condition_manifest_sha256` from YAML. Relative manifest paths resolve against `data_root`;
-absolute paths are also supported. Both fields must be supplied together. The provided V2 YAMLs
+absolute paths are also supported. Both fields must be supplied together. The provided ECHO-G YAMLs
 pin the official path and SHA above. Independent `echo-g-infer` uses the explicit
 `--condition-manifest PATH --condition-manifest-sha256 SHA256` options; it does not infer a data
 root or silently reuse the YAML's relative manifest path.
 
 When a manifest is explicitly supplied, file identity is checked even if the payload also
 contains new raw provenance. Without either valid raw provenance or a matching released file identity,
-the loader rejects the cache. This includes older 64-token caches whose `n_tokens` also equals
-64. A genuinely complete 64-token input remains valid through either verified path.
+the loader rejects the cache. Complete inputs of any length up to 256 tokens remain valid
+through either verified path.
 
 Do not pad truncated features, edit counts, or recompute a manifest from unverified caches to
 make them pass. Regenerate raw conditions with the current extractor, or use the official
@@ -139,7 +142,7 @@ frozen data and its published manifest identity. Changing frozen condition files
 
 ## Time and length
 
-For timed inputs, V2 constructs:
+For timed inputs, ECHO-G constructs:
 
 ```text
 frame_seconds[i] = i / 30
@@ -150,7 +153,7 @@ signed_distance[i, j] = frame_seconds[i] - token_center[j]
 Keep the sign. An absolute value changes the learned-lag behavior. Tokens are subwords/tokenizer
 units, not words; their intervals come from the original word-to-character-to-token mapping.
 The raw extractor joins word strings with spaces, including non-English words, and assigns each
-inserted space the preceding word's end time, preserving the reference convention. V2 does not
+inserted space the preceding word's end time, preserving the reference convention. ECHO-G does not
 replace this mapping with word pooling or a new alignment algorithm.
 
 | Entry point | Frame policy | Text policy |
@@ -165,10 +168,8 @@ audio duration. Learned positional capacity is 608 internally; it does not exten
 600-frame input limit. The model receives the output length externally rather than predicting an
 end-of-utterance token.
 
-The original training implementation permitted missing/invalid timing by passing zero distances,
-which makes local and global attention mathematically coincide. The V2 condition decoder in this
-release requires finite, word-derived token intervals and `has_word_timing=True`; it does not
-silently replace an invalid public input with that historical fallback.
+The condition decoder requires finite, word-derived token intervals and
+`has_word_timing=True`. Missing or invalid timing is rejected.
 
 ## Training statistics
 
@@ -179,11 +180,11 @@ silently replace an invalid public input with that historical fallback.
 }
 ```
 
-Use only `stats/drop_train.pt` for the reference V2 run. It was computed from the 14,987 training
+Use only `stats/drop_train.pt` for the reference ECHO-G run. It was computed from the 14,987 training
 clips (3,537,311 physical frames) with unbiased variance, without validation data. Training
 normalizes motion and inference reverses the same transform using checkpoint-local statistics.
-Do not apply normalization to the ground-truth files themselves. The all-status training
-statistics belong to another experiment and must not be substituted.
+Do not apply normalization to the ground-truth files themselves or substitute statistics
+computed from another population.
 
 ## Canonical frame lengths
 

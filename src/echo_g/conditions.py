@@ -80,7 +80,7 @@ def load_manifest(path: Path, limit: int = 0) -> list[Utterance]:
                 raise ValueError(f"{path}:{line_number}: words must be a list")
             words = tuple(dict(word) for word in words_payload)
             if not words:
-                raise ValueError(f"{path}:{line_number}: V2 requires word timestamps")
+                raise ValueError(f"{path}:{line_number}: ECHO-G requires word timestamps")
             previous_start = -1.0
             for word in words:
                 text = str(word.get("text", word.get("word", "")))
@@ -96,7 +96,7 @@ def load_manifest(path: Path, limit: int = 0) -> list[Utterance]:
                     raise ValueError(f"{path}:{line_number}: invalid word timestamps")
                 word.update(text=text, start=start, end=end)
                 previous_start = start
-            # Match the canonical transcript used by the released V2 encoders.
+            # Match the canonical transcript used by the released encoders.
             transcript = " ".join(word["text"] for word in words)
             if not transcript:
                 raise ValueError(f"{path}:{line_number}: transcript is empty")
@@ -227,7 +227,7 @@ def extract_audio_conditions(
         waveform, _ = librosa.load(utterance.audio_path, sr=16_000, mono=True)
         duration = len(waveform) / 16_000.0
         if not 0 < duration <= 20.0 or fps != 30:
-            raise ValueError("V2 input audio must be at most 20 seconds, with target fps=30")
+            raise ValueError("Input audio must be at most 20 seconds, with target fps=30")
         validate_word_duration(utterance, duration)
         inputs = processor(waveform, sampling_rate=16_000, return_tensors="pt")
         input_values = inputs.input_values.to(device)
@@ -280,7 +280,7 @@ def extract_text_conditions(
         model_name, trust_remote_code=trust_remote_code, use_fast=True
     )
     if not 1 <= max_tokens <= 256 or layer != -2:
-        raise ValueError("V2 uses hidden layer -2 and at most 256 tokens")
+        raise ValueError("Text extraction uses hidden layer -2 and at most 256 tokens")
     dtype = torch.bfloat16
     model = Qwen3_5ForConditionalGeneration.from_pretrained(
         model_name,

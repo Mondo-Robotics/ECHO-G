@@ -1,25 +1,23 @@
-# ECHO-G V2
+# ECHO-G
 
 **Embodied Co-speech Humanoid mOtion Generation**
 
-ECHO-G V2 generates full-body Unitree G1 motion from audio and a word-timed transcript.
+ECHO-G generates full-body Unitree G1 motion from audio and a word-timed transcript.
 It generates physical 39D robot references at 30 FPS using a rectified-flow transformer.
-V2 combines normalized Q/K content attention with global/local text attention and a learned,
+ECHO-G combines normalized Q/K content attention with global/local text attention and a learned,
 directional Gaussian time prior.
 
 ```text
 Audio -> frozen Wav2Vec2 -> 30 FPS acoustic features ---+
                                                       v
-Gaussian motion noise -> motion + audio + positions -> V2 DiT -> physical robot39
+Gaussian motion noise -> motion + audio + positions -> ECHO-G DiT -> physical robot39
                                                       ^
 Word-timed text -> frozen Qwen -> token features -------+
                        global / local Gaussian cross-attention
 ```
 
-This is the **V2 audio+text release candidate** on `release/v2-20260928`, organized as the
-existing `src/echo_g` Python package. It is being reviewed before any change to `main`.
-The earlier sinusoidal model is not the model distributed by this branch. Its archival
-branch/tag will be arranged separately. HumanRetarget and Seedance data are outside this release.
+This package provides the model, training and inference commands, a benchmark evaluator, and
+MuJoCo visualization for the released robot-motion dataset.
 
 ## Data and weights
 
@@ -31,9 +29,10 @@ remain pending. Model weights and the FGD encoder have not been uploaded.
 | Asset | Hugging Face location | Status |
 |---|---|---|
 | Processed robot-motion dataset | [gaopusen/ECHO-G](https://huggingface.co/datasets/gaopusen/ECHO-G) | Uploaded private preview |
-| V2 audio+text `best.pt` (15k, EMA) | **To be added** | Upload pending |
+| ECHO-G audio+text `best.pt` (15k, EMA) | **To be added** | Upload pending |
 | Benchmark FGD encoder | **To be added** | Weight upload pending; identity recorded |
 | Frozen BA normalization | With dataset | Included in the private dataset preview |
+| G1 MuJoCo XML and meshes | With dataset | Included under BSD-3-Clause |
 
 The prepared dataset contains processed robot motions, frozen audio/text conditions, clip-aligned
 audio, source transcripts, word-time annotations, frozen splits, training statistics, and the
@@ -41,23 +40,24 @@ frozen BA normalization array. The dataset split is **14,987 training clips + 3,
 Audio is stored as `audio/<stem>.wav`, source text as `transcripts/<stem>.txt`, and canonical text,
 word times, and tokenizer mapping as `annotations/words/<stem>.json`. `raw_inputs.jsonl` provides
 inputs for feature extraction. BEAT2-derived audio/text retain their applicable source license
-and attribution, with clipping/text reconstruction documented. Encoder weights and robot assets
-remain separate downloads with their own terms. Seedance is not included.
+and attribution, with clipping/text reconstruction documented. Encoder weights are separate downloads with their own terms. The dataset includes the G1
+MuJoCo XML and meshes with their BSD-3-Clause license; see [visualization](docs/VISUALIZATION.md).
 
 The public benchmark reports FGD, Div, BA, weighted jerk, foot metrics, and optional MM20. It does
 not require or distribute semantic labels. See [the benchmark protocol](docs/BENCHMARK.md).
 
-- [V2 model card](docs/MODEL_CARD.md)
+- [ECHO-G model card](docs/MODEL_CARD.md)
 - [Dataset card](docs/DATASET_CARD.md)
 - [Download and use the dataset](docs/DATASET.md)
 - [Data format and timing contract](docs/DATA_FORMAT.md)
-- [Dataset asset manifest](manifests/v2_dataset.json)
-- [Frozen-condition manifest identity](manifests/v2_frozen_conditions.json)
-- [Model asset manifest](manifests/v2_audio_text.json)
+- [Dataset asset manifest](manifests/dataset.json)
+- [Frozen-condition manifest identity](manifests/frozen_conditions.json)
+- [Model asset manifest](manifests/audio_text.json)
 - [Benchmark asset manifest](manifests/benchmark_assets.json)
 
 Follow the [dataset download guide](docs/DATASET.md), then use the commands below.
-The dataset download is approximately **18.61 GB**, including 12 tar archives (18.52 GB).
+The clip data comprise 12 tar archives (18.52 GB), with separate metadata and a robot-asset archive.
+Download and extract all archives into the same data root.
 
 ## Installation
 
@@ -86,9 +86,9 @@ ruff check .
 Benchmark and MuJoCo dependencies are documented in [BENCHMARK.md](docs/BENCHMARK.md) and
 [VISUALIZATION.md](docs/VISUALIZATION.md).
 
-## V2 at a glance
+## Model at a glance
 
-| Setting | V2 audio+text |
+| Setting | ECHO-G audio+text |
 |---|---|
 | Backbone | 12 blocks, width 768, 8 heads, FFN 2048 |
 | Motion representation | Direct physical 39D G1, 30 FPS |
@@ -100,10 +100,10 @@ Benchmark and MuJoCo dependencies are documented in [BENCHMARK.md](docs/BENCHMAR
 | Sampling | EMA, 8 Euler updates, CFG = 1 |
 | Reference weights | Minimum-EMA-validation-loss `best.pt`, step 15,000 |
 
-The original run completed 63,000 optimizer steps; **best15k and final63k are different
-checkpoints**. V2 uses `frame_seconds - token_center_seconds`, preserving the sign needed for
-learned lag. Text keys remain tokenizer units, including subwords; V2 does not pool them into
-one key per word. See [the architecture](docs/V2_ARCHITECTURE.md).
+The reference checkpoint was selected at step 15,000 by minimum EMA validation loss from
+63,000 training steps. ECHO-G uses `frame_seconds - token_center_seconds`, preserving the sign needed for
+learned lag. Text keys remain tokenizer units, including subwords; ECHO-G does not pool them into
+one key per word. See [the architecture](docs/ARCHITECTURE.md).
 
 ## Training
 
@@ -120,18 +120,18 @@ DATA_ROOT/
 └── audit/condition/frozen_conditions.json
 ```
 
-The supplied V2 configurations use these files automatically. Download and extract the complete
+The supplied ECHO-G configurations use these files automatically. Download and extract the complete
 dataset, then run:
 
 ```bash
 echo-g-train \
-  --config configs/sgdit_v2_audio_text.yaml \
-  --data-root /path/to/v2_data \
-  --output-dir outputs/v2_audio_text \
+  --config configs/sgdit_audio_text.yaml \
+  --data-root /path/to/echo-g-data \
+  --output-dir outputs/audio_text \
   --device cuda
 ```
 
-Resume using the same command plus `--resume outputs/v2_audio_text/latest.pt`.
+Resume using the same command plus `--resume outputs/audio_text/latest.pt`.
 The training directory records `experiment.json`, `latest.pt`, `best.pt`, `final.pt`, and
 `complete.json`. `latest.pt` is the full training-resume state; `best.pt` is selected by validation
 loss, not by FGD. The training recipe is in [REPRODUCIBILITY.md](docs/REPRODUCIBILITY.md).
@@ -144,10 +144,10 @@ Use the paired dataset entry point when reproducing the canonical benchmark:
 
 ```bash
 echo-g-sample \
-  --checkpoint /path/to/v2_best015000.pt \
-  --config configs/sgdit_v2_audio_text.yaml \
-  --data-root /path/to/v2_data \
-  --output-dir outputs/v2_val \
+  --checkpoint /path/to/best.pt \
+  --config configs/sgdit_audio_text.yaml \
+  --data-root /path/to/echo-g-data \
+  --output-dir outputs/validation \
   --split val --seeds 0 --device cuda
 ```
 
@@ -158,10 +158,10 @@ provenance:
 
 ```bash
 echo-g-infer \
-  --checkpoint /path/to/v2_best015000.pt \
-  --config configs/sgdit_v2_audio_text.yaml \
+  --checkpoint /path/to/best.pt \
+  --config configs/sgdit_audio_text.yaml \
   --condition-dir /path/to/condition_30fps \
-  --output-dir outputs/v2_new_clips \
+  --output-dir outputs/new_clips \
   --device cuda
 ```
 
@@ -169,12 +169,12 @@ For independent inference on released dataset conditions, supply the included co
 
 ```bash
 echo-g-infer \
-  --checkpoint /path/to/v2_best015000.pt \
-  --config configs/sgdit_v2_audio_text.yaml \
-  --condition-dir /path/to/v2_data/condition_30fps \
-  --condition-manifest /path/to/v2_data/audit/condition/frozen_conditions.json \
+  --checkpoint /path/to/best.pt \
+  --config configs/sgdit_audio_text.yaml \
+  --condition-dir /path/to/echo-g-data/condition_30fps \
+  --condition-manifest /path/to/echo-g-data/audit/condition/frozen_conditions.json \
   --condition-manifest-sha256 81e0b1197821f9014d147c8d17970ac9143a7d7f72c529d74e891a944d692b01 \
-  --output-dir outputs/v2_frozen_conditions \
+  --output-dir outputs/frozen_conditions \
   --device cuda
 ```
 
@@ -195,7 +195,7 @@ The dataset includes `raw_inputs.jsonl` for its released clips. For your own inp
 {"stem":"example_0001","audio_path":"audio/example.wav","transcript":"Hello world","words":[{"text":"Hello","start":0.10,"end":0.42},{"text":"world","start":0.55,"end":0.91}]}
 ```
 
-Word times are relative to the audio clip. The V2 extractor reconstructs the canonical text
+Word times are relative to the audio clip. The ECHO-G extractor reconstructs the canonical text
 from the word list and preserves the original token/time mapping. Provide the frozen encoder
 assets separately, then run:
 
@@ -217,10 +217,10 @@ echo-g-extract-conditions \
   --output-dir data/new_conditions
 
 echo-g-infer \
-  --checkpoint /path/to/v2_best015000.pt \
-  --config configs/sgdit_v2_audio_text.yaml \
+  --checkpoint /path/to/best.pt \
+  --config configs/sgdit_audio_text.yaml \
   --condition-dir data/new_conditions \
-  --output-dir outputs/v2_raw \
+  --output-dir outputs/raw \
   --device cuda
 ```
 
@@ -243,16 +243,16 @@ audio or text cache is not claimed.
 - Render physical robot references using the MuJoCo pipeline in
   [VISUALIZATION.md](docs/VISUALIZATION.md).
 
-Historical V2 best15k scores on common3242 were **FGD 2.278349** (seed000) and
+The reference checkpoint scores on the 3,242-clip validation split were **FGD 2.278349** (seed000) and
 **MM20 1.785556** (seeds 0–19). The packaged implementation scores **FGD 2.278311** under the released benchmark protocol;
 MM20 refers to the original 20-seed run.
-[Reproduction scope and reference results](docs/REPRODUCIBILITY.md#historical-results)
+[Reproduction scope and reference results](docs/REPRODUCIBILITY.md#reference-results)
 explain the distinction.
 
 ## Project layout
 
 ```text
-configs/                  V2 training and inference configuration
+configs/                  training and inference configuration
 src/echo_g/               model, data, training, inference, and condition extraction
 scripts/                  G1 evaluation and MuJoCo visualization entry points
 docs/                     architecture, data/model cards, and usage protocols
@@ -263,6 +263,6 @@ tests/                    implementation and integration checks
 ## License and citation
 
 This branch retains the existing [LICENSE](LICENSE) and [NOTICE](NOTICE) without changes.
-Final code, dataset, weight, and third-party distribution terms will be discussed before
-public release; private dataset access is not a license grant. The current source license
+Final code, dataset and weight distribution terms will be confirmed before public release;
+third-party assets retain their included license notices; private dataset access is not a license grant. The current source license
 is PolyForm Noncommercial 1.0.0. Citation metadata is in [CITATION.cff](CITATION.cff).

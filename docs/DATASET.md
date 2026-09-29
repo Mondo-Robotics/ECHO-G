@@ -18,17 +18,21 @@ revision and extract the archives:
 ```bash
 hf auth login
 hf download gaopusen/ECHO-G --repo-type dataset \
-  --revision 6abf2ddc129de54e2d950775023492f34fc71ac5 --local-dir data/echo-g
+  --revision 2026-09-29 --local-dir data/echo-g
 
-for archive in data/echo-g/data/*.tar; do
+for archive in data/echo-g/data/*.tar data/echo-g/robot_assets/*.tar; do
   tar -xf "$archive" -C data/echo-g
 done
 ```
 
-Extract all 12 archives into the same directory as the downloaded metadata. The resulting
-`data/echo-g` is ready to use as `--data-root`; no preprocessing is needed for the supplied
-frozen conditions. The total download is approximately **18.61 GB**, including 12 tar archives
-(18.52 GB). Extracted clip files require another 18.45 GB while the archives are retained.
+Extract all 12 clip-data archives and the robot-asset archive into the same directory as the
+downloaded metadata. The resulting `data/echo-g` is ready to use as `--data-root`; no preprocessing
+is needed for the supplied frozen conditions. The clip-data archives occupy 18.52 GB; extracted
+clip files require another 18.45 GB while those archives are retained. The robot-asset archive
+adds about 19.73 MB.
+
+The rendering model is then available at
+`data/echo-g/assets/unitree_g1/g1_mocap_29dof.xml`, with its referenced meshes and license.
 
 ## Train or generate motion
 
@@ -36,7 +40,7 @@ After [installing ECHO-G](../README.md#installation), train with:
 
 ```bash
 echo-g-train \
-  --config configs/sgdit_v2_audio_text.yaml \
+  --config configs/sgdit_audio_text.yaml \
   --data-root data/echo-g \
   --output-dir outputs/audio_text \
   --device cuda
@@ -48,7 +52,7 @@ validation split with:
 ```bash
 echo-g-sample \
   --checkpoint weights/best.pt \
-  --config configs/sgdit_v2_audio_text.yaml \
+  --config configs/sgdit_audio_text.yaml \
   --data-root data/echo-g \
   --output-dir outputs/validation \
   --split val --seeds 0 --device cuda

@@ -1,4 +1,4 @@
-# V2 robot benchmark
+# ECHO-G robot benchmark
 
 Run `scripts/eval_g1_motion_cls.py` or the equivalent `echo-g-eval` entry point for G1 motion
 metrics. Both call `echo_g.evaluation.g1_motion_cls`. The public benchmark requires robot
@@ -13,24 +13,24 @@ python -c "import librosa, scipy, soundfile; print(librosa.__version__, scipy.__
 
 The dataset is available in the private preview
 [gaopusen/ECHO-G](https://huggingface.co/datasets/gaopusen/ECHO-G); see the
-[download guide](DATASET.md). Only authorized accounts can access it. V2 model weights and
+[download guide](DATASET.md). Only authorized accounts can access it. ECHO-G model weights and
 the FGD encoder have **not been uploaded**. Dataset archive and FGD/MMAE asset hashes are recorded in the
-[dataset manifest](../manifests/v2_dataset.json) and
+[dataset manifest](../manifests/dataset.json) and
 [benchmark asset manifest](../manifests/benchmark_assets.json); this branch contains code,
 protocols and identity records, not the large assets.
 Use the same pinned asset revisions for every model in a comparison.
 
 | Required input | Expected content | Distribution |
 |---|---|---|
-| Predictions | One physical `robot_repr[T,39]` tensor per `<stem>.pt`, 30 FPS | Generate with V2 inference |
-| References | Released V2 robot motion files, same stems and coordinate system | [Private dataset preview](https://huggingface.co/datasets/gaopusen/ECHO-G) |
+| Predictions | One physical `robot_repr[T,39]` tensor per `<stem>.pt`, 30 FPS | Generate with ECHO-G inference |
+| References | Released ECHO-G robot motion files, same stems and coordinate system | [Private dataset preview](https://huggingface.co/datasets/gaopusen/ECHO-G) |
 | Split | Released `splits/val_common.txt`; any formal exclusion list must be frozen and shared across methods | [Private dataset preview](https://huggingface.co/datasets/gaopusen/ECHO-G) |
 | FGD encoder | Trained G1 skeleton-convolution AE `g1_aeskconv_full_pure2_w192.bin`, with its configuration/state | Hugging Face evaluation weights link: **pending** |
 | BA normalization | `eval_assets/mmae/g1_mmae_30body_30fps.npy`, finite array of shape `(30,)` | Included in the [private dataset preview](https://huggingface.co/datasets/gaopusen/ECHO-G) |
 | Audio | `audio/<stem>.wav`, matching the start of the released motion | Included in the [private dataset preview](https://huggingface.co/datasets/gaopusen/ECHO-G), under its source terms |
 
 BA reads the included clip-aligned waveform, not the frozen acoustic feature tensor. The
-loader accepts both `<wav-dir>/<stem>.wav` and the legacy `<wav-dir>/<stem>/audio.wav` layout.
+loader accepts both `<wav-dir>/<stem>.wav` and the `<wav-dir>/<stem>/audio.wav` layout.
 Do not shift the audio start, stretch it, or trim the stored file to the motion length; BA uses
 the common evaluated prefix internally. Transcripts and word annotations accompany the data
 but are not additional inputs to this motion evaluator.
@@ -52,7 +52,7 @@ Set the paths below to the downloaded dataset and external FGD encoder:
 
 ```bash
 python scripts/eval_g1_motion_cls.py \
-  --pred-dir results/v2_audio_text/seed_000 \
+  --pred-dir results/audio_text/seed_000 \
   --ref-dir data/echo-g/motion_39d_30fps \
   --val-split data/echo-g/splits/val_common.txt \
   --wav-dir data/echo-g/audio \
@@ -60,7 +60,7 @@ python scripts/eval_g1_motion_cls.py \
   --g1-ae-ckpt weights/g1_aeskconv_full_pure2_w192.bin \
   --fps 30 --ba-direction audio_to_motion \
   --enable-foot-metrics --require-all-stems \
-  --tag v2_audio_text_best --out results/v2_audio_text/benchmark.json
+  --tag audio_text_best --out results/audio_text/benchmark.json
 ```
 
 Do not use `--limit` for a full benchmark. `--require-all-stems` fails on missing or
@@ -88,7 +88,7 @@ would measure zero diversity and is not a valid sampling experiment. Arrange the
 physical predictions as:
 
 ```text
-results/v2_audio_text/mm20/
+results/audio_text/mm20/
   run_000/<stem>.pt
   run_001/<stem>.pt
   ...
@@ -98,7 +98,7 @@ results/v2_audio_text/mm20/
 Run the preceding benchmark command with these additional arguments:
 
 ```text
---multimodality-root results/v2_audio_text/mm20
+--multimodality-root results/audio_text/mm20
 --multimodality-runs 20
 --require-all-multimodality
 ```

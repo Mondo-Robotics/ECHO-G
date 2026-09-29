@@ -7,7 +7,7 @@
 # (xuhao3e8@gmail.com) and Dr. Shuo Yang (shuo.yang@mondorobotics.com).
 
 data:
-  conditioning: audio-text
+  conditioning: text-only
   fps: 30
   max_frames: 600
   max_text_tokens: 256
@@ -30,7 +30,6 @@ model:
   num_heads: 8
   feedforward_dim: 2048
   dropout: 0.0
-  architecture: v2
   position_encoding: learned
   max_t: 608
   max_text_tokens: 256

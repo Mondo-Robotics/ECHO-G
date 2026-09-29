@@ -39,7 +39,7 @@ class DataConfig:
         if not 1 <= self.max_text_tokens <= 256:
             raise ValueError("data.max_text_tokens must be in [1, 256]")
         if self.max_frames > 600:
-            raise ValueError("V2 data.max_frames cannot exceed 600")
+            raise ValueError("data.max_frames cannot exceed 600")
         if (self.condition_manifest is None) != (self.condition_manifest_sha256 is None):
             raise ValueError(
                 "condition_manifest and condition_manifest_sha256 are required together"
@@ -65,7 +65,7 @@ class ModelConfig:
 
     def validate(self) -> None:
         if self.architecture != "v2" or self.position_encoding != "learned":
-            raise ValueError("this branch supports V2 with learned position encoding only")
+            raise ValueError("unsupported architecture or position encoding")
         if not 1 <= self.max_text_tokens <= 256:
             raise ValueError("model.max_text_tokens must be in [1, 256]")
         dimensions = {
