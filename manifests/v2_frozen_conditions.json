@@ -1,6 +1,6 @@
 {
   "schema": "echo-g-v2-frozen-condition-manifest-identity-v1",
-  "publication_status": "public_copy_verified_hugging_face_upload_pending",
+  "publication_status": "prepared_hugging_face_upload_pending",
   "manifest": {
     "relative_dataset_path": "audit/condition/frozen_conditions.json",
     "schema": "echo-g-frozen-condition-manifest-v1",
@@ -9,24 +9,12 @@
     "maximum_full_token_count": 247,
     "distribution": "To accompany the Hugging Face dataset; not embedded in the code repository."
   },
-  "source_release_version_sha256": "610339f317ad3aa72a007cda14062cbdc39ca655930df14de1a1cb4b4007f4ad",
-  "independent_token_time_audit_sha256": "17baab99180499b1f333cf0c85988e8cd1daccf465b7d8bddf22d5235d60dd0e",
-  "verification": [
-    "The independent original full-token audit contains exactly the train_drop and val_common union.",
-    "Every stored token count equals the independently audited untruncated tokenizer count.",
-    "Every FP16 token-time tensor matches the independent word-derived timing audit.",
-    "Every condition file, text tensor and token-time tensor is bound by SHA256.",
-    "Public condition files remove only internal path fields; every retained tensor and numerical field is bitwise equal to the frozen source.",
-    "Every public word annotation was retokenized without truncation; token IDs and FP16 times match the original independent audit."
-  ],
-  "loader_policy": "New raw conditions require echo-g-complete-text-provenance-v1; historical frozen conditions require the manifest and this externally pinned SHA256. An explicitly supplied manifest always requires matching file identity.",
-  "not_a_public_archive_hash": true,
+  "loader_policy": "Raw conditions require echo-g-complete-text-provenance-v1. Frozen conditions require this manifest and its pinned SHA256; each condition file must match its manifest entry.",
   "hugging_face": {
     "status": "planned_not_uploaded",
     "repo_id": null,
     "revision": null,
     "url": null,
     "repo_type": "dataset"
-  },
-  "source_condition_manifest_sha256": "c4cc2b25a00483cf93fc06741cd1424ce5c14b53af9c72a02a9a7d91c72c7417"
+  }
 }

@@ -1,12 +1,8 @@
 # V2 robot benchmark
 
-The release uses the current `eval_g1_motion_cls.py` implementation captured on
-2026-09-28. Run it as `scripts/eval_g1_motion_cls.py` or `echo-g-eval`; both call
-`echo_g.evaluation.g1_motion_cls`. Metric computations are preserved from the
-research script. Internal paths have been replaced by explicit asset arguments. The public
-dataset protocol omits semantic labels; their historical metric is now opt-in.
-Source and packaged-file SHA-256 hashes are in
-[`scripts/benchmark_visualization_source_manifest.json`](../scripts/benchmark_visualization_source_manifest.json).
+Run `scripts/eval_g1_motion_cls.py` or the equivalent `echo-g-eval` entry point for G1 motion
+metrics. Both call `echo_g.evaluation.g1_motion_cls`. The public benchmark requires robot
+references, clip audio, the FGD encoder and the supplied BA normalization array.
 
 ## Install and assets
 
@@ -67,18 +63,16 @@ python scripts/eval_g1_motion_cls.py \
 
 Do not use `--limit` for a full benchmark. `--require-all-stems` fails on missing or
 invalid clips or incomplete valid BA/jerk coverage. The archived source motion tensors
-can be longer than the audited common audio/motion prefix used for prediction: this
+can be longer than the canonical common audio/motion prefix used for prediction: this
 affects 433 of the 3,242 source validation clips. The command above preserves the
 historical common-prefix evaluation and must cover 891,351 frames. It does not resample
 motion or shift the start time.
 
 For strict `--require-equal-lengths`, first create a separate reference directory whose
-`robot_repr` tensors and `real_num_frames` are clipped to the frozen audit CSV
+`robot_repr` tensors and `real_num_frames` are clipped to the supplied length CSV
 `aligned_frames` (at most 600). Keep the original files and their identities. Then use
 that directory as `--ref-dir` and add the flag; do not apply it directly to the longer
-source tensors. The 2026-09-29 package acceptance uses this explicit audited-prefix
-reference preparation and checks every prediction length before evaluation.
-The FGD encoder additionally uses complete multiples of 32 frames internally and
+source tensors. The FGD encoder additionally uses complete multiples of 32 frames internally and
 skips shorter clips for its features, matching the research implementation.
 Store the command, checkpoint SHA, split SHA, evaluator source SHA and all evaluation
 asset checksums beside the JSON. FGD is comparable only when the same G1 encoder is
@@ -134,14 +128,6 @@ uses stored root orientation and the trajectory integrated from local velocity a
 yaw increments. Foot metrics use the same physical trajectory with an initial sole
 grounding offset. Lower raw BA, Div or jerk is not automatically better: compare the
 corresponding GT gap as well as the raw value.
-
-**Historical compatibility:** archived reports may contain SRGR. It is outside the current
-public dataset and metric list; no semantic cache is distributed or required. The evaluator
-retains an explicit legacy `--sem-dir` option for reproducing those archived reports. When it
-is omitted, no semantic cache is loaded and no SRGR fields are written. Supplying an invalid
-or incomplete cache still fails the legacy checks; other metric computations are unchanged.
-Do not attach an older table to a new evaluation protocol without checking metric definitions,
-encoder, selection and frame coverage.
 
 ## Source provenance
 

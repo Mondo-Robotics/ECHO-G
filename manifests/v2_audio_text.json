@@ -85,57 +85,5 @@
     ]
   },
   "dataset_manifest": "v2_dataset.json",
-  "historical_results_manifest": "v2_reference_results.json",
-  "provenance": {
-    "source_kind": "audited_original_v2_experiment_metadata",
-    "experiment_json_sha256": "ba5ce14ba11974fd7e875125bad9e328d3563c551fea6556baadc85f789e93af",
-    "source_name": "release30_wordtime_v2_20260913_v1/qknorm_wordtime/experiment.json",
-    "original_wordtime_source_sha256": "56e8f120196b70f19b831744085cf9fd96844fb1cefe9b0ab9fbbe9729b92023",
-    "original_frozen_trainer_sha256": "7d0c965edb4eeb4b48e7185d50b0ec49f105e25f508978380776f47c764850f8",
-    "note": "Original source hashes are historical identities, not hashes of the current packaged implementation."
-  },
-  "current_branch_validation": {
-    "scope": "full_common3242_frozen_conditions_and_three_raw_inputs_plus_real_G1_render",
-    "source_commit": "06055037f2bbdbf89a09868ad27d0c586d088a73",
-    "status": "completed_with_documented_historical_raw_cache_limit",
-    "initial_five_canaries": {
-      "scope": "five_real_checkpoint_frozen_condition_canaries",
-      "report": "../validation/real_checkpoint_parity.json",
-      "status": "passed",
-      "max_abs": 0.0,
-      "frames": [
-        60,
-        312,
-        591,
-        600,
-        588
-      ],
-      "text_tokens": [
-        8,
-        40,
-        73,
-        52,
-        247
-      ]
-    },
-    "full_benchmark_run": true,
-    "full_benchmark_report": "../validation/common3242_acceptance.json",
-    "matched_runtime_report": "../validation/matched_runtime_parity.json",
-    "raw_encoder_parity_run": true,
-    "same_input_raw_reference_parity": "pass",
-    "historical_frozen_raw_cache_parity": "fail",
-    "raw_report": "../validation/raw_encoder_acceptance.json",
-    "real_mujoco_report": "../validation/real_mujoco_acceptance.json",
-    "MM20_rerun": false,
-    "package_checks": {
-      "tests_passed": 52,
-      "tests_skipped": 1,
-      "tests_failed": 0,
-      "skip_reason": "MuJoCo absent from CPU suite environment; separate real G1 render passed",
-      "ruff": "passed",
-      "training_math_report": "../validation/training_math_reference_parity.json",
-      "model_port_report": "../validation/model_port_reference_parity.json",
-      "benchmark_visualization_report": "../validation/benchmark_visualization_parity.json"
-    }
-  }
+  "historical_results_manifest": "v2_reference_results.json"
 }

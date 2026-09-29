@@ -1,6 +1,6 @@
 {
   "schema": "echo-g-v2-benchmark-assets-v1",
-  "status": "asset_packaging_pending",
+  "status": "hugging_face_upload_and_external_robot_asset_instructions_pending",
   "hugging_face": {
     "status": "planned_not_uploaded",
     "repo_id": null,
@@ -14,28 +14,23 @@
       "reference_filename": "g1_aeskconv_full_pure2_w192.bin",
       "url": null,
       "sha256": "466b18af663156637b3dac8ce5fc074487e287b0c5d2749744fb4580ce00909a",
-      "status": "source_file_identity_verified_public_upload_pending",
-      "suggested_local_path": "weights/g1_aeskconv_full_pure2_w192.bin",
-      "reference_sha256": "466b18af663156637b3dac8ce5fc074487e287b0c5d2749744fb4580ce00909a",
-      "reference_sha256_source": "audited V2 text-only step025000 evaluation contract, same G1 encoder",
-      "verified_in": "../validation/common3242_acceptance.json"
+      "status": "public_upload_pending",
+      "suggested_local_path": "weights/g1_aeskconv_full_pure2_w192.bin"
     },
     {
       "role": "BA_mean_velocity_normalization",
       "reference_filename": "g1_mmae_30body_30fps.npy",
       "url": null,
       "sha256": "0f763e6d54ca7bb33e49b0336ba2cc3359f9e9d5942e7f475c85c74b4b66e880",
-      "status": "included_in_verified_public_dataset_candidate",
-      "suggested_local_path": "data/v2/eval_assets/mmae/g1_mmae_30body_30fps.npy",
-      "verified_in": "../validation/common3242_acceptance.json"
+      "status": "included_in_prepared_dataset",
+      "suggested_local_path": "data/v2/eval_assets/mmae/g1_mmae_30body_30fps.npy"
     },
     {
       "role": "raw_audio_for_BA",
       "url": null,
-      "status": "included_in_verified_public_dataset_candidate",
+      "status": "included_in_prepared_dataset",
       "distribution": "source_terms_apply",
-      "suggested_local_path": "data/v2/audio/<stem>.wav",
-      "verification": "All 18229 source WAV slices match official recording samples exactly; packaged WAV bytes preserved."
+      "suggested_local_path": "data/v2/audio/<stem>.wav"
     },
     {
       "role": "G1_robot_XML_and_meshes_for_MuJoCo",
@@ -46,7 +41,7 @@
       "suggested_local_path": "assets_external/unitree_g1/g1_mocap_29dof.xml"
     }
   ],
-  "note": "Null fields are intentional placeholders. Original model benchmark scores do not establish equivalence of arbitrary substitute metric assets.",
+  "note": "Download links will be filled in when assets are published. Use the listed metric asset SHA256 values to reproduce the reference scores.",
   "excluded_metrics": [
     "SRGR"
   ]

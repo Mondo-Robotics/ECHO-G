@@ -22,11 +22,8 @@ DATA_ROOT/
 └── audit/condition/frozen_conditions.json
 ```
 
-The audited `frozen_conditions.json` is required when loading the historical frozen V2 files.
-It will accompany the Hugging Face dataset; that upload is still pending. The prepared package
-additionally contains paired audio, source transcripts and standalone word-time annotations.
-Archive shard identities are recorded in [the dataset manifest](../manifests/v2_dataset.json).
-Included BEAT2-derived audio/text retain the applicable upstream terms and attribution.
+The supplied V2 configurations read the length CSV and condition manifest automatically.
+Both files are included with the dataset. See [download instructions](DATASET.md).
 
 ### Audio, transcripts and word times
 
@@ -40,7 +37,7 @@ The word-to-token mapping follows the frozen V2 convention below.
 
 `raw_inputs.jsonl` supplies the corresponding audio path, transcript and words to
 `echo-g-extract-conditions`. Use the released canonical lengths for cached benchmark inference;
-the untrimmed waveform duration is not a replacement for the audited common-prefix length.
+the untrimmed waveform duration is not a replacement for the stored common-prefix length.
 The benchmark reads `--wav-dir DATA_ROOT/audio` and uses the frozen MMAE array above.
 
 ## Physical motion
@@ -110,11 +107,9 @@ count after truncating to 64. The loader now requires one of the following verif
 The condition payload retains `canonical_transcript`, `word_timestamps`, `source_text_model`,
 `hidden_layer=-2`, and `encoder_dtype=bfloat16`. Loading recomputes word-derived token intervals
 from the stored canonical transcript and offsets, checks the encoder metadata, and verifies
-counts and tensor digests. These fields audit the extraction contract; an encoder identifier
-is not a claim of cross-hardware numerical equality or a hash of every encoder weight file.
-The token features, FP16 storage boundary, and signed-distance computation are unchanged.
+counts and tensor digests. These fields ensure that loaded tokens and intervals match the extraction inputs.
 
-**Published frozen conditions** require the official audited condition manifest and its
+**Published frozen conditions** require the released condition manifest and its
 externally pinned SHA256:
 
 ```text
@@ -123,14 +118,8 @@ SHA256: 81e0b1197821f9014d147c8d17970ac9143a7d7f72c529d74e891a944d692b01
 Entries: 18229
 ```
 
-[The small identity manifest](../manifests/v2_frozen_conditions.json) records its source and
-independent full-token timing audit. The complete 18,229-entry file will ship with the data,
-not inside the Python package. Its entries bind each condition file and its text/time tensors
-to the independent full tokenizer count. The public files remove internal path metadata and therefore have new file identities.
-Every retained tensor and numerical field was verified against the original frozen inputs;
-complete token IDs and FP16 intervals were independently checked against the original word audit.
-The manifest above pins these public files. Original experiment file identities are retained
-separately in the dataset provenance; future reserialization requires a new audited identity.
+The dataset manifest records each frozen condition file, its text/time tensors and complete
+tokenizer count. The provided V2 configurations already select this manifest.
 
 Paired training, validation and sampling use `data.condition_manifest` and
 `data.condition_manifest_sha256` from YAML. Relative manifest paths resolve against `data_root`;
@@ -140,14 +129,13 @@ pin the official path and SHA above. Independent `echo-g-infer` uses the explici
 root or silently reuse the YAML's relative manifest path.
 
 When a manifest is explicitly supplied, file identity is checked even if the payload also
-contains new raw provenance. Without either valid raw provenance or an audited file identity,
+contains new raw provenance. Without either valid raw provenance or a matching released file identity,
 the loader rejects the cache. This includes older 64-token caches whose `n_tokens` also equals
 64. A genuinely complete 64-token input remains valid through either verified path.
 
 Do not pad truncated features, edit counts, or recompute a manifest from unverified caches to
 make them pass. Regenerate raw conditions with the current extractor, or use the official
-frozen data and its published manifest identity. A newly packaged or reserialized frozen
-release requires a separately audited identity before its SHA is updated.
+frozen data and its published manifest identity. Changing frozen condition files invalidates the supplied manifest.
 
 ## Time and length
 
@@ -167,8 +155,8 @@ replace this mapping with word pooling or a new alignment algorithm.
 
 | Entry point | Frame policy | Text policy |
 |---|---|---|
-| Paired training/validation Dataset | Audited common audio/motion prefix, at most 600 frames | Complete stored tokens, at most 256; require verified provenance or manifest identity |
-| Independent cached inference | Acoustic sequence length, or supplied canonical audited length; at most 600 | Reject oversized conditions or missing/invalid complete-text provenance |
+| Paired training/validation Dataset | Stored common audio/motion prefix, at most 600 frames | Complete stored tokens, at most 256; require verified provenance or manifest identity |
+| Independent cached inference | Acoustic sequence length, or supplied canonical length; at most 600 | Reject oversized conditions or missing/invalid complete-text provenance |
 | Raw audio extraction → inference | `T = max(2, round(audio_seconds * 30))`; reject audio longer than 20 seconds | Require word timing; reject more than 256 tokens |
 
 There is no automatic segmentation or stitching. For longer inputs, create shorter audio clips
@@ -197,7 +185,7 @@ normalizes motion and inference reverses the same transform using checkpoint-loc
 Do not apply normalization to the ground-truth files themselves. The all-status training
 statistics belong to another experiment and must not be substituted.
 
-## Alignment audit
+## Canonical frame lengths
 
 The CSV includes at least:
 

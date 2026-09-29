@@ -77,22 +77,3 @@ ffmpeg -i results/v2_audio_text/mujoco/example.mp4 \
 Use the clip-aligned audio, not an uncropped recording. The explicit audio interval starts at
 zero and preserves the copied video stream. Check output stream durations with `ffprobe`; do
 not use `-shortest` to silently remove video frames. Keep the silent source for frame extraction.
-
-## Smoke check after dataset packaging
-
-Select one released validation stem, generate its prediction from the new audited frozen
-condition identity, and run the export/render commands above with the same external G1 XML and
-meshes used in [the previous real render acceptance](BRANCH_VALIDATION.md). Use the new package's
-audio for the mux step. Record the source dataset revision, condition/prediction hashes, robot
-asset hashes, frame count, FPS, audio/video durations and output hashes. The clip
-`english_1_wayne_0_100_100_utt_0000` has a frozen benchmark prefix of 312 frames at 30 FPS and is
-suitable for this check. This is a packaging smoke test; the earlier render evidence does not
-establish that a newly packaged dataset has passed it.
-
-## Validation boundary
-
-The release tests physical unit/FPS validation, first-frame grounding, integrated
-translation, canonical joint schema, and duration-preserving frame selection on
-synthetic motions. A real G1 render additionally needs the external robot asset
-revision and a working graphics backend. Code-level tests do not establish that
-arbitrary third-party XML geometry matches the benchmark skeleton.

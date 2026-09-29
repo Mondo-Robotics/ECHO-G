@@ -64,7 +64,6 @@ echo-g-eval = "echo_g.evaluation.g1_motion_cls:main"
 echo-g-export-mujoco = "echo_g.visualization.export:main"
 echo-g-render = "echo_g.visualization.render:main"
 echo-g-extract-conditions = "echo_g.conditions:main"
-echo-g-validate-data = "echo_g.validate_data:main"
 
 [tool.setuptools]
 package-dir = { "" = "src" }

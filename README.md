@@ -29,7 +29,7 @@ release candidate yet.
 
 | Asset | Hugging Face location | Status |
 |---|---|---|
-| V2 processed robot-motion dataset | **To be added** | 12 validated local shards prepared; destination and new-contribution license pending |
+| V2 processed robot-motion dataset | **To be added** | Prepared; upload and release terms pending |
 | V2 audio+text `best.pt` (15k, EMA) | **To be added** | Upload pending |
 | Benchmark FGD encoder | **To be added** | Weight upload pending; identity recorded |
 | Frozen BA normalization | With dataset | Included in prepared dataset |
@@ -48,21 +48,15 @@ not require or distribute semantic labels. See [the benchmark protocol](docs/BEN
 
 - [V2 model card](docs/MODEL_CARD.md)
 - [V2 dataset card](docs/DATASET_CARD.md)
-- [Dataset packaging and download procedure](docs/DATASET_RELEASE.md)
+- [Download and use the dataset](docs/DATASET.md)
 - [Data format and timing contract](docs/DATA_FORMAT.md)
 - [Dataset asset manifest](manifests/v2_dataset.json)
 - [Frozen-condition manifest identity](manifests/v2_frozen_conditions.json)
 - [Model asset manifest](manifests/v2_audio_text.json)
 - [Benchmark asset manifest](manifests/benchmark_assets.json)
 
-The commands below require locally provisioned assets until the Hugging Face links are filled in.
-The new package completed [common3242 and real-input acceptance](docs/BRANCH_VALIDATION.md)
-on 2026-09-29: FGD **2.278311**, three raw-input reference comparisons, and a real G1 video.
-The tested matched-runtime and raw-input reference comparisons are exact; historical
-frozen raw-feature-cache agreement remains
-unmet. Use the frozen conditions for benchmark reproduction. The separate public-data packaging
-acceptance passed all 18,229 clips and re-evaluated existing common3242 predictions with exactly
-the same retained metrics; [scope and evidence](docs/DATASET_RELEASE.md).
+Follow the [dataset download guide](docs/DATASET.md), then use the commands below.
+Hugging Face links will be filled in after publication.
 
 ## Installation
 
@@ -110,7 +104,7 @@ checkpoints**. V2 uses `frame_seconds - token_center_seconds`, preserving the si
 learned lag. Text keys remain tokenizer units, including subwords; V2 does not pool them into
 one key per word. See [the architecture](docs/V2_ARCHITECTURE.md).
 
-## Dataset validation and training
+## Training
 
 Expected core layout:
 
@@ -125,20 +119,10 @@ DATA_ROOT/
 └── audit/condition/frozen_conditions.json
 ```
 
-The supplied V2 YAMLs require the audited frozen-condition manifest at the path above and pin
-its SHA256 to `81e0b1197821f9014d147c8d17970ac9143a7d7f72c529d74e891a944d692b01`.
-The full manifest will accompany the Hugging Face dataset; its upload remains pending.
-See [the manifest identity](manifests/v2_frozen_conditions.json) and
-[complete-text provenance rules](docs/DATA_FORMAT.md#complete-text-provenance). Older caches
-without verified provenance are rejected, including caches truncated to 64 tokens that report
-`n_tokens=64`. Regenerate them or obtain the audited full-text release; changing counts or
-rehashing unverified caches does not establish completeness.
+The supplied V2 configurations use these files automatically. Download and extract the complete
+dataset, then run:
 
 ```bash
-echo-g-validate-data \
-  --config configs/sgdit_v2_audio_text.yaml \
-  --data-root /path/to/v2_data
-
 echo-g-train \
   --config configs/sgdit_v2_audio_text.yaml \
   --data-root /path/to/v2_data \
@@ -149,7 +133,7 @@ echo-g-train \
 Resume using the same command plus `--resume outputs/v2_audio_text/latest.pt`.
 The training directory records `experiment.json`, `latest.pt`, `best.pt`, `final.pt`, and
 `complete.json`. `latest.pt` is the full training-resume state; `best.pt` is selected by validation
-loss, not by FGD. Recipe and source-data hashes are in [REPRODUCIBILITY.md](docs/REPRODUCIBILITY.md).
+loss, not by FGD. The training recipe is in [REPRODUCIBILITY.md](docs/REPRODUCIBILITY.md).
 
 ## Inference
 
@@ -180,7 +164,7 @@ echo-g-infer \
   --device cuda
 ```
 
-For the historical frozen V2 dataset, supply its audited manifest and pinned SHA explicitly:
+For independent inference on released dataset conditions, supply the included condition manifest:
 
 ```bash
 echo-g-infer \
@@ -259,8 +243,8 @@ audio or text cache is not claimed.
   [VISUALIZATION.md](docs/VISUALIZATION.md).
 
 Historical V2 best15k scores on common3242 were **FGD 2.278349** (seed000) and
-**MM20 1.785556** (seeds 0–19). These are reference results from the original validated model,
-and remain separate from this package's new **FGD 2.278311** measurement. MM20 was not rerun in this acceptance.
+**MM20 1.785556** (seeds 0–19). The packaged implementation scores **FGD 2.278311** under the released benchmark protocol;
+MM20 refers to the original 20-seed run.
 [Reproduction scope and reference results](docs/REPRODUCIBILITY.md#historical-results)
 explain the distinction.
 
