@@ -37,15 +37,23 @@ FGD-selected checkpoint. Historical validation used `drop_last=True` and batch 3
 
 ## Checkpoint identity
 
-Reference filename: `best.pt`.
+Released filename: `best.pt`, from model repository
+[gaopusen/ECHO-G](https://huggingface.co/gaopusen/ECHO-G/tree/2026-09-30), revision `2026-09-30`.
 
 ```text
-SHA256: c1e7e863e28b76b710bc18f9e9029836771fc86c1bb9fca42aa9d7655f74a616
+Release SHA256: c84f31fce140cdc8c3be5e5dbc8cb8eb3a82ce1865e2d84026a0791d4735928d
+Source SHA256:  c1e7e863e28b76b710bc18f9e9029836771fc86c1bb9fca42aa9d7655f74a616
 step: 15000
 weights: EMA
 ```
 
-[The model manifest](../manifests/audio_text.json) records the checkpoint and pending
+The published checkpoint removes unrelated training metadata and internal paths while
+preserving every inference parameter and normalization value. Strict loading, parameter
+equality and seven real-clip prediction/FGD-feature comparisons passed; the maximum absolute
+output difference was 0. These checks establish packaging equivalence and do not constitute
+a new full-split benchmark. See the [model card](MODEL_CARD.md) for both published weight files.
+
+[The model manifest](../manifests/audio_text.json) records the checkpoint and pinned
 Hugging Face location. Dataset details and download instructions are in the
 [data card](DATASET_CARD.md) and [download guide](DATASET.md).
 

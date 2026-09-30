@@ -138,5 +138,8 @@
     "MM20": "not_rerun"
   },
   "raw_input_limitations": "Earlier raw feature re-extraction did not meet historical audio-cache tolerance. Exact source-cache audio reproduction is not claimed.",
-  "evaluator": "scripts/eval_g1_motion_cls.py"
+  "evaluator": "scripts/eval_g1_motion_cls.py",
+  "checkpoint_sha256_scope": "Original source checkpoint used for the historical reference records.",
+  "release_checkpoint_sha256": "c84f31fce140cdc8c3be5e5dbc8cb8eb3a82ce1865e2d84026a0791d4735928d",
+  "release_checkpoint_relationship": "Same EMA tensors and motion statistics; internal paths and unused metadata removed. Seven real-clip predictions and FGD features were bitwise equal after cleanup."
 }

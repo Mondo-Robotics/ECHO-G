@@ -46,15 +46,16 @@ echo-g-train \
   --device cuda
 ```
 
-Model checkpoint upload is still pending. Once the checkpoint is available, generate the
-validation split with:
+Download the private model repository at revision `2026-09-30` using the
+[weight download commands](../README.md#download-model-weights), then generate the validation
+split with:
 
 ```bash
 echo-g-sample \
   --checkpoint weights/best.pt \
-  --config configs/sgdit_audio_text.yaml \
+  --config weights/configs/sgdit_audio_text.yaml \
   --data-root data/echo-g \
-  --output-dir outputs/validation \
+  --output-dir results/audio_text \
   --split val --seeds 0 --device cuda
 ```
 

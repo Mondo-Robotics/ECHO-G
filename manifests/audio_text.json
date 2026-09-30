@@ -4,21 +4,27 @@
   "name": "ECHO-G audio+text direct robot",
   "config": "configs/sgdit_audio_text.yaml",
   "hugging_face": {
-    "status": "planned_not_uploaded",
-    "repo_id": null,
-    "revision": null,
-    "url": null,
-    "repo_type": "model"
+    "status": "uploaded_private_preview",
+    "repo_id": "gaopusen/ECHO-G",
+    "repo_type": "model",
+    "revision": "2026-09-30",
+    "url": "https://huggingface.co/gaopusen/ECHO-G",
+    "private": true,
+    "commit_sha": "193f9c74dcf6b0c457ead7a095bb640b324c2872"
   },
   "license_status": "confirmed",
   "checkpoint": {
     "suggested_local_filename": "best.pt",
-    "sha256": "c1e7e863e28b76b710bc18f9e9029836771fc86c1bb9fca42aa9d7655f74a616",
+    "sha256": "c84f31fce140cdc8c3be5e5dbc8cb8eb3a82ce1865e2d84026a0791d4735928d",
     "global_step": 15000,
     "weights": "ema",
     "selection": "minimum EMA validation loss",
     "validation_loss": 0.289654246331365,
-    "upload_filename": null
+    "upload_filename": "best.pt",
+    "source_sha256": "c1e7e863e28b76b710bc18f9e9029836771fc86c1bb9fca42aa9d7655f74a616",
+    "bytes": 655730204,
+    "url": "https://huggingface.co/gaopusen/ECHO-G/resolve/2026-09-30/best.pt",
+    "packaging": "Internal paths and unused metadata removed; EMA tensors and motion statistics preserved exactly."
   },
   "training_completed_optimizer_steps": 63000,
   "training_validation_clips_at_batch_three": 3240,
@@ -89,5 +95,15 @@
   "license": "cc-by-nc-4.0",
   "license_file": "LICENSE-DATA-WEIGHTS",
   "license_scope": "Project rights in the ECHO-G model weights; third-party materials retain their applicable terms.",
-  "licensing_document": "docs/LICENSING.md"
+  "licensing_document": "docs/LICENSING.md",
+  "release_date": "2026-09-30",
+  "release_validation": {
+    "state_tensors_bitwise_equal": true,
+    "motion_statistics_bitwise_equal": true,
+    "real_clip_prediction_parity": {
+      "clips": 7,
+      "max_abs_difference": 0.0
+    },
+    "scope": "Metadata cleanup equivalence; existing full-set reference scores are recorded separately."
+  }
 }

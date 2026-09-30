@@ -13,8 +13,11 @@ python -c "import librosa, scipy, soundfile; print(librosa.__version__, scipy.__
 
 The dataset is available in the private preview
 [gaopusen/ECHO-G](https://huggingface.co/datasets/gaopusen/ECHO-G); see the
-[download guide](DATASET.md). Only authorized accounts can access it. ECHO-G model weights and
-the FGD encoder have **not been uploaded**. Dataset archive and FGD/MMAE asset hashes are recorded in the
+[download guide](DATASET.md). ECHO-G model weights and the FGD encoder are available in the
+[private model repository](https://huggingface.co/gaopusen/ECHO-G/tree/2026-09-30); follow the
+[weight download commands](../README.md#download-model-weights). Only authorized accounts
+can access these repositories. Pin dataset revision `2026-09-29-license` and model revision
+`2026-09-30`. Dataset archive and FGD/MMAE asset hashes are recorded in the
 [dataset manifest](../manifests/dataset.json) and
 [benchmark asset manifest](../manifests/benchmark_assets.json); this branch contains code,
 protocols and identity records, not the large assets.
@@ -25,7 +28,7 @@ Use the same pinned asset revisions for every model in a comparison.
 | Predictions | One physical `robot_repr[T,39]` tensor per `<stem>.pt`, 30 FPS | Generate with ECHO-G inference |
 | References | Released ECHO-G robot motion files, same stems and coordinate system | [Private dataset preview](https://huggingface.co/datasets/gaopusen/ECHO-G) |
 | Split | Released `splits/val_common.txt`; any formal exclusion list must be frozen and shared across methods | [Private dataset preview](https://huggingface.co/datasets/gaopusen/ECHO-G) |
-| FGD encoder | Trained G1 skeleton-convolution AE `g1_aeskconv_full_pure2_w192.bin`, with its configuration/state | Hugging Face evaluation weights link: **pending** |
+| FGD encoder | Trained G1 skeleton-convolution AE `evaluation/g1_fgd_encoder.pt`, including its configuration/state | [Private model preview](https://huggingface.co/gaopusen/ECHO-G/tree/2026-09-30/evaluation) |
 | BA normalization | `eval_assets/mmae/g1_mmae_30body_30fps.npy`, finite array of shape `(30,)` | Included in the [private dataset preview](https://huggingface.co/datasets/gaopusen/ECHO-G) |
 | Audio | `audio/<stem>.wav`, matching the start of the released motion | Included in the [private dataset preview](https://huggingface.co/datasets/gaopusen/ECHO-G), under its source terms |
 
@@ -48,7 +51,12 @@ normalization of the 39D motion representation.
 
 ## Evaluate one prediction per clip
 
-Set the paths below to the downloaded dataset and external FGD encoder:
+After downloading the model repository, the FGD encoder is at
+`weights/evaluation/g1_fgd_encoder.pt` (5,551,281 bytes; SHA256
+`761d3ae1e833123765785c8d8fcb95ec3745ee07de230cc892b52c8ecd304b91`).
+Its parameters, topology and required input configuration match the original evaluation
+checkpoint; unrelated training metadata was removed. Set the paths below to the downloaded
+dataset, released FGD encoder and generated predictions:
 
 ```bash
 python scripts/eval_g1_motion_cls.py \
@@ -57,7 +65,7 @@ python scripts/eval_g1_motion_cls.py \
   --val-split data/echo-g/splits/val_common.txt \
   --wav-dir data/echo-g/audio \
   --mmae-file data/echo-g/eval_assets/mmae/g1_mmae_30body_30fps.npy \
-  --g1-ae-ckpt weights/g1_aeskconv_full_pure2_w192.bin \
+  --g1-ae-ckpt weights/evaluation/g1_fgd_encoder.pt \
   --fps 30 --ba-direction audio_to_motion \
   --enable-foot-metrics --require-all-stems \
   --tag audio_text_best --out results/audio_text/benchmark.json
@@ -138,7 +146,7 @@ EMAGE evaluation code, with skeleton convolution from DeepMotionEditing and deco
 code from TM2T. Their source notices are retained in the vendored files. The rotation
 utilities retain their PyTorch3D-derived attribution. No third-party model weights,
 robot assets, SMPL-X assets or audio are included in this code branch. The project-trained
-FGD encoder weights are designated **CC BY-NC 4.0** and have not yet been uploaded.
+FGD encoder weights are available in the private model repository under **CC BY-NC 4.0**.
 The project's contribution to the frozen BA normalization is covered by the same data license.
 Code and third-party source materials retain their applicable licenses; see
 [licensing scope](LICENSING.md).

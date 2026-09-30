@@ -1,6 +1,6 @@
 {
   "schema": "echo-g-benchmark-assets-v1",
-  "status": "dataset_and_robot_assets_uploaded_private_preview_fgd_pending",
+  "status": "all_assets_uploaded_private_preview",
   "hugging_face": {
     "status": "dataset_uploaded_private_preview",
     "repo_id": "gaopusen/ECHO-G",
@@ -19,14 +19,27 @@
   "assets": [
     {
       "role": "learned_FGD_encoder",
-      "reference_filename": "g1_aeskconv_full_pure2_w192.bin",
-      "url": null,
-      "sha256": "466b18af663156637b3dac8ce5fc074487e287b0c5d2749744fb4580ce00909a",
-      "status": "public_upload_pending",
-      "suggested_local_path": "weights/g1_aeskconv_full_pure2_w192.bin",
+      "reference_filename": "g1_fgd_encoder.pt",
+      "url": "https://huggingface.co/gaopusen/ECHO-G/resolve/2026-09-30/evaluation/g1_fgd_encoder.pt",
+      "sha256": "761d3ae1e833123765785c8d8fcb95ec3745ee07de230cc892b52c8ecd304b91",
+      "status": "uploaded_private_preview",
+      "suggested_local_path": "weights/evaluation/g1_fgd_encoder.pt",
       "license": "cc-by-nc-4.0",
       "license_file": "LICENSE-DATA-WEIGHTS",
-      "license_scope": "Project rights in this asset; third-party materials retain their applicable terms."
+      "license_scope": "Project rights in this asset; third-party materials retain their applicable terms.",
+      "source_sha256": "466b18af663156637b3dac8ce5fc074487e287b0c5d2749744fb4580ce00909a",
+      "upload_filename": "evaluation/g1_fgd_encoder.pt",
+      "bytes": 5551281,
+      "hugging_face": {
+        "status": "uploaded_private_preview",
+        "repo_id": "gaopusen/ECHO-G",
+        "repo_type": "model",
+        "revision": "2026-09-30",
+        "url": "https://huggingface.co/gaopusen/ECHO-G",
+        "private": true,
+        "commit_sha": "193f9c74dcf6b0c457ead7a095bb640b324c2872"
+      },
+      "packaging": "Internal paths and unused training metadata removed; complete network state and evaluation configuration preserved."
     },
     {
       "role": "BA_mean_velocity_normalization",
@@ -66,7 +79,7 @@
       "license_path": "assets/unitree_g1/LICENSE"
     }
   ],
-  "note": "The private dataset preview contains BA audio and normalization and the G1 MuJoCo XML/meshes. The FGD encoder and model checkpoints are not uploaded. Use the listed SHA256 values and pinned dataset revision.",
+  "note": "The private model repository contains the model checkpoint and FGD encoder. The paired private dataset contains BA audio and normalization and G1 MuJoCo XML/meshes. Use the listed release-file SHA256 values and pinned revisions; source SHA256 values identify pre-cleanup files.",
   "excluded_metrics": [
     "SRGR"
   ],

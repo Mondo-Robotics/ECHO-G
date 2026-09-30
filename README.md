@@ -21,18 +21,16 @@ MuJoCo visualization for the released robot-motion dataset.
 
 ## Data and weights
 
-**The dataset is available in the private preview repository
-[gaopusen/ECHO-G](https://huggingface.co/datasets/gaopusen/ECHO-G).** Access requires an
-authorized Hugging Face account. Public release remains pending. ECHO-G data contributions
-and project model/evaluation weights use **CC BY-NC 4.0**; third-party materials retain their
-applicable terms. See [licensing scope](docs/LICENSING.md). Model weights and the FGD encoder
-have not been uploaded.
+**The dataset and model weights are available as private previews on Hugging Face.**
+Access requires an account authorized for each repository; public release remains pending.
+ECHO-G data contributions and project model/evaluation weights use **CC BY-NC 4.0**;
+third-party materials retain their applicable terms. See [licensing scope](docs/LICENSING.md).
 
 | Asset | Hugging Face location | Status |
 |---|---|---|
 | Processed robot-motion dataset | [gaopusen/ECHO-G](https://huggingface.co/datasets/gaopusen/ECHO-G) | Uploaded private preview |
-| ECHO-G audio+text `best.pt` (15k, EMA) | **To be added** | Upload pending |
-| Benchmark FGD encoder | **To be added** | Weight upload pending; identity recorded |
+| ECHO-G audio+text `best.pt` (15k, EMA) | [Model repository](https://huggingface.co/gaopusen/ECHO-G/tree/2026-09-30) | Uploaded private preview |
+| Benchmark FGD encoder | [Model repository: evaluation](https://huggingface.co/gaopusen/ECHO-G/tree/2026-09-30/evaluation) | Uploaded private preview |
 | Frozen BA normalization | With dataset | Included in the private dataset preview |
 | G1 MuJoCo XML and meshes | With dataset | Included under BSD-3-Clause |
 
@@ -59,7 +57,26 @@ not require or distribute semantic labels. See [the benchmark protocol](docs/BEN
 
 Follow the [dataset download guide](docs/DATASET.md), then use the commands below.
 The clip data comprise 12 tar archives (18.52 GB), with separate metadata and a robot-asset archive.
-Download and extract all archives into the same data root.
+Download and extract all archives into the same data root. The dataset revision is
+`2026-09-29-license`; the model revision is `2026-09-30`.
+
+### Download model weights
+
+Install the Hugging Face CLI with `python -m pip install huggingface_hub` if needed.
+Log in with an account authorized for the private model repository, then download and verify:
+
+```bash
+hf auth login
+hf download gaopusen/ECHO-G --repo-type model \
+  --revision 2026-09-30 --local-dir weights
+(cd weights && sha256sum -c SHA256SUMS)
+```
+
+This supplies `weights/best.pt`, `weights/evaluation/g1_fgd_encoder.pt`,
+`weights/configs/sgdit_audio_text.yaml`, the model card, license and checksums.
+The model and dataset are separate repository types with independent pinned revisions.
+No human-motion VAE is needed for this direct robot model. See the
+[model card](docs/MODEL_CARD.md) for file identities and release checks.
 
 ## Installation
 
@@ -146,10 +163,10 @@ Use the paired dataset entry point when reproducing the canonical benchmark:
 
 ```bash
 echo-g-sample \
-  --checkpoint /path/to/best.pt \
-  --config configs/sgdit_audio_text.yaml \
+  --checkpoint weights/best.pt \
+  --config weights/configs/sgdit_audio_text.yaml \
   --data-root /path/to/echo-g-data \
-  --output-dir outputs/validation \
+  --output-dir results/audio_text \
   --split val --seeds 0 --device cuda
 ```
 
@@ -160,8 +177,8 @@ provenance:
 
 ```bash
 echo-g-infer \
-  --checkpoint /path/to/best.pt \
-  --config configs/sgdit_audio_text.yaml \
+  --checkpoint weights/best.pt \
+  --config weights/configs/sgdit_audio_text.yaml \
   --condition-dir /path/to/condition_30fps \
   --output-dir outputs/new_clips \
   --device cuda
@@ -171,8 +188,8 @@ For independent inference on released dataset conditions, supply the included co
 
 ```bash
 echo-g-infer \
-  --checkpoint /path/to/best.pt \
-  --config configs/sgdit_audio_text.yaml \
+  --checkpoint weights/best.pt \
+  --config weights/configs/sgdit_audio_text.yaml \
   --condition-dir /path/to/echo-g-data/condition_30fps \
   --condition-manifest /path/to/echo-g-data/audit/condition/frozen_conditions.json \
   --condition-manifest-sha256 81e0b1197821f9014d147c8d17970ac9143a7d7f72c529d74e891a944d692b01 \
@@ -219,8 +236,8 @@ echo-g-extract-conditions \
   --output-dir data/new_conditions
 
 echo-g-infer \
-  --checkpoint /path/to/best.pt \
-  --config configs/sgdit_audio_text.yaml \
+  --checkpoint weights/best.pt \
+  --config weights/configs/sgdit_audio_text.yaml \
   --condition-dir data/new_conditions \
   --output-dir outputs/raw \
   --device cuda
