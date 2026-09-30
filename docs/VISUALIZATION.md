@@ -11,7 +11,7 @@ validates the joint names in the supplied robot XML.
 python -m pip install -e '.[visualization]'
 ```
 
-Follow [the dataset download guide](DATASET.md) to extract the robot-asset archive alongside
+Follow [the HF dataset instructions](https://huggingface.co/datasets/gaopusen/ECHO-G#download) to extract the robot-asset archive alongside
 the data. It supplies `assets/unitree_g1/g1_mocap_29dof.xml`, the referenced meshes and the
 BSD-3-Clause license. Preserve their relative directory layout. The model
 must have a floating base, a `pelvis` body and the 29 canonical G1 hinge joints;
@@ -28,11 +28,11 @@ The prediction must already be in physical units at 30 FPS. It should contain
 `robot_repr[T,39]`, `representation_units="physical"` and `fps=30`.
 
 ```bash
-python scripts/export_robot_repr_mujoco_npz.py \
+echo-g-export-mujoco \
   --input results/audio_text/seed_000/example.pt \
   --output results/audio_text/mujoco/example.npz
 
-python scripts/render_g1_motion.py \
+echo-g-render \
   --npz results/audio_text/mujoco/example.npz \
   --mjcf data/echo-g/assets/unitree_g1/g1_mocap_29dof.xml \
   --out results/audio_text/mujoco/example.mp4 \
@@ -40,10 +40,8 @@ python scripts/render_g1_motion.py \
   --azimuth 180 --elevation -15 --distance 3
 ```
 
-Installed entry points `echo-g-export-mujoco` and `echo-g-render` accept the same
-arguments. For a directory of predictions, export with `--input-dir` and
-`--output-dir`; relative subdirectories are preserved. Existing NPZ files require
-`--overwrite` to replace them.
+For a directory of predictions, export with `--input-dir` and `--output-dir`; relative
+subdirectories are preserved. Existing NPZ files require `--overwrite` to replace them.
 
 By default the first frame is grounded using G1 sole proxies, root velocity is
 integrated, and every stored root orientation is used. Export alternatives are

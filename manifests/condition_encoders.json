@@ -1,10 +1,8 @@
 {
   "schema": "echo-g-condition-encoders-v1",
-  "recorded_on": "2026-09-30",
   "purpose": "Pinned upstream encoders for raw audio and word-timed text extraction; not needed when using the released frozen conditions.",
-  "identity_basis": "Recorded file SHA256 values from the 2026-09-29 real raw-encoder acceptance matched these pinned upstream revisions. Large-file hashes were checked against Hugging Face LFS object SHA256 values; small files were downloaded and hashed. This is asset identity evidence, not a claim that fresh features equal the historical frozen cache.",
   "checksum_file": "manifests/condition_encoders.sha256",
-  "checksum_scope": "All runtime files listed below; upstream README/license and other optional files are not covered by this checksum list.",
+  "checksum_scope": "Runtime files listed below; excludes optional files and upstream documentation.",
   "encoders": {
     "qwen": {
       "repo_id": "Qwen/Qwen3.5-4B",

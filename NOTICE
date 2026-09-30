@@ -13,3 +13,25 @@ Commercial usage is NOT permitted by default.
 For commercial licensing, please contact both:
 - Dr. Hao Xu (Nanjing University): xuhao3e8@gmail.com
 - Dr. Shuo Yang (Mondo Robotics): shuo.yang@mondorobotics.com
+
+License scope
+-------------
+Project code and configurations use PolyForm Noncommercial 1.0.0 (LICENSE).
+Project contributions to processed robot motion, frozen conditions, annotations,
+splits, statistics, metadata, dataset documentation, model weights and the
+project-trained FGD encoder use CC BY-NC 4.0 (LICENSE-DATA-WEIGHTS), to the extent
+the project holds the relevant rights.
+
+BEAT2 source speech, transcripts and word annotations retain their applicable
+upstream Apache-2.0 terms. Included G1 XML and meshes retain BSD-3-Clause.
+Other third-party code and assets retain their own licenses and source notices.
+The dataset supplies THIRD_PARTY_NOTICES.md, MODIFICATIONS.md and licenses/.
+SMPL-X model assets and frozen encoder weights must be obtained separately under
+their upstream terms. Project licenses do not replace those rights or establish
+a separate license for every generated output.
+
+Retain attribution and applicable license notices and identify modifications.
+CC BY-NC 4.0 permits noncommercial sharing and adaptation under its full terms;
+noncommercial purpose is not determined solely by company or university status.
+The contacts above can grant permissions only for rights held by the project.
+Citation metadata is provided in CITATION.cff.

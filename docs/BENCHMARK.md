@@ -1,61 +1,44 @@
-# ECHO-G robot benchmark
+# Benchmark
 
-Run `scripts/eval_g1_motion_cls.py` or the equivalent `echo-g-eval` entry point for G1 motion
-metrics. Both call `echo_g.evaluation.g1_motion_cls`. The public benchmark requires robot
-references, clip audio, the FGD encoder and the supplied BA normalization array.
-
-## Install and assets
+Use `scripts/eval_g1_motion_cls.py` (also available as `echo-g-eval`) for all four models.
+Install the optional dependencies:
 
 ```bash
 python -m pip install -e '.[benchmark]'
 python -c "import librosa, scipy, soundfile; print(librosa.__version__, scipy.__version__, soundfile.__version__)"
 ```
 
-The dataset is publicly available at
-[gaopusen/ECHO-G](https://huggingface.co/datasets/gaopusen/ECHO-G); see the
-[download guide](DATASET.md). ECHO-G model weights and the FGD encoder are available in the
-[public model repository](https://huggingface.co/gaopusen/ECHO-G/tree/v0.2.0); follow the
-[weight download commands](../README.md#download-model-weights). Both repositories are public. Pin dataset revision `v0.2.0` and model revision
-`v0.2.0`. Dataset archive and FGD/MMAE asset hashes are recorded in the
-[dataset manifest](../manifests/dataset.json) and
-[benchmark asset manifest](../manifests/benchmark_assets.json); this branch contains code,
-protocols and identity records, not the large assets.
-Use the same pinned asset revisions for every model in a comparison.
+## Inputs
 
-| Required input | Expected content | Distribution |
-|---|---|---|
-| Predictions | One physical `robot_repr[T,39]` tensor per `<stem>.pt`, 30 FPS | Generate with ECHO-G inference |
-| References | Released ECHO-G robot motion files, same stems and coordinate system | [Public dataset](https://huggingface.co/datasets/gaopusen/ECHO-G) |
-| Split | Released `splits/val_common.txt`; any formal exclusion list must be frozen and shared across methods | [Public dataset](https://huggingface.co/datasets/gaopusen/ECHO-G) |
-| FGD encoder | Trained G1 skeleton-convolution AE `evaluation/g1_fgd_encoder.pt`, including its configuration/state | [Public model weights](https://huggingface.co/gaopusen/ECHO-G/tree/v0.2.0/evaluation) |
-| BA normalization | `eval_assets/mmae/g1_mmae_30body_30fps.npy`, finite array of shape `(30,)` | Included in the [public dataset](https://huggingface.co/datasets/gaopusen/ECHO-G) |
-| Audio | `audio/<stem>.wav`, matching the start of the released motion | Included in the [public dataset](https://huggingface.co/datasets/gaopusen/ECHO-G), under its source terms |
+[Download weights](../README.md#download-model-weights) and extract the
+[dataset](https://huggingface.co/datasets/gaopusen/ECHO-G#download) into `data/echo-g`.
+Use HF revision `v0.2.0`; [assets.json](../manifests/assets.json) pins every required asset.
 
-BA reads the included clip-aligned waveform, not the frozen acoustic feature tensor. The
-loader accepts both `<wav-dir>/<stem>.wav` and the `<wav-dir>/<stem>/audio.wav` layout.
-Do not shift the audio start, stretch it, or trim the stored file to the motion length; BA uses
-the common evaluated prefix internally. Transcripts and word annotations accompany the data
-but are not additional inputs to this motion evaluator.
+| Input | Path |
+|---|---|
+| Physical predictions at 30 FPS | `results/audio_text/seed_000/<stem>.pt` |
+| GT motion and split | `data/echo-g/motion_39d_30fps/`, `splits/val_common.txt` |
+| Clip-aligned audio | `data/echo-g/audio/<stem>.wav` |
+| BA normalization | `data/echo-g/eval_assets/mmae/g1_mmae_30body_30fps.npy` |
+| FGD encoder | `weights/evaluation/g1_fgd_encoder.pt` |
 
-The MMAE file is the frozen frame-weighted per-body central-difference speed normalization,
-computed from the original 20,790-clip reference corpus (5,014,146 frames). It is a shared
-benchmark reference, not the training split's 39D normalization statistics. Its SHA256 is
-`0f763e6d54ca7bb33e49b0336ba2cc3359f9e9d5942e7f475c85c74b4b66e880`.
-Do not recompute it on the 18,229 released clips: that would change the BA protocol.
+Predictions must use physical units and the same coordinates as GT. BA reads waveforms,
+not acoustic features; it uses the common evaluated prefix without shifting or stretching
+the audio. Its fixed 30-body normalization comes from 20,790 reference clips / 5,014,146
+frames. Recomputing it on the released training split would change the protocol.
 
-Prediction payloads should include `representation_units="physical"` and `fps=30`.
-Normalized network outputs must be de-normalized with the checkpoint's released
-stats before evaluation. The evaluator performs no coordinate conversion or
-normalization of the 39D motion representation.
+## Full validation benchmark
 
-## Evaluate one prediction per clip
+Generate all 3,242 clips, without the quick start's `--limit`:
 
-After downloading the model repository, the FGD encoder is at
-`weights/evaluation/g1_fgd_encoder.pt` (5,551,281 bytes; SHA256
-`761d3ae1e833123765785c8d8fcb95ec3745ee07de230cc892b52c8ecd304b91`).
-Its parameters, topology and required input configuration match the original evaluation
-checkpoint; unrelated training metadata was removed. Set the paths below to the downloaded
-dataset, released FGD encoder and generated predictions:
+```bash
+echo-g-sample --config configs/sgdit_audio_text.yaml --checkpoint weights/best.pt \
+  --data-root data/echo-g --output-dir results/audio_text \
+  --split val --seeds 0 --steps 8 --guidance-scale 1 --batch-size 3 --device cuda
+```
+
+For another model, use its [inference command](INFERENCE.md#dataset-clips), remove `--limit`
+and update the prediction/output paths below.
 
 ```bash
 python scripts/eval_g1_motion_cls.py \
@@ -87,19 +70,20 @@ Store the command, checkpoint SHA, split SHA, evaluator source SHA and all evalu
 asset checksums beside the JSON. FGD is comparable only when the same G1 encoder is
 used; it is not directly comparable to SMPL-X EMAGE paper values.
 
-## MM20: 20 independent samples per clip
+## MM20
 
-MM20 requires 20 generated predictions for each condition, using the **same model
-weights and settings with different random seeds**. Copying one output 20 times
-would measure zero diversity and is not a valid sampling experiment. Arrange the
-physical predictions as:
+Generate 20 independent samples of every condition with the same weights and settings.
+The sampler writes `seed_000` through `seed_019`; the evaluator expects `run_000` through
+`run_019`. Create aliases after sampling:
 
-```text
-results/audio_text/mm20/
-  run_000/<stem>.pt
-  run_001/<stem>.pt
-  ...
-  run_019/<stem>.pt
+```bash
+echo-g-sample --config configs/sgdit_audio_text.yaml --checkpoint weights/best.pt \
+  --data-root data/echo-g --output-dir results/audio_text/mm20 \
+  --seeds 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 \
+  --steps 8 --guidance-scale 1 --batch-size 3 --device cuda
+for i in {000..019}; do
+  ln -s "seed_$i" "results/audio_text/mm20/run_$i"
+done
 ```
 
 Run the preceding benchmark command with these additional arguments:
@@ -138,7 +122,36 @@ yaw increments. Foot metrics use the same physical trajectory with an initial so
 grounding offset. Lower raw BA, Div or jerk is not automatically better: compare the
 corresponding GT gap as well as the raw value.
 
-## Source provenance
+## Reference scores
+
+All results use 3,242 validation clips / 891,351 aligned frames at 30 FPS, EMA,
+Euler 8 and CFG 1. Single-sample metrics use seed 0; MM20 uses seeds 0–19.
+
+| Model / measurement | Selected step | FGD ↓ | MM20 |
+|---|---:|---:|---:|
+| Audio + text, released implementation | 15,000 | 2.278311 | Not rerun |
+| Audio + text, historical checkpoint | 15,000 | 2.278349 | 1.785556 |
+| Audio only, historical checkpoint | 25,000 | 2.360242 | Not reported |
+| Text only, historical checkpoint | 15,000 | 2.436127 | 1.680639 |
+| HumanRetarget after robot decoding, historical checkpoint | 25,000 | 4.724520 | 1.498274 |
+
+Additional audio+text historical metrics:
+
+| Metric | Prediction | GT | Absolute gap |
+|---|---:|---:|---:|
+| Div | 0.840263 | 1.159718 | 0.319455 |
+| BA, frame weighted | 0.471369 | 0.534412 | 0.063043 |
+| Jerk, weighted by T−3 (m/s³) | 48.322776 | 39.283955 | 9.038821 |
+| Foot ground error (m) | 0.008435 | — | — |
+| Contact sliding speed (m/s) | 0.051901 | — | — |
+
+The released checkpoints preserve the source inference parameters and statistics.
+Only the audio+text full-set FGD was rerun for the released implementation; the other
+listed measurements remain historical results. Exact values and evaluation settings
+are in [reference_results.json](../manifests/reference_results.json). Fresh feature
+extraction or independent training may differ numerically; use the supplied frozen inputs.
+
+## Attribution
 
 The packaged G1 encoder derives from the project's G1 adaptation of PantoMatrix
 EMAGE evaluation code, with skeleton convolution from DeepMotionEditing and decoder
@@ -148,4 +161,4 @@ robot assets, SMPL-X assets or audio are included in this code branch. The proje
 FGD encoder weights are available in the public model repository under **CC BY-NC 4.0**.
 The project's contribution to the frozen BA normalization is covered by the same data license.
 Code and third-party source materials retain their applicable licenses; see
-[licensing scope](LICENSING.md).
+[NOTICE](../NOTICE).

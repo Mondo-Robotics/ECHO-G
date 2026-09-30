@@ -1,8 +1,8 @@
-# ECHO-G dataset and inference format
+# Data format
 
-The ECHO-G release uses stable clip stems to pair conditions and physical robot references.
-The split lists, not directory enumeration, determine the training and validation population.
-The data card describes the exact [ECHO-G split and its source lineage](DATASET_CARD.md).
+The [HF dataset](https://huggingface.co/datasets/gaopusen/ECHO-G) provides download instructions,
+source attribution and the full dataset card. Use the supplied split lists: 14,987 training
+and 3,242 validation clips. Stable clip stems pair every motion and condition file.
 
 ## Core layout
 
@@ -14,139 +14,85 @@ DATA_ROOT/
 ├── transcripts/<stem>.txt
 ├── annotations/words/<stem>.json
 ├── raw_inputs.jsonl
-├── eval_assets/mmae/g1_mmae_30body_30fps.npy
-├── assets/unitree_g1/g1_mocap_29dof.xml
-├── assets/unitree_g1/meshes/
-├── assets/unitree_g1/LICENSE
-├── splits/train_drop.txt
-├── splits/val_common.txt
+├── splits/{train_drop,val_common}.txt
 ├── stats/drop_train.pt
 ├── audit/condition/per_clip_condition_motion_audit.csv
-└── audit/condition/frozen_conditions.json
+├── audit/condition/frozen_conditions.json
+├── manifests/clips.jsonl
+├── eval_assets/mmae/g1_mmae_30body_30fps.npy
+└── assets/unitree_g1/
 ```
 
-The supplied ECHO-G configurations read the length CSV and condition manifest automatically.
-Both files are included with the dataset. See [download instructions](DATASET.md).
-
-### Audio, transcripts and word times
-
-`audio/<stem>.wav` preserves the packaged waveform and its sample rate without further cropping
-or stretching. `transcripts/<stem>.txt` preserves the original packaged text bytes. The paired
-`annotations/words/<stem>.json` records `canonical_transcript`, `words` entries with `text`,
-`start`, and `end`, and `tokenization` metadata including token IDs and character offsets.
-Word times are in seconds relative to the start of that clip's WAV. The original transcript and
-canonical tokenization text are distinct identities even when their visible wording matches.
-The word-to-token mapping follows the frozen ECHO-G convention below.
-
-`raw_inputs.jsonl` supplies the corresponding audio path, transcript and words to
-`echo-g-extract-conditions`. Use the released canonical lengths for cached benchmark inference;
-the untrimmed waveform duration is not a replacement for the stored common-prefix length.
-The benchmark reads `--wav-dir DATA_ROOT/audio` and uses the frozen MMAE array above.
+Extract all dataset and robot archives into the same root. The configs load the length CSV,
+condition manifest and training statistics automatically. Keep these metadata files with the data.
 
 ## Physical motion
 
-```python
-{
-    "robot_repr": torch.Tensor,       # [T, 39], unnormalized physical values
-    "real_num_frames": int,           # valid prefix length
-    "fps": 30.0,
-    "representation_schema": "projecthermes-g1-39d-standard-v2",
-}
-```
+Load `.pt` files with `torch.load(path, map_location="cpu", weights_only=True)`.
+Motion files contain `robot_repr[T,39]`, `real_num_frames`, `fps=30.0` and
+`representation_schema="projecthermes-g1-39d-standard-v2"`.
 
 | Slice | Meaning | Unit |
 |---|---|---|
-| `[0:6]` | Continuous 6D base orientation | Unitless |
-| `[6]` | Frame-to-frame base yaw change | Radians per frame |
-| `[7:10]` | Yaw-local root velocity, standard XYZ order | m/s |
-| `[10:39]` | 29 G1 joint angles in the canonical representation order | Radians |
+| `0:6` | Continuous 6D base orientation | Unitless |
+| `6` | Frame-to-frame base yaw change | rad/frame |
+| `7:10` | Yaw-local root velocity in XYZ order | m/s |
+| `10:39` | 29 G1 joint angles in canonical order | rad |
 
-Coordinates are Z-up and forward is +X. Only the base orientation has frame-zero yaw removed.
-Root velocity remains yaw-local. The representation is not an array of XYZ body positions or
-MuJoCo qpos; the evaluator/renderer reconstructs root motion and applies the fixed G1 joint mapping.
-Preserve the canonical joint order rather than inferring it from URDF or filesystem ordering.
-Ground-truth and exported prediction files remain in physical units.
+Coordinates are Z-up with +X forward. Frame-zero yaw is removed from base orientation;
+root velocity remains yaw-local. The evaluator/renderer reconstructs root motion and applies
+the fixed joint mapping. These values are physical robot references, not XYZ joint positions
+or MuJoCo qpos. Preserve their units and joint order.
 
 ## Frozen conditions
 
-```python
-{
-    "audio_4fps": torch.Tensor,       # [Ta, 1024], historical key; ACTUALLY 30 FPS
-    "text_tokens": torch.Tensor,     # [N, 2560], complete token sequence, N <= 256
-    "text_pooled": torch.Tensor,     # [2560], retained for payload compatibility
-    "token_times": torch.Tensor,     # [N, 2], clip-relative start/end in seconds
-    "has_word_timing": True,
-    "n_tokens": int,                 # actual tokenizer count, equal to N
-    "latent_fps": 30.0,
-}
-```
-
-The package also accepts `audio_features` and `fps` for newly extracted conditions. These are
-aliases for the same time-aligned audio contract. Frozen audio/text features and token intervals
-cross an FP16 storage boundary; model inputs and token-center calculations use FP32.
-
-Text is produced by Qwen3.5-4B hidden layer −2. Acoustic features use Wav2Vec2 final hidden states:
-16 kHz mono input, native encoder time sequence, FP32 linear interpolation to the target frame
-count with `align_corners=True`, then FP16 storage. The audio key name does not denote a 4 Hz rate.
-
-Upstream encoder repository IDs, fixed revisions and download commands are in
-[the encoder download guide](INFERENCE.md#download-the-frozen-encoders);
-[the encoder manifest](../manifests/condition_encoders.json) records the runtime file hashes.
-
-### Complete-text provenance
-
-`n_tokens == len(text_tokens)` alone does not prove that the full transcript was encoded.
-The loader requires one of the following verified paths.
-
-**New raw conditions** include a `text_provenance` mapping with schema
-`echo-g-complete-text-provenance-v1`, produced automatically by `echo-g-extract-conditions`:
-
-| Field | Purpose |
+| Field | Shape or value |
 |---|---|
-| `full_token_count` | Count from the tokenizer with `truncation=False`, independent of the stored feature-row count |
-| `tokenizer_truncation` | Must be `False` |
-| `token_ids`, `token_offsets` | Complete token IDs and character offsets, each with `full_token_count` entries |
-| `encoder_identity` | Model identifier, encoder/tokenizer classes, and resolved revision when supplied by the encoder |
-| `token_time_mapping` | `character_offset_union_with_spaces_at_previous_word_end` |
-| `canonical_transcript_sha256` | Binds the exact canonical transcript |
-| `text_tokens_sha256`, `token_times_sha256` | Bind the stored text features and token intervals |
+| `audio_4fps` | `[Ta,1024]`; this historical key stores **30 FPS** features |
+| `text_tokens` | `[N,2560]`; complete token sequence, `N <= 256` |
+| `text_pooled` | `[2560]`, retained for compatibility |
+| `token_times` | `[N,2]`; clip-relative start/end seconds |
+| `n_tokens` | Actual tokenizer count, equal to `N` |
+| `has_word_timing`, `latent_fps` | `True`, `30.0` |
 
-The condition payload retains `canonical_transcript`, `word_timestamps`, `source_text_model`,
-`hidden_layer=-2`, and `encoder_dtype=bfloat16`. Loading recomputes word-derived token intervals
-from the stored canonical transcript and offsets, checks the encoder metadata, and verifies
-counts and tensor digests. These fields ensure that loaded tokens and intervals match the extraction inputs.
+New extracted conditions may use `audio_features` and `fps` aliases. Frozen audio/text
+features and token intervals are stored as FP16; model inputs and token centers use FP32.
+Text features use Qwen3.5-4B hidden layer −2. Audio features use Wav2Vec2 final hidden states
+from mono 16 kHz input, linearly interpolated in FP32 to the target frame count with
+`align_corners=True`, then stored in FP16. [Encoder identities](../manifests/condition_encoders.json)
+and [download commands](INFERENCE.md#download-the-frozen-encoders) pin the upstream models.
 
-**Published frozen conditions** require the released condition manifest and its
-externally pinned SHA256:
+### Complete-text validation
 
-```text
-Dataset path: audit/condition/frozen_conditions.json
-SHA256: 81e0b1197821f9014d147c8d17970ac9143a7d7f72c529d74e891a944d692b01
-Entries: 18229
-```
+The loader accepts two verified condition formats:
 
-The dataset manifest records each frozen condition file, its text/time tensors and complete
-tokenizer count. The provided ECHO-G configurations already select this manifest.
+- **Released frozen conditions:** the supplied `audit/condition/frozen_conditions.json`
+  and its pinned SHA256 identify all 18,229 files, their text/time tensors and full token counts.
+  The YAMLs already set both `data.condition_manifest` and `data.condition_manifest_sha256`;
+  relative paths resolve against `data_root`.
+- **New raw conditions:** `echo-g-extract-conditions` embeds `text_provenance` with schema
+  `echo-g-complete-text-provenance-v1`, tokenizer count with `truncation=False`, complete token
+  IDs/offsets, encoder identity, mapping rule and transcript/text/time digests. The loader
+  validates those values against the stored transcript, words and tensors.
 
-Paired training, validation and sampling use `data.condition_manifest` and
-`data.condition_manifest_sha256` from YAML. Relative manifest paths resolve against `data_root`;
-absolute paths are also supported. Both fields must be supplied together. The provided ECHO-G YAMLs
-pin the official path and SHA above. Independent `echo-g-infer` uses the explicit
-`--condition-manifest PATH --condition-manifest-sha256 SHA256` options; it does not infer a data
-root or silently reuse the YAML's relative manifest path.
+`echo-g-infer` requires explicit manifest arguments for released conditions; see
+[cached inference](INFERENCE.md#cached-conditions-without-ground-truth-motion). An explicit
+manifest always checks file identity, including files carrying embedded raw provenance.
+Missing provenance or a mismatched identity is rejected. Regenerate incomplete raw features
+with the extractor; editing counts or padding truncated features does not restore the transcript.
 
-When a manifest is explicitly supplied, file identity is checked even if the payload also
-contains new raw provenance. Without either valid raw provenance or a matching released file identity,
-the loader rejects the cache. Complete inputs of any length up to 256 tokens remain valid
-through either verified path.
+## Word and token times
 
-Do not pad truncated features, edit counts, or recompute a manifest from unverified caches to
-make them pass. Regenerate raw conditions with the current extractor, or use the official
-frozen data and its published manifest identity. Changing frozen condition files invalidates the supplied manifest.
+`audio/<stem>.wav` preserves the segmented source waveform; `transcripts/<stem>.txt`
+contains the source text. `annotations/words/<stem>.json` contains canonical text,
+`words[text,start,end]`, token IDs and character offsets. Word times are relative to
+that clip's audio start. Canonical tokenization text and original transcript bytes are
+recorded separately.
 
-## Time and length
-
-For timed inputs, ECHO-G constructs:
+Tokens can be subwords, spaces or punctuation. Canonical text joins word strings with spaces,
+including non-English words. Each inserted space inherits the preceding word's end time;
+a token interval is the union of its covered character times. Preserve zero-duration
+intervals and the FP16 storage boundary before computing centers:
 
 ```text
 frame_seconds[i] = i / 30
@@ -154,64 +100,41 @@ token_center[j] = mean(float32(token_times[j]))
 signed_distance[i, j] = frame_seconds[i] - token_center[j]
 ```
 
-Keep the sign. An absolute value changes the learned-lag behavior. Tokens are subwords/tokenizer
-units, not words; their intervals come from the original word-to-character-to-token mapping.
-The raw extractor joins word strings with spaces, including non-English words, and assigns each
-inserted space the preceding word's end time, preserving the reference convention. ECHO-G does not
-replace this mapping with word pooling or a new alignment algorithm.
+The sign supports the learned lag; taking the absolute value changes attention behavior.
 
-| Entry point | Frame policy | Text policy |
-|---|---|---|
-| Paired training/validation Dataset | Stored common audio/motion prefix, at most 600 frames | Complete stored tokens, at most 256; require verified provenance or manifest identity |
-| Independent cached inference | Acoustic sequence length, or supplied canonical length; at most 600 | Reject oversized conditions or missing/invalid complete-text provenance |
-| Raw audio extraction → inference | `T = max(2, round(audio_seconds * 30))`; reject audio longer than 20 seconds | Require word timing; reject more than 256 tokens |
+## Time and length
 
-There is no automatic segmentation or stitching. For longer inputs, create shorter audio clips
-and corresponding clip-relative transcript times before inference. Silence is included in the
-audio duration. Learned positional capacity is 608 internally; it does not extend the supported
-600-frame input limit. The model receives the output length externally rather than predicting an
-end-of-utterance token.
+| Input path | Output length |
+|---|---|
+| Paired training, validation or sampling | Stored common audio/motion prefix, capped at 600 frames |
+| Independent cached inference | Supplied length CSV, otherwise acoustic sequence length; maximum 600 |
+| New audio | `max(2, round(audio_seconds * 30))`; reject audio over 20 seconds |
+| New text only | Same rounding of the explicitly supplied duration; word times must fit it |
 
-The condition decoder requires finite, word-derived token intervals and
-`has_word_timing=True`. Missing or invalid timing is rejected.
+Text-bearing inputs require complete word-timed tokens, at most 256. Oversized raw inputs
+are rejected without automatic truncation, segmentation or stitching. The learned position
+table has capacity 608; the supported motion limit remains 600. Audio-only new requests do
+not need transcripts. Output length is supplied to the model rather than predicted from text.
 
-## Training statistics
+The CSV columns include `stem`, `aligned_frames` and `error`. `aligned_frames` fixes the common
+valid prefix; errors or missing pairs are rejected. Use it for paired benchmarks: independently
+rounding WAV duration can differ by one frame. The released text sequences contain at most
+247 tokens (73 in validation).
 
-```python
-{
-    "mean": torch.Tensor,  # [39]
-    "std": torch.Tensor,   # [39], positive
-}
-```
+## Normalization and evaluation
 
-Use only `stats/drop_train.pt` for the reference ECHO-G run. It was computed from the 14,987 training
-clips (3,537,311 physical frames) with unbiased variance, without validation data. Training
-normalizes motion and inference reverses the same transform using checkpoint-local statistics.
-Do not apply normalization to the ground-truth files themselves or substitute statistics
-computed from another population.
+`stats/drop_train.pt` contains `[39]` mean/std tensors from the 14,987 training clips and
+3,537,311 physical frames, using unbiased variance. Training normalizes motion; inference
+reverses the transform using checkpoint-local statistics. Keep GT and predictions in physical
+units, and use the published statistics rather than recomputing on another split.
 
-## Canonical frame lengths
+The separate `eval_assets/mmae/g1_mmae_30body_30fps.npy` is the fixed BA normalization;
+its population and aggregation are documented in [BENCHMARK.md](BENCHMARK.md).
 
-The CSV includes at least:
+## Raw requests
 
-```csv
-stem,aligned_frames,error
-example_0001,312,
-```
-
-`aligned_frames` freezes the common valid prefix of audio and motion. A nonempty error or missing
-required pair is an error. Benchmark inference must preserve these canonical lengths; using raw
-WAV rounding independently can differ by one frame on the released dataset.
-
-## Raw-input manifest
-
-Use one JSON object per line:
-
-```json
-{"stem":"example_0001","audio_path":"audio/example.wav","transcript":"Hello world","words":[{"text":"Hello","start":0.10,"end":0.42},{"text":"world","start":0.55,"end":0.91}]}
-```
-
-Paths are relative to the manifest unless absolute. Stems start with a letter or number and otherwise use letters, numbers, `.`, `_`, and `-`.
-Word start/end times are in seconds relative to the supplied audio, finite, and ordered within
-each interval. Use a new condition directory when changing source audio/text or encoder assets.
-The complete three-stage extraction and sampling commands are in the [README](../README.md).
+`raw_inputs.jsonl` uses one JSON object per clip. Audio paths are relative to the manifest
+unless absolute. Stems start with a letter or number and otherwise contain letters, numbers,
+`.`, `_` or `-`. Word times must be finite, with ordered start/end values. Use a new condition
+directory when changing inputs or encoders. [INFERENCE.md](INFERENCE.md#new-audio-and-word-timed-text)
+provides request examples and extraction commands for each model.

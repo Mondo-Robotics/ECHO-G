@@ -1,4 +1,4 @@
-# ECHO-G audio+text architecture
+# Architecture
 
 ECHO-G generates robot motion directly from audio and a word-timed transcript. It retains
 tokenizer-level text keys and learns a global/local attention mixture with a directional
@@ -6,7 +6,7 @@ Gaussian time prior.
 
 ## Backbone and acoustic alignment
 
-The transformer has 12 blocks, hidden width 768, 8 heads, FFN width 2048, dropout 0, and learned
+The direct audio+text transformer has 12 blocks, hidden width 768, 8 heads, FFN width 2048, dropout 0, and learned
 frame positions. The supported clip limit is 600 frames at 30 FPS; the stored position table has
 capacity 608. Input and output motion dimension is 39.
 
@@ -69,7 +69,7 @@ still read the entire transcript. Input conditions require word-derived token ti
 
 ## Learning and sampling
 
-Physical motion is normalized with the frozen drop-training statistics. For Gaussian noise `z`,
+Direct robot motion is normalized with the frozen drop-training statistics. For Gaussian noise `z`,
 normalized motion `x`, and sampled flow time `u`, training uses `x_u = u*x + (1-u)*z` and target
 velocity `x-z`. The objective is valid-frame flow MSE plus 0.5 times adjacent-frame velocity
 difference MSE. This temporal loss is not world-space jerk.
@@ -78,4 +78,29 @@ Sampling starts from stem/seed-derived Gaussian noise and performs 8 Euler updat
 weights and CFG=1. Fixed seeds make individual runs repeatable; the model remains a stochastic
 generative model. Physical references are obtained by one inverse normalization at export.
 
-See [REPRODUCIBILITY.md](REPRODUCIBILITY.md) for the full recipe and checkpoint identity.
+## Model variants
+
+| Model | Conditioning and output |
+|---|---|
+| Audio + text | Global/local word-time attention; predicts physical Robot39 after denormalization |
+| Audio only | Scaled-dot attention with one zero text key and no time bias; predicts Robot39 |
+| Text only | Global/local word-time attention with zero acoustic features; predicts Robot39 |
+| HumanRetarget | Audio + text with global/local attention; predicts Human136 before robot decoding |
+
+Audio-only is a separately trained network; its text projection and cross-attention weights
+remain active. Text-only preserves the complete token sequence and signed time distances.
+
+## HumanRetarget decoding
+
+The generator's statistics restore physical Human136. RetargetVAE's human statistics then
+normalize it for decoding to physical Robot39. These statistics serve different stages.
+The decoder loads Human MotionVAE and the complete RetargetVAE state, including its updated
+human encoder, and uses the mean latent. Decoding uses 120-frame windows, 20-frame chunks
+and 20-frame overlap. Short windows are padded and cropped back; the last window preserves
+the tail. A +90-degree base-orientation correction is applied once, before evaluation or rendering.
+
+Both VAE files are checked against their published hashes. HumanRetarget requires neither
+SMPL-X assets nor human training data for inference; its config is rejected by the trainer.
+Generated references and MuJoCo renders do not establish closed-loop robot tracking performance.
+
+See [TRAINING.md](TRAINING.md) for training and [INFERENCE.md](INFERENCE.md) for all model commands.

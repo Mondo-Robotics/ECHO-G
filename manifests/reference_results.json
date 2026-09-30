@@ -1,145 +1,72 @@
 {
-  "schema": "echo-g-historical-reference-results-v1",
-  "status": "historical_model_scores_and_current_package_reference_scores",
-  "checkpoint_sha256": "c1e7e863e28b76b710bc18f9e9029836771fc86c1bb9fca42aa9d7655f74a616",
-  "weights": "ema",
-  "checkpoint_step": 15000,
-  "single_seed": {
-    "date": "2026-09-19",
+  "schema": "echo-g-reference-results-v1",
+  "assets": "assets.json",
+  "protocol": {
+    "split": "splits/val_common.txt",
     "clips": 3242,
-    "frames": 891351,
-    "seed": 0,
+    "aligned_frames": 891351,
+    "fps": 30,
+    "weights": "ema",
     "euler_steps": 8,
     "cfg": 1.0,
-    "metrics": {
-      "FGD": 2.2783488876001456,
-      "Div": 0.8402629311262025,
-      "Div_GT": 1.1597175934725334,
-      "Div_signed_gap": -0.3194546623463309,
-      "Div_gap": 0.3194546623463309,
-      "Div_relative_gap": 0.27545901187011423,
-      "Multimodality": null,
-      "Multimodality_eq16_literal": null,
-      "Multimodality_status": "SKIPPED_NO_MULTIRUN",
-      "Multimodality_clips": 0,
-      "Multimodality_runs_per_clip": 0,
-      "Multimodality_pairs_per_clip": 0,
-      "Multimodality_frames": 0,
-      "BA": {
-        "mean": 0.4713691178275428,
-        "std": 0.14317351093920674,
-        "min": 0.0,
-        "max": 0.7767299552734128,
-        "n": 3242,
-        "mean_unweighted": 0.45640290698131264
-      },
-      "BA_GT": {
-        "mean": 0.5344117589875796,
-        "std": 0.1456949351917425,
-        "min": 0.0,
-        "max": 0.8210771052229192,
-        "n": 3242,
-        "mean_unweighted": 0.5273153737839774
-      },
-      "BA_signed_gap": -0.06304264116003683,
-      "BA_gap": 0.06304264116003683,
-      "BA_relative_gap": 0.11796641840267219,
-      "Jerk": {
-        "mean": 50.6834785348363,
-        "std": 16.442136495391157,
-        "min": 28.33631612697754,
-        "max": 174.18266904389515,
-        "n": 3242
-      },
-      "Jerk_GT": {
-        "mean": 38.61603495422704,
-        "std": 24.312826089231805,
-        "min": 6.5389986215680915,
-        "max": 119.85628628771406,
-        "n": 3242
-      },
-      "Jerk_signed_gap": 12.067443580609257,
-      "Jerk_gap": 12.067443580609257,
-      "Jerk_relative_gap": 0.31249825609784193,
-      "Jerk_ratio": 1.312498256097842,
-      "Jerk_length_weighted": {
-        "mean": 48.32277587780043,
-        "std": 13.655856242734684,
-        "min": 28.33631612697754,
-        "max": 174.18266904389515,
-        "n": 3242,
-        "weight_sum": 881625
-      },
-      "Jerk_GT_length_weighted": {
-        "mean": 39.28395519409566,
-        "std": 24.45331850520345,
-        "min": 6.5389986215680915,
-        "max": 119.85628628771406,
-        "n": 3242,
-        "weight_sum": 881625
-      },
-      "Jerk_length_weighted_signed_gap": 9.03882068370477,
-      "Jerk_length_weighted_gap": 9.03882068370477,
-      "Jerk_length_weighted_relative_gap": 0.23008937463260562,
-      "Jerk_length_weighted_ratio": 1.2300893746326056,
-      "foot_ground_error": {
-        "mean": 0.00843468832701421,
-        "std": 0.00424979359001137,
-        "min": 0.0009277396032839644,
-        "max": 0.02945559415297631,
-        "n": 3242
-      },
-      "contact_sliding_speed": {
-        "mean": 0.05190072521650078,
-        "std": 0.019878843994961003,
-        "min": 0.025531968101859093,
-        "max": 0.4245621860027313,
-        "n": 3242
-      }
+    "single_seed": 0,
+    "mm20": {
+      "seed_range_inclusive": [
+        0,
+        19
+      ],
+      "predictions": 64840,
+      "pairs_per_clip": 190,
+      "aggregation": "Per-stem mean pairwise pose-only 30-body G1 FK L1 distance across 190 unordered pairs; then clip-equal mean. No division by the 90 coordinate dimensions."
     }
   },
-  "mm20": {
-    "date": "2026-09-19",
-    "seeds": [
-      0,
-      1,
-      2,
-      3,
-      4,
-      5,
-      6,
-      7,
-      8,
-      9,
-      10,
-      11,
-      12,
-      13,
-      14,
-      15,
-      16,
-      17,
-      18,
-      19
-    ],
-    "clips": 3242,
-    "predictions": 64840,
-    "frames_across_seeds": 17827020,
-    "value": 1.7855559846504696,
-    "eq16_literal_diagnostic": 1.6962781854179545,
-    "aggregation": "Per-stem mean pairwise pose-only 30-body G1 FK L1 distance across 190 unordered pairs; then clip-equal mean. No division by the 90 coordinate dimensions."
+  "historical_results": {
+    "audio_text": {
+      "selected_step": 15000,
+      "single_sample_date": "2026-09-19",
+      "metrics": {
+        "FGD": 2.2783488876001456,
+        "Div": 0.8402629311262025,
+        "Div_GT": 1.1597175934725334,
+        "Div_gap": 0.3194546623463309,
+        "BA_gap": 0.06304264116003683,
+        "Jerk_gap": 12.067443580609257,
+        "Jerk_length_weighted_gap": 9.03882068370477,
+        "BA": 0.4713691178275428,
+        "BA_GT": 0.5344117589875796,
+        "Jerk": 50.6834785348363,
+        "Jerk_GT": 38.61603495422704,
+        "Jerk_length_weighted": 48.32277587780043,
+        "Jerk_GT_length_weighted": 39.28395519409566,
+        "foot_ground_error": 0.00843468832701421,
+        "contact_sliding_speed": 0.05190072521650078
+      },
+      "MM20": 1.7855559846504696,
+      "mm20_date": "2026-09-19"
+    },
+    "audio_only": {
+      "selected_step": 25000,
+      "FGD": 2.360242,
+      "MM20_status": "not_reported"
+    },
+    "text_only": {
+      "selected_step": 15000,
+      "FGD": 2.436127,
+      "MM20": 1.680639
+    },
+    "human_retarget": {
+      "selected_step": 25000,
+      "FGD": 4.72452,
+      "MM20": 1.498274
+    }
   },
-  "current_branch_full_set_benchmark": {
-    "status": "completed",
-    "date": "2026-09-29",
-    "FGD": 2.2783108333534123,
-    "clips": 3242,
-    "frames": 891351,
-    "MM20": "not_rerun"
+  "released_implementation": {
+    "audio_text": {
+      "date": "2026-09-29",
+      "FGD": 2.2783108333534123,
+      "MM20_status": "not_rerun"
+    }
   },
-  "raw_input_limitations": "Earlier raw feature re-extraction did not meet historical audio-cache tolerance. Exact source-cache audio reproduction is not claimed.",
-  "evaluator": "scripts/eval_g1_motion_cls.py",
-  "checkpoint_sha256_scope": "Original source checkpoint used for the historical reference records.",
-  "release_checkpoint_sha256": "c84f31fce140cdc8c3be5e5dbc8cb8eb3a82ce1865e2d84026a0791d4735928d",
-  "release_checkpoint_relationship": "Same EMA tensors and motion statistics; internal paths and unused metadata removed. Seven real-clip predictions and FGD features were bitwise equal after cleanup."
+  "measurement_scope": "Historical results were measured on source checkpoints; released packages preserve their inference parameters and statistics. Only the listed released-implementation FGD was rerun.",
+  "reproduction": "Use frozen conditions and fixed assets/settings. Fresh feature extraction and independent training may differ numerically."
 }

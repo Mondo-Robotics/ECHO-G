@@ -1,0 +1,133 @@
+{
+  "schema": "echo-g-release-assets-v1",
+  "release": "v0.2.0",
+  "code_tag": "v0.2.0",
+  "repositories": {
+    "models": {
+      "repo_id": "gaopusen/ECHO-G",
+      "repo_type": "model",
+      "revision": "v0.2.0",
+      "commit_sha": "fb14caf73a23d842282a34f51811aa5aaeef5e91"
+    },
+    "dataset": {
+      "repo_id": "gaopusen/ECHO-G",
+      "repo_type": "dataset",
+      "revision": "v0.2.0",
+      "commit_sha": "a1280e7524817e74f06c928285698378ba5d85bc"
+    }
+  },
+  "models": {
+    "audio_text": {
+      "config": "configs/sgdit_audio_text.yaml",
+      "training_supported": true,
+      "weights": [
+        {
+          "file": "best.pt",
+          "sha256": "c84f31fce140cdc8c3be5e5dbc8cb8eb3a82ce1865e2d84026a0791d4735928d",
+          "bytes": 655730204
+        }
+      ]
+    },
+    "audio_only": {
+      "config": "configs/sgdit_audio_only.yaml",
+      "training_supported": true,
+      "weights": [
+        {
+          "file": "audio_only/best.pt",
+          "sha256": "26c0a6c246dc313ca207973e7e65be41590612827e65f40d85734a8c1d04cc8e",
+          "bytes": 655718928
+        }
+      ]
+    },
+    "text_only": {
+      "config": "configs/sgdit_text_only.yaml",
+      "training_supported": true,
+      "weights": [
+        {
+          "file": "text_only/best.pt",
+          "sha256": "723a2056e4e43b2d1b55681a3604bbd13b076934f6ce159c35ade2df5329d5b7",
+          "bytes": 655730204
+        }
+      ]
+    },
+    "human_retarget": {
+      "config": "configs/human_retarget_inference.yaml",
+      "training_supported": false,
+      "weights": [
+        {
+          "file": "human_retarget/best.pt",
+          "sha256": "749ff11d347eb36f719b6015ac9a2f7fcb1f886ab92fab6c800e71a048216dee",
+          "bytes": 656327132
+        },
+        {
+          "file": "human_retarget/retarget_vae.pt",
+          "sha256": "6b8a95c11c3e301921e56c4520811a6efade9950f42f7a416aa36f95ccc931c8",
+          "bytes": 351013544
+        },
+        {
+          "file": "human_retarget/human_motion_vae.pt",
+          "sha256": "928a159381564489482d072a203b91918c656cc28047b273c691c74132e4fb62",
+          "bytes": 195417833
+        }
+      ]
+    }
+  },
+  "dataset": {
+    "clips": {
+      "train": 14987,
+      "validation": 3242
+    },
+    "files": [
+      {
+        "file": "splits/train_drop.txt",
+        "sha256": "18c9d6abdc1eabc79889d2d2cfc6620e75cb2781db9e0824473411b8dbdfe66a"
+      },
+      {
+        "file": "splits/val_common.txt",
+        "sha256": "36a960134a321f7b2c47c1b24aabfdf1fa8ee213ea59a8570740be196ba7d83b"
+      },
+      {
+        "file": "stats/drop_train.pt",
+        "sha256": "dc57d8f9fa5b74d644c7daeb219d2dad656ad4a24910bdbcd9d3d9f559b05ec6"
+      },
+      {
+        "file": "checksums/SHA256SUMS",
+        "sha256": "c87c9e48f66502a711c4ef27e63a2337d057e8c03697fe25b9fc3ab833e4f740"
+      },
+      {
+        "file": "ARCHIVE_SHA256SUMS",
+        "sha256": "fe25eef237b1ec3ae91857184685e37e94fb46010cbec5201ce69799f5e8d9fa"
+      },
+      {
+        "file": "data_archives.json",
+        "sha256": "96931d7dd0fdf34fa60aedd719659946e03e5df57d1ea56569d0e8d7c9f4e77d"
+      },
+      {
+        "file": "audit/condition/frozen_conditions.json",
+        "sha256": "81e0b1197821f9014d147c8d17970ac9143a7d7f72c529d74e891a944d692b01"
+      },
+      {
+        "file": "robot_assets/unitree_g1.tar",
+        "sha256": "790ab1ef4d65c99a6028ee804b8a1aed9a6493133d98d65fbd7cdc4e01d3c7c9",
+        "bytes": 19732480
+      }
+    ],
+    "archive_layout": "Extract all archives under data/ and robot_assets/ into the downloaded dataset root.",
+    "paired_lengths": "audit/condition/per_clip_condition_motion_audit.csv",
+    "robot_xml": "assets/unitree_g1/g1_mocap_29dof.xml"
+  },
+  "evaluation": {
+    "fgd_encoder": {
+      "repository": "models",
+      "file": "evaluation/g1_fgd_encoder.pt",
+      "sha256": "761d3ae1e833123765785c8d8fcb95ec3745ee07de230cc892b52c8ecd304b91",
+      "bytes": 5551281
+    },
+    "ba_normalization": {
+      "repository": "dataset",
+      "file": "eval_assets/mmae/g1_mmae_30body_30fps.npy",
+      "sha256": "0f763e6d54ca7bb33e49b0336ba2cc3359f9e9d5942e7f475c85c74b4b66e880"
+    }
+  },
+  "licensing": "../NOTICE"
+}
