@@ -44,8 +44,8 @@ class DataConfig:
             raise ValueError(
                 "condition_manifest and condition_manifest_sha256 are required together"
             )
-        if self.conditioning not in {"audio-text", "text-only"}:
-            raise ValueError("data.conditioning must be audio-text or text-only")
+        if self.conditioning not in {"audio-text", "text-only", "audio-only"}:
+            raise ValueError("data.conditioning must be audio-text, text-only, or audio-only")
 
 
 @dataclass(frozen=True)
@@ -64,7 +64,7 @@ class ModelConfig:
     max_text_tokens: int = 256
 
     def validate(self) -> None:
-        if self.architecture != "v2" or self.position_encoding != "learned":
+        if self.architecture not in {"v2", "audio_only"} or self.position_encoding != "learned":
             raise ValueError("unsupported architecture or position encoding")
         if not 1 <= self.max_text_tokens <= 256:
             raise ValueError("model.max_text_tokens must be in [1, 256]")
@@ -194,6 +194,8 @@ class ExperimentConfig:
         self.data.validate()
         self.model.validate()
         self.training.validate()
+        if (self.model.architecture == "audio_only") != (self.data.conditioning == "audio-only"):
+            raise ValueError("audio-only conditioning requires the audio_only architecture")
         self.sampling.validate()
         if self.data.max_frames > self.model.max_t:
             raise ValueError("data.max_frames exceeds model.max_t")
@@ -202,3 +204,49 @@ class ExperimentConfig:
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
+
+
+@dataclass(frozen=True)
+class HumanInferenceConfig:
+    """The released human-to-robot pipeline has no training configuration."""
+
+    data: DataConfig
+    model: ModelConfig
+    sampling: SamplingConfig
+
+    @classmethod
+    def from_yaml(cls, path: Path) -> HumanInferenceConfig:
+        payload = yaml.safe_load(path.read_text(encoding="utf-8"))
+        if not isinstance(payload, dict) or set(payload) != {
+            "profile",
+            "data",
+            "model",
+            "sampling",
+        }:
+            raise ValueError("HumanRetarget requires an inference-only configuration")
+        if payload["profile"] != "human_retarget":
+            raise ValueError("Unknown inference profile")
+        config = cls(
+            _section(DataConfig, payload["data"]),
+            _section(ModelConfig, payload["model"]),
+            _section(SamplingConfig, payload["sampling"]),
+        )
+        config.data.validate()
+        config.model.validate()
+        config.sampling.validate()
+        if (
+            config.model.motion_dim != 136
+            or config.model.architecture != "v2"
+            or config.data.conditioning != "audio-text"
+            or config.data.max_frames > config.model.max_t
+            or config.data.max_text_tokens > config.model.max_text_tokens
+        ):
+            raise ValueError("Invalid HumanRetarget inference architecture or inputs")
+        return config
+
+
+def load_inference_config(path: Path) -> ExperimentConfig | HumanInferenceConfig:
+    payload = yaml.safe_load(path.read_text(encoding="utf-8"))
+    if isinstance(payload, dict) and "profile" in payload:
+        return HumanInferenceConfig.from_yaml(path)
+    return ExperimentConfig.from_yaml(path)

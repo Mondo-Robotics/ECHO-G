@@ -34,9 +34,10 @@ SAFE_STEM = re.compile(r"^[A-Za-z0-9._-]+$")
 @dataclass(frozen=True)
 class Utterance:
     stem: str
-    audio_path: Path
+    audio_path: Path | None
     transcript: str
     words: tuple[dict[str, Any], ...]
+    duration: float | None = None
 
 
 def parse_args() -> argparse.Namespace:
@@ -58,7 +59,7 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def load_manifest(path: Path, limit: int = 0) -> list[Utterance]:
+def load_manifest(path: Path, limit: int = 0, mode: str = "merge") -> list[Utterance]:
     utterances: list[Utterance] = []
     seen: set[str] = set()
     with path.open(encoding="utf-8") as stream:
@@ -71,15 +72,15 @@ def load_manifest(path: Path, limit: int = 0) -> list[Utterance]:
                 raise ValueError(f"{path}:{line_number}: unsafe or empty stem {stem!r}")
             if stem in seen:
                 raise ValueError(f"{path}:{line_number}: duplicate stem {stem}")
-            audio_path = Path(str(payload.get("audio_path", "")))
-            if not audio_path.is_absolute():
+            audio_path = Path(str(payload["audio_path"])) if payload.get("audio_path") else None
+            if audio_path is not None and not audio_path.is_absolute():
                 audio_path = (path.parent / audio_path).resolve()
             transcript = str(payload.get("transcript", ""))
             words_payload = payload.get("words") or []
             if not isinstance(words_payload, list):
                 raise ValueError(f"{path}:{line_number}: words must be a list")
             words = tuple(dict(word) for word in words_payload)
-            if not words:
+            if not words and mode != "audio":
                 raise ValueError(f"{path}:{line_number}: ECHO-G requires word timestamps")
             previous_start = -1.0
             for word in words:
@@ -98,12 +99,22 @@ def load_manifest(path: Path, limit: int = 0) -> list[Utterance]:
                 previous_start = start
             # Match the canonical transcript used by the released encoders.
             transcript = " ".join(word["text"] for word in words)
-            if not transcript:
+            if not transcript and mode != "audio":
                 raise ValueError(f"{path}:{line_number}: transcript is empty")
-            if not audio_path.is_file():
+            duration = payload.get("duration")
+            if duration is not None:
+                duration = float(duration)
+                if not math.isfinite(duration) or not 0 < duration <= 20:
+                    raise ValueError("Explicit duration must be in (0,20] seconds")
+                if words and max(float(word["end"]) for word in words) > duration + 0.05:
+                    raise ValueError("Word timestamps exceed the requested duration")
+            if audio_path is None:
+                if mode != "text" or duration is None:
+                    raise ValueError("Provide audio_path, or duration for text-only extraction")
+            elif not audio_path.is_file():
                 raise FileNotFoundError(audio_path)
             seen.add(stem)
-            utterances.append(Utterance(stem, audio_path, transcript, words))
+            utterances.append(Utterance(stem, audio_path, transcript, words, duration))
             if limit > 0 and len(utterances) >= limit:
                 break
     if not utterances:
@@ -182,6 +193,8 @@ def word_timing_records(utterance: Utterance) -> list[dict[str, Any]]:
 
 
 def validate_word_duration(utterance: Utterance, duration: float) -> None:
+    if not utterance.words:
+        return
     ends = [float(word["end"]) for word in utterance.words]
     if not ends or not all(math.isfinite(end) for end in ends) or max(ends) > duration + 0.05:
         raise ValueError(f"{utterance.stem}: word timestamps exceed audio duration")
@@ -212,6 +225,8 @@ def extract_audio_conditions(
     model.eval()
     for index, utterance in enumerate(utterances, start=1):
         output_path = output_dir / f"{utterance.stem}.pt"
+        if utterance.audio_path is None:
+            raise ValueError("Audio extraction requires an audio file")
         source_hash = sha256(utterance.audio_path)
         if skip_existing and output_path.is_file():
             cached = torch.load(output_path, map_location="cpu", weights_only=True)
@@ -307,7 +322,8 @@ def extract_text_conditions(
         if skip_existing and output_path.is_file():
             cached = torch.load(output_path, map_location="cpu", weights_only=True)
             if (
-                cached.get("canonical_transcript") != utterance.transcript
+                cached.get("duration") != utterance.duration
+                or cached.get("canonical_transcript") != utterance.transcript
                 or cached.get("source_text_model") != model_name
                 or cached.get("n_tokens") != count
                 or cached.get("hidden_layer") != -2
@@ -332,6 +348,8 @@ def extract_text_conditions(
         payload = {
             "text_pooled": hidden.mean(dim=0).cpu().half(),
             "canonical_transcript": utterance.transcript,
+            "duration": utterance.duration,
+            "fps": 30.0,
             "source_text_model": model_name,
             "hidden_layer": -2,
             "encoder_dtype": "bfloat16",
@@ -397,7 +415,13 @@ def merge_conditions(
         validate_word_duration(utterance, float(audio["duration"]))
         if float(text["token_times"].max()) > float(audio["duration"]) + 0.05:
             raise ValueError("Token timestamps exceed audio duration")
-        merged = {**audio, **text, "stem": utterance.stem}
+        merged = {
+            **audio,
+            **text,
+            "stem": utterance.stem,
+            "duration": audio["duration"],
+            "fps": audio["fps"],
+        }
         if skip_existing and output_path.is_file():
             cached = torch.load(output_path, map_location="cpu", weights_only=True)
             for key, value in merged.items():
@@ -417,7 +441,7 @@ def merge_conditions(
 def main() -> None:
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
     args = parse_args()
-    utterances = load_manifest(args.manifest, args.limit)
+    utterances = load_manifest(args.manifest, args.limit, args.mode)
     audio_dir = args.output_dir / ".audio"
     text_dir = args.output_dir / ".text"
     if args.mode == "audio":

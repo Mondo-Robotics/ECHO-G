@@ -1,0 +1,47 @@
+{
+  "schema": "echo-g-model-manifest-v1",
+  "name": "ECHO-G HumanRetarget",
+  "config": "configs/human_retarget_inference.yaml",
+  "hugging_face": {
+    "repo_id": "gaopusen/ECHO-G",
+    "repo_type": "model",
+    "revision": "2026-09-30-models",
+    "private": true,
+    "status": "prepared_upload_pending"
+  },
+  "inference_only": true,
+  "target": "physical_robot39",
+  "fps": 30,
+  "weights": [
+    {
+      "file": "human_retarget/best.pt",
+      "sha256": "749ff11d347eb36f719b6015ac9a2f7fcb1f886ab92fab6c800e71a048216dee",
+      "bytes": 656327132
+    },
+    {
+      "file": "human_retarget/retarget_vae.pt",
+      "sha256": "6b8a95c11c3e301921e56c4520811a6efade9950f42f7a416aa36f95ccc931c8",
+      "bytes": 351013544
+    },
+    {
+      "file": "human_retarget/human_motion_vae.pt",
+      "sha256": "928a159381564489482d072a203b91918c656cc28047b273c691c74132e4fb62",
+      "bytes": 195417833
+    }
+  ],
+  "reference_evaluation": {
+    "origin": "historical source checkpoint",
+    "clips": 3242,
+    "best_step": 25000,
+    "fgd": 4.72452,
+    "mm20": 1.498274
+  },
+  "license": "cc-by-nc-4.0",
+  "code_license": "PolyForm-Noncommercial-1.0.0",
+  "validation": {
+    "real_clips": 7,
+    "max_abs_difference": 0.0,
+    "state_tensors_bitwise_equal": true
+  },
+  "human_training_data_included": false
+}

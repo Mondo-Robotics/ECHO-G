@@ -1,0 +1,36 @@
+{
+  "schema": "echo-g-model-manifest-v1",
+  "name": "ECHO-G Audio only",
+  "config": "configs/sgdit_audio_only.yaml",
+  "hugging_face": {
+    "repo_id": "gaopusen/ECHO-G",
+    "repo_type": "model",
+    "revision": "2026-09-30-models",
+    "private": true,
+    "status": "prepared_upload_pending"
+  },
+  "inference_only": false,
+  "target": "physical_robot39",
+  "fps": 30,
+  "weights": [
+    {
+      "file": "audio_only/best.pt",
+      "sha256": "26c0a6c246dc313ca207973e7e65be41590612827e65f40d85734a8c1d04cc8e",
+      "bytes": 655718928
+    }
+  ],
+  "reference_evaluation": {
+    "origin": "historical source checkpoint",
+    "clips": 3242,
+    "best_step": 25000,
+    "fgd": 2.360242,
+    "mm20": null
+  },
+  "license": "cc-by-nc-4.0",
+  "code_license": "PolyForm-Noncommercial-1.0.0",
+  "validation": {
+    "real_clips": 7,
+    "max_abs_difference": 0.0,
+    "state_tensors_bitwise_equal": true
+  }
+}

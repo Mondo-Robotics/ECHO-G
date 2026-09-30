@@ -198,14 +198,18 @@ def experiment_metadata(
         "val_clips": len(val_dataset),
         "precision": "fp32",
         "amp": False,
-        "architecture": "v2",
+        "architecture": config.model.architecture,
         "conditioning": config.data.conditioning,
         "max_frames": config.data.max_frames,
         "max_text_tokens": config.data.max_text_tokens,
-        "wordtime_schema": V2_SCHEMA,
-        "wordtime_mode": "qknorm_wordtime",
-        "wordtime_config": dict(V2_CONFIG),
-        "time_distance_convention": "signed_frame_minus_token_center_seconds",
+        "wordtime_schema": V2_SCHEMA if config.model.architecture == "v2" else None,
+        "wordtime_mode": "qknorm_wordtime" if config.model.architecture == "v2" else None,
+        "wordtime_config": dict(V2_CONFIG) if config.model.architecture == "v2" else None,
+        "time_distance_convention": (
+            "signed_frame_minus_token_center_seconds"
+            if config.model.architecture == "v2"
+            else "none"
+        ),
         "validation_drop_last": True,
         "validation_loss_clips": (
             len(val_dataset) // config.training.batch_size * config.training.batch_size
@@ -267,6 +271,8 @@ def run_training(
     longest_first: bool = False,
 ) -> Path:
     config.validate()
+    if config.model.motion_dim == 136:
+        raise ValueError("HumanRetarget is inference-only in this release")
     configure_reproducibility(config.training.seed)
     device = resolve_device(device_name)
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -535,6 +541,10 @@ def main() -> None:
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
     args = parse_args()
     config = ExperimentConfig.from_yaml(args.config)
+    if config.model.motion_dim != 39:
+        raise ValueError(
+            "Training supports direct robot motion only; HumanRetarget is inference-only"
+        )
     run_training(
         config,
         args.data_root,

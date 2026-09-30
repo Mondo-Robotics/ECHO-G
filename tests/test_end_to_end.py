@@ -8,8 +8,10 @@
 
 from __future__ import annotations
 
+from dataclasses import replace
 from pathlib import Path
 
+import pytest
 import torch
 
 from echo_g.config import ExperimentConfig
@@ -17,10 +19,18 @@ from echo_g.inference import export_predictions
 from echo_g.training import run_training
 
 
+@pytest.mark.parametrize("conditioning", ["audio-text", "audio-only", "text-only"])
 def test_cpu_training_and_sampling(
-    synthetic_release: tuple[Path, ExperimentConfig], tmp_path: Path
+    synthetic_release: tuple[Path, ExperimentConfig], tmp_path: Path, conditioning: str
 ) -> None:
     data_root, config = synthetic_release
+    config = replace(
+        config,
+        data=replace(config.data, conditioning=conditioning),
+        model=replace(
+            config.model, architecture="audio_only" if conditioning == "audio-only" else "v2"
+        ),
+    )
     run_dir = tmp_path / "run"
     checkpoint = run_training(config, data_root, run_dir, "cpu")
     assert checkpoint.is_file()

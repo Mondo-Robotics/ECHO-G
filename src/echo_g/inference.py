@@ -17,7 +17,7 @@ from typing import Any
 import torch
 from torch.utils.data import DataLoader
 
-from echo_g.config import ExperimentConfig
+from echo_g.config import ExperimentConfig, HumanInferenceConfig, load_inference_config
 from echo_g.data import (
     ConditionDataset,
     LengthBucketBatchSampler,
@@ -46,6 +46,8 @@ TIME_CONVENTION = "signed_frame_minus_token_center_seconds"
 def parse_args(condition_only: bool = False) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Sample robot motion with ECHO-G SGDiT")
     parser.add_argument("--checkpoint", type=Path, required=True)
+    parser.add_argument("--retarget-checkpoint", type=Path)
+    parser.add_argument("--human-vae-checkpoint", type=Path)
     if condition_only:
         parser.add_argument("--condition-dir", type=Path, required=True)
         parser.add_argument("--stem-list", type=Path)
@@ -86,7 +88,7 @@ def load_model_and_config(
     device: torch.device,
 ) -> tuple[
     SpeechGroundedDiT,
-    ExperimentConfig,
+    ExperimentConfig | HumanInferenceConfig,
     torch.Tensor,
     torch.Tensor,
     dict[str, Any],
@@ -105,25 +107,30 @@ def load_model_and_config(
     else:
         if config_path is None:
             raise ValueError("--config is required when the checkpoint has no package config")
-        config = ExperimentConfig.from_yaml(config_path)
+        config = load_inference_config(config_path)
         model_config = checkpoint.get("model_config")
         if not isinstance(model_config, dict):
             raise ValueError(f"{checkpoint_path}: missing model_config")
         expected = {
-            "wordtime_schema": V2_SCHEMA,
-            "wordtime_mode": "qknorm_wordtime",
-            "wordtime_config": V2_CONFIG,
-            "time_distance_convention": TIME_CONVENTION,
-            "max_text_tokens": config.data.max_text_tokens,
             "conditioning": config.data.conditioning,
-            "target": "robot",
+            "target": "human" if isinstance(config, HumanInferenceConfig) else "robot",
             "fps": config.data.fps,
             "max_frames": config.data.max_frames,
         }
+        if config.model.architecture == "v2":
+            expected.update(
+                {
+                    "wordtime_schema": V2_SCHEMA,
+                    "wordtime_mode": "qknorm_wordtime",
+                    "wordtime_config": V2_CONFIG,
+                    "time_distance_convention": TIME_CONVENTION,
+                    "max_text_tokens": config.data.max_text_tokens,
+                }
+            )
         for name, value in expected.items():
             if experiment.get(name) != value:
                 raise ValueError(f"Checkpoint experiment.{name} differs from the configuration")
-        model = SpeechGroundedDiT.from_checkpoint_config(model_config)
+        model = SpeechGroundedDiT.from_checkpoint_config(model_config, config.model.architecture)
         if model.config != config.model:
             raise ValueError("checkpoint architecture does not match --config")
     model.load_state_dict(checkpoint["ema"], strict=True)
@@ -180,6 +187,8 @@ def export_predictions(
     lengths_csv: Path | None = None,
     condition_manifest: Path | None = None,
     condition_manifest_sha256: str | None = None,
+    retarget_checkpoint: Path | None = None,
+    human_vae_checkpoint: Path | None = None,
 ) -> Path:
     if batch_size < 1 or num_workers < 0 or limit < 0:
         raise ValueError("Invalid batch size, worker count, or limit")
@@ -188,6 +197,44 @@ def export_predictions(
     model, config, mean, std, experiment = load_model_and_config(
         checkpoint_path, config_path, device
     )
+    decoder = None
+    decoder_metadata: dict[str, Any] = {}
+    human_profile = isinstance(config, HumanInferenceConfig)
+    if human_profile:
+        if retarget_checkpoint is None or human_vae_checkpoint is None:
+            raise ValueError(
+                "HumanRetarget requires --retarget-checkpoint and --human-vae-checkpoint"
+            )
+        from echo_g.human_retarget_decoder import HumanRetargetDecoder
+
+        decoder = HumanRetargetDecoder(retarget_checkpoint, human_vae_checkpoint, device)
+        decoder_metadata = decoder.metadata()
+    elif retarget_checkpoint is not None or human_vae_checkpoint is not None:
+        raise ValueError("Decoder checkpoints are only valid with the HumanRetarget profile")
+    output_dimension = 39 if human_profile else config.model.motion_dim
+    time_convention = TIME_CONVENTION if config.model.architecture == "v2" else "none"
+    requested_split = split if condition_dir is None else None
+    if human_profile and data_root is not None:
+        if condition_dir is not None:
+            raise ValueError("Use either --condition-dir or --data-root")
+        if split != "val":
+            raise ValueError("HumanRetarget supports condition-only or validation inference")
+        # No human targets or training statistics are needed for this pipeline.
+        stem_list = data_root / config.data.val_split
+        expected_split_hash = experiment.get("val_split_sha256")
+        if expected_split_hash and sha256(stem_list) != expected_split_hash:
+            raise ValueError("Dataset split differs from the checkpoint")
+        condition_dir = data_root / config.data.condition_dir
+        lengths_csv = (
+            data_root / config.data.aligned_lengths_file
+            if config.data.aligned_lengths_file
+            else None
+        )
+        condition_manifest = (
+            data_root / config.data.condition_manifest if config.data.condition_manifest else None
+        )
+        condition_manifest_sha256 = config.data.condition_manifest_sha256
+        data_root = None
     sample_seeds = [0] if seeds is None else seeds
     if not sample_seeds:
         raise ValueError("at least one sampling seed is required")
@@ -239,7 +286,9 @@ def export_predictions(
         dataset.lengths,
         batch_size,
         seed=0,
-        bucket_multiplier=config.training.bucket_multiplier,
+        bucket_multiplier=(
+            config.training.bucket_multiplier if isinstance(config, ExperimentConfig) else 64
+        ),
         shuffle=False,
         drop_last=False,
     )
@@ -270,7 +319,8 @@ def export_predictions(
                 "guidance_scale": cfg,
                 "fps": float(config.data.fps),
                 "representation_schema": config.data.representation_schema,
-                "time_distance_convention": TIME_CONVENTION,
+                "time_distance_convention": time_convention,
+                **decoder_metadata,
                 "conditioning": config.data.conditioning,
                 "stem": stem,
             }
@@ -285,7 +335,7 @@ def export_predictions(
                     validate_prediction(
                         output_path,
                         frame_counts[row],
-                        config.model.motion_dim,
+                        output_dimension,
                         sample_seed,
                         identities[stems[row]],
                     )
@@ -320,6 +370,8 @@ def export_predictions(
                 stem = stems[row]
                 frames = frame_counts[row]
                 robot_motion = normalized[row, :frames].float() * std_device + mean_device
+                if decoder is not None:
+                    robot_motion = decoder.decode(robot_motion)
                 robot_motion = robot_motion.cpu().contiguous()
                 if not torch.isfinite(robot_motion).all():
                     raise ValueError(f"{stem}: sampled motion contains non-finite values")
@@ -347,9 +399,11 @@ def export_predictions(
         "status": "complete",
         "checkpoint_sha256": checkpoint_hash,
         "training_schema": experiment.get("schema"),
-        "split": split if condition_dir is None else None,
-        "time_distance_convention": TIME_CONVENTION,
-        "wordtime_schema": V2_SCHEMA,
+        "split": requested_split,
+        "time_distance_convention": time_convention,
+        "wordtime_schema": V2_SCHEMA if config.model.architecture == "v2" else None,
+        "conditioning": config.data.conditioning,
+        **decoder_metadata,
         "utterances": len(dataset),
         "seeds": sample_seeds,
         "expected_files": expected,
@@ -388,6 +442,8 @@ def main(condition_only: bool = False) -> None:
         args.lengths_csv,
         args.condition_manifest,
         args.condition_manifest_sha256,
+        args.retarget_checkpoint,
+        args.human_vae_checkpoint,
     )
 
 

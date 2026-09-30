@@ -137,6 +137,40 @@ class V2CrossAttentionBlock(nn.Module):
         return values + mlp_gate.unsqueeze(1) * self.mlp(hidden)
 
 
+class AudioOnlyCrossAttentionBlock(V2CrossAttentionBlock):
+    """Original scaled-dot attention with the trained single null text key."""
+
+    def __init__(self, hidden: int, heads: int, feedforward: int, dropout: float) -> None:
+        super().__init__(hidden, heads, feedforward, dropout)
+        for name in ("qk_temperature_raw", "word_sigma_raw", "word_lag_raw", "word_mix_raw"):
+            delattr(self, name)
+        self.time_bias_strength = nn.Parameter(torch.tensor(0.5))
+
+    def cross_attention(
+        self,
+        motion: torch.Tensor,
+        text: torch.Tensor,
+        text_padding_mask: torch.Tensor,
+        time_distance: torch.Tensor,
+    ) -> torch.Tensor:
+        batch, frames, hidden = motion.shape
+        tokens = text.shape[1]
+        query = self.query(motion).view(batch, frames, self.heads, self.head_dim)
+        query = query.transpose(1, 2)
+        key = self.key(text).view(batch, tokens, self.heads, self.head_dim).transpose(1, 2)
+        value = self.value(text).view(batch, tokens, self.heads, self.head_dim).transpose(1, 2)
+        logits = torch.matmul(query.float(), key.float().transpose(-1, -2))
+        logits = logits / math.sqrt(self.head_dim)
+        # The audio-only data adapter supplies zero distances and one null key.
+        time_bias = -F.softplus(self.time_bias_strength.float()) * time_distance.float()
+        logits = logits + time_bias.unsqueeze(1)
+        logits = logits.masked_fill(text_padding_mask[:, None, None, :], float("-inf"))
+        attention = torch.softmax(logits, dim=-1)
+        output = torch.matmul(attention, value.float()).to(motion.dtype)
+        output = output.transpose(1, 2).reshape(batch, frames, hidden)
+        return self.cross_output(output)
+
+
 class SpeechGroundedDiT(nn.Module):
     def __init__(self, config: ModelConfig) -> None:
         super().__init__()
@@ -157,9 +191,14 @@ class SpeechGroundedDiT(nn.Module):
         )
         self.position = nn.Parameter(torch.zeros(1, config.max_t, config.hidden_dim))
         nn.init.normal_(self.position, std=0.02)
+        block_type = (
+            AudioOnlyCrossAttentionBlock
+            if config.architecture == "audio_only"
+            else V2CrossAttentionBlock
+        )
         self.blocks = nn.ModuleList(
             [
-                V2CrossAttentionBlock(
+                block_type(
                     config.hidden_dim,
                     config.num_heads,
                     config.feedforward_dim,
@@ -179,7 +218,9 @@ class SpeechGroundedDiT(nn.Module):
         nn.init.zeros_(self.output.bias)
 
     @classmethod
-    def from_checkpoint_config(cls, payload: dict[str, Any]) -> SpeechGroundedDiT:
+    def from_checkpoint_config(
+        cls, payload: dict[str, Any], architecture: str = "v2"
+    ) -> SpeechGroundedDiT:
         if "hidden" in payload:
             required = {"motion_dim", "max_t", "pos_enc", "hidden", "layers", "heads", "ff_dim"}
             missing = sorted(required - payload.keys())
@@ -191,6 +232,7 @@ class SpeechGroundedDiT(nn.Module):
                     "pos_enc must be learned"
                 )
             config = ModelConfig(
+                architecture=architecture,
                 motion_dim=int(payload["motion_dim"]),
                 audio_dim=int(payload.get("audio_dim", 1024)),
                 text_dim=int(payload.get("text_dim", 2560)),
@@ -202,8 +244,8 @@ class SpeechGroundedDiT(nn.Module):
                 max_t=int(payload["max_t"]),
             )
         else:
-            if payload.get("architecture") != "v2":
-                raise ValueError("checkpoint must explicitly declare architecture='v2'")
+            if payload.get("architecture") not in {"v2", "audio_only"}:
+                raise ValueError("checkpoint must explicitly declare a supported architecture")
             config = ModelConfig(**payload)
         return cls(config)
 

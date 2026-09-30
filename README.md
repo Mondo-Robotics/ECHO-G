@@ -19,6 +19,10 @@ Word-timed text -> frozen Qwen -> token features -------+
 This package provides the model, training and inference commands, a benchmark evaluator, and
 MuJoCo visualization for the released robot-motion dataset.
 
+See [model variants](docs/model_variants.md) for audio-only, text-only, and HumanRetarget.
+Training is provided for the direct robot models; **HumanRetarget is inference-only**.
+HumanRetarget training data and training recipes are outside this release.
+
 ## Data and weights
 
 **The dataset and model weights are available as private previews on Hugging Face.**
@@ -30,6 +34,9 @@ third-party materials retain their applicable terms. See [licensing scope](docs/
 |---|---|---|
 | Processed robot-motion dataset | [gaopusen/ECHO-G](https://huggingface.co/datasets/gaopusen/ECHO-G) | Uploaded private preview |
 | ECHO-G audio+text `best.pt` (15k, EMA) | [Model repository](https://huggingface.co/gaopusen/ECHO-G/tree/2026-09-30) | Uploaded private preview |
+| Audio-only `best.pt` (25k, EMA) | [Model repository: audio_only](https://huggingface.co/gaopusen/ECHO-G/tree/2026-09-30-models/audio_only) | Private preview |
+| Text-only `best.pt` (15k, EMA) | [Model repository: text_only](https://huggingface.co/gaopusen/ECHO-G/tree/2026-09-30-models/text_only) | Private preview |
+| HumanRetarget inference weights | [Model repository: human_retarget](https://huggingface.co/gaopusen/ECHO-G/tree/2026-09-30-models/human_retarget) | Private preview; three files |
 | Benchmark FGD encoder | [Model repository: evaluation](https://huggingface.co/gaopusen/ECHO-G/tree/2026-09-30/evaluation) | Uploaded private preview |
 | Frozen BA normalization | With dataset | Included in the private dataset preview |
 | G1 MuJoCo XML and meshes | With dataset | Included under BSD-3-Clause |
@@ -47,6 +54,7 @@ The public benchmark reports FGD, Div, BA, weighted jerk, foot metrics, and opti
 not require or distribute semantic labels. See [the benchmark protocol](docs/BENCHMARK.md).
 
 - [ECHO-G model card](docs/MODEL_CARD.md)
+- [Model variants and their download/inference commands](docs/model_variants.md)
 - [Dataset card](docs/DATASET_CARD.md)
 - [Download and use the dataset](docs/DATASET.md)
 - [Data format and timing contract](docs/DATA_FORMAT.md)
@@ -58,7 +66,8 @@ not require or distribute semantic labels. See [the benchmark protocol](docs/BEN
 Follow the [dataset download guide](docs/DATASET.md), then use the commands below.
 The clip data comprise 12 tar archives (18.52 GB), with separate metadata and a robot-asset archive.
 Download and extract all archives into the same data root. The dataset revision is
-`2026-09-29-license`; the model revision is `2026-09-30`.
+`2026-09-29-license`. The audio + text revision is `2026-09-30`; the combined model revision
+is `2026-09-30-models`. Both preserve the same audio + text weight file.
 
 ### Download model weights
 

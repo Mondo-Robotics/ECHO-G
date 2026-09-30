@@ -101,7 +101,15 @@ def decode_condition(
     condition_path: Path | None = None,
     condition_manifest: FrozenConditionManifest | None = None,
 ) -> dict[str, Any]:
-    audio = _audio_features(payload)
+    if config.conditioning == "text-only" and not any(
+        key in payload for key in ("audio_features", "audio_4fps")
+    ):
+        duration = float(payload.get("duration") or 0)
+        if not math.isfinite(duration) or not 0 < duration <= config.max_frames / config.fps:
+            raise ValueError(f"{stem}: text-only input requires an explicit valid duration")
+        audio = torch.zeros(max(2, round(duration * config.fps)), model_config.audio_dim)
+    else:
+        audio = _audio_features(payload)
     if audio.ndim != 2 or audio.shape[1] != model_config.audio_dim:
         raise ValueError(f"{stem}: invalid audio shape {tuple(audio.shape)}")
     if float(payload.get("fps", payload.get("latent_fps", config.fps))) != config.fps:
@@ -111,6 +119,20 @@ def decode_condition(
         raise ValueError(f"{stem}: input must fit {config.max_frames} frames; split explicitly")
     if not torch.isfinite(audio).all():
         raise ValueError(f"{stem}: non-finite audio features")
+    if config.conditioning == "audio-only":
+        if condition_manifest is not None:
+            if condition_path is None:
+                raise ValueError("A path is required for frozen-condition verification")
+            condition_manifest.verify(condition_path, stem, payload)
+        return {
+            "audio": audio[:frames],
+            "text": torch.zeros(1, model_config.text_dim),
+            "frames": frames,
+            "stem": stem,
+            "frame_times": torch.arange(frames, dtype=torch.float32) / config.fps,
+            "token_centers": torch.zeros(1),
+            "has_timing": False,
+        }
     text = torch.as_tensor(payload["text_tokens"]).float()
     if (
         text.ndim != 2
@@ -133,6 +155,11 @@ def decode_condition(
         or bool((times[:, 1] < times[:, 0]).any())
     ):
         raise ValueError(f"{stem}: invalid token timestamps")
+    if config.conditioning == "text-only" and not any(
+        key in payload for key in ("audio_features", "audio_4fps")
+    ):
+        if float(times.max()) > float(payload["duration"]) + 0.05:
+            raise ValueError(f"{stem}: token timestamps exceed the requested duration")
     if not torch.isfinite(text).all():
         raise ValueError(f"{stem}: non-finite text features")
     validate_condition_provenance(payload, stem, condition_path, condition_manifest)
