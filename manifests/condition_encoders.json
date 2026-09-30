@@ -1,0 +1,85 @@
+{
+  "schema": "echo-g-condition-encoders-v1",
+  "recorded_on": "2026-09-30",
+  "purpose": "Pinned upstream encoders for raw audio and word-timed text extraction; not needed when using the released frozen conditions.",
+  "identity_basis": "Recorded file SHA256 values from the 2026-09-29 real raw-encoder acceptance matched these pinned upstream revisions. Large-file hashes were checked against Hugging Face LFS object SHA256 values; small files were downloaded and hashed. This is asset identity evidence, not a claim that fresh features equal the historical frozen cache.",
+  "checksum_file": "manifests/condition_encoders.sha256",
+  "checksum_scope": "All runtime files listed below; upstream README/license and other optional files are not covered by this checksum list.",
+  "encoders": {
+    "qwen": {
+      "repo_id": "Qwen/Qwen3.5-4B",
+      "revision": "851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a",
+      "repo_type": "model",
+      "url": "https://huggingface.co/Qwen/Qwen3.5-4B/tree/851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a",
+      "local_dir": "models/Qwen3.5-4B",
+      "license": "apache-2.0",
+      "model_class": "Qwen3_5ForConditionalGeneration",
+      "processor_class": "AutoTokenizer",
+      "hidden_layer": -2,
+      "feature_dimension": 2560,
+      "files": {
+        "tokenizer.json": {
+          "sha256": "5f9e4d4901a92b997e463c1f46055088b6cca5ca61a6522d1b9f64c4bb81cb42"
+        },
+        "model.safetensors-00001-of-00002.safetensors": {
+          "sha256": "26a93f066e1916adb13453dae5a0c707c0fbc71299ed98779571a907b8e74c61"
+        },
+        "model.safetensors-00002-of-00002.safetensors": {
+          "sha256": "cb544bd9bfae93dc59b0f22b292f5933573854a7f9b97835c67060d7d910e188"
+        },
+        "config.json": {
+          "sha256": "ddc63e1c717afa86c865bb5e01313d89d72bb53b97ad4a8a03ba8510c0621670"
+        },
+        "preprocessor_config.json": {
+          "sha256": "27225450ac9c6529872ee1924fcb0962ff5634834f817040f444118116f4e516"
+        },
+        "tokenizer_config.json": {
+          "sha256": "316230d6a809701f4db5ea8f8fc862bc3a6f3229c937c174e674ff3ca0a64ac8"
+        },
+        "model.safetensors.index.json": {
+          "sha256": "cf3f798ee02ba45f9622aa8892a47369ab667d0afbf154ee7c2212de42e6302d"
+        },
+        "merges.txt": {
+          "sha256": "a9d356d7bdf1ef4949e3e748e95b8e10ad9d4e2e838eddc38a0a7b6b94d1db8d"
+        },
+        "vocab.json": {
+          "sha256": "ce99b4cb2983d118806ce0a8b777a35b093e2000a503ebde25853284c9dfa003"
+        }
+      }
+    },
+    "wav2vec": {
+      "repo_id": "jonatasgrosman/wav2vec2-large-xlsr-53-english",
+      "revision": "569a6236e92bd5f7652a0420bfe9bb94c5664080",
+      "repo_type": "model",
+      "url": "https://huggingface.co/jonatasgrosman/wav2vec2-large-xlsr-53-english/tree/569a6236e92bd5f7652a0420bfe9bb94c5664080",
+      "local_dir": "models/wav2vec2-large-xlsr-53-english",
+      "license": "apache-2.0",
+      "model_class": "Wav2Vec2ForCTC",
+      "processor_class": "Wav2Vec2Processor",
+      "hidden_layer": -1,
+      "feature_dimension": 1024,
+      "files": {
+        "model.safetensors": {
+          "sha256": "6144f8464c6aaa220dd57c5a2ad4039b5710dcf8ee6e67057675f76597c19875"
+        },
+        "config.json": {
+          "sha256": "ffcc5c417fe11433447975d5053b2279fbeafd6bca03dd2753082e72ad2d36b7"
+        },
+        "preprocessor_config.json": {
+          "sha256": "ca5999a45e98bb76ea87a461ba28a23ad32a5bb9f733b8e0f6546ff38b6c612d"
+        },
+        "special_tokens_map.json": {
+          "sha256": "bb7068de1150661a10b55f9e4b12a0e77af8bf91f5e45e1b58afaf1d0e17f675"
+        },
+        "vocab.json": {
+          "sha256": "1ec5eeced764da0e4a4d2e95c1c3470c3235222db0182088beac3e7c67eda8ff"
+        }
+      },
+      "also_distributed_by": {
+        "repo_id": "Wan-AI/Wan2.2-S2V-14B",
+        "revision": "dab4e9c55bbe4c8c4d03db1c2c98c7f0ac9c454b",
+        "subdirectory": "wav2vec2-large-xlsr-53-english"
+      }
+    }
+  }
+}
