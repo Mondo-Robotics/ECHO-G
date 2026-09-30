@@ -16,7 +16,7 @@ from typing import Any
 import torch
 import torch.nn.functional as F
 
-from echo_g.human_retarget_networks import (
+from echo_g.human_retarget.networks import (
     MotionVAE,
     MotionVAEConfig,
     RetargetVAE,

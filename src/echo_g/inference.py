@@ -37,7 +37,7 @@ from echo_g.utils import (
     sha256,
     stable_seed,
 )
-from echo_g.v2_attention import V2_CONFIG, V2_SCHEMA
+from echo_g.word_time_attention import WORD_TIME_CONFIG, WORD_TIME_SCHEMA
 
 LOGGER = logging.getLogger(__name__)
 TIME_CONVENTION = "signed_frame_minus_token_center_seconds"
@@ -120,9 +120,9 @@ def load_model_and_config(
         if config.model.architecture == "v2":
             expected.update(
                 {
-                    "wordtime_schema": V2_SCHEMA,
+                    "wordtime_schema": WORD_TIME_SCHEMA,
                     "wordtime_mode": "qknorm_wordtime",
-                    "wordtime_config": V2_CONFIG,
+                    "wordtime_config": WORD_TIME_CONFIG,
                     "time_distance_convention": TIME_CONVENTION,
                     "max_text_tokens": config.data.max_text_tokens,
                 }
@@ -205,7 +205,7 @@ def export_predictions(
             raise ValueError(
                 "HumanRetarget requires --retarget-checkpoint and --human-vae-checkpoint"
             )
-        from echo_g.human_retarget_decoder import HumanRetargetDecoder
+        from echo_g.human_retarget.decoder import HumanRetargetDecoder
 
         decoder = HumanRetargetDecoder(retarget_checkpoint, human_vae_checkpoint, device)
         decoder_metadata = decoder.metadata()
@@ -401,7 +401,7 @@ def export_predictions(
         "training_schema": experiment.get("schema"),
         "split": requested_split,
         "time_distance_convention": time_convention,
-        "wordtime_schema": V2_SCHEMA if config.model.architecture == "v2" else None,
+        "wordtime_schema": WORD_TIME_SCHEMA if config.model.architecture == "v2" else None,
         "conditioning": config.data.conditioning,
         **decoder_metadata,
         "utterances": len(dataset),

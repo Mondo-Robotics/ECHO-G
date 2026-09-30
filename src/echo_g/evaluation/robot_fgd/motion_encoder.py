@@ -7,7 +7,7 @@
 # (xuhao3e8@gmail.com) and Dr. Shuo Yang (shuo.yang@mondorobotics.com).
 
 # Vendored from PantoMatrix/emage_evaltools/motion_encoder.py (EMAGE VAESKConv).
-# G1 edits (Project Hermes route B, see docs/G1_LEARNED_FGD.md):
+# G1 adaptation:
 #   * VAESKConv accepts `topology`/`input_mode` and skips the SMPL-X npz load.
 #   * LocalEncoder honours args.channel_base if pre-set (pure2 mode = 2 ch/body),
 #     otherwise keeps the EMAGE default 6 (padded6 mode).

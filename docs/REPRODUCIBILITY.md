@@ -42,16 +42,13 @@ Released filename: `best.pt`, from model repository
 
 ```text
 Release SHA256: c84f31fce140cdc8c3be5e5dbc8cb8eb3a82ce1865e2d84026a0791d4735928d
-Source SHA256:  c1e7e863e28b76b710bc18f9e9029836771fc86c1bb9fca42aa9d7655f74a616
 step: 15000
 weights: EMA
 ```
 
-The published checkpoint removes unrelated training metadata and internal paths while
-preserving every inference parameter and normalization value. Strict loading, parameter
-equality and seven real-clip prediction/FGD-feature comparisons passed; the maximum absolute
-output difference was 0. These checks establish packaging equivalence and do not constitute
-a new full-split benchmark. See the [model card](MODEL_CARD.md) for both published weight files.
+The published checkpoint preserves the source EMA parameters and normalization statistics.
+Fixed-input sample comparisons matched the source implementation exactly; these checks do not
+replace a full-split benchmark. See the [model card](MODEL_CARD.md) for file identities.
 
 [The model manifest](../manifests/audio_text.json) records the checkpoint and pinned
 Hugging Face location. Dataset details and download instructions are in the
@@ -101,6 +98,7 @@ features can change their values with encoder revisions, decoding, hardware and 
 backends; exact agreement with the historical feature cache is not guaranteed. Independent
 training can likewise differ across PyTorch, CUDA and GPU environments.
 
-The [README](../README.md) gives training, sampling and raw condition extraction commands.
+The [README](../README.md) gives training and sampling commands; [INFERENCE.md](INFERENCE.md)
+covers raw condition extraction.
 Keep the checkpoint, dataset, configuration, sampling seeds and evaluation assets fixed when
 comparing results.

@@ -34,7 +34,7 @@ from echo_g.utils import (
     move_batch,
     sha256,
 )
-from echo_g.v2_attention import V2_CONFIG, V2_SCHEMA
+from echo_g.word_time_attention import WORD_TIME_CONFIG, WORD_TIME_SCHEMA
 
 LOGGER = logging.getLogger(__name__)
 
@@ -202,9 +202,9 @@ def experiment_metadata(
         "conditioning": config.data.conditioning,
         "max_frames": config.data.max_frames,
         "max_text_tokens": config.data.max_text_tokens,
-        "wordtime_schema": V2_SCHEMA if config.model.architecture == "v2" else None,
+        "wordtime_schema": WORD_TIME_SCHEMA if config.model.architecture == "v2" else None,
         "wordtime_mode": "qknorm_wordtime" if config.model.architecture == "v2" else None,
-        "wordtime_config": dict(V2_CONFIG) if config.model.architecture == "v2" else None,
+        "wordtime_config": dict(WORD_TIME_CONFIG) if config.model.architecture == "v2" else None,
         "time_distance_convention": (
             "signed_frame_minus_token_center_seconds"
             if config.model.architecture == "v2"

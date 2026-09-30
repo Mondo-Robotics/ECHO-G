@@ -42,7 +42,6 @@ from __future__ import annotations
 
 import math
 
-import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -343,87 +342,6 @@ class SkeletonPool(nn.Module):
         return torch.matmul(self.weight, input)
 
 
-class SkeletonUnpool(nn.Module):
-    def __init__(self, pooling_list, channels_per_edge):
-        super(SkeletonUnpool, self).__init__()
-        self.pooling_list = pooling_list
-        self.input_edge_num = len(pooling_list)
-        self.output_edge_num = 0
-        self.channels_per_edge = channels_per_edge
-        for t in self.pooling_list:
-            self.output_edge_num += len(t)
-
-        self.description = "SkeletonUnpool(in_edge_num={}, out_edge_num={})".format(
-            self.input_edge_num,
-            self.output_edge_num,
-        )
-
-        self.weight = torch.zeros(
-            self.output_edge_num * channels_per_edge, self.input_edge_num * channels_per_edge
-        )
-
-        for i, pair in enumerate(self.pooling_list):
-            for j in pair:
-                for c in range(channels_per_edge):
-                    self.weight[j * channels_per_edge + c, i * channels_per_edge + c] = 1
-
-        self.weight = nn.Parameter(self.weight)
-        self.weight.requires_grad_(False)
-
-    def forward(self, input: torch.Tensor):
-        # print('SkeletonUnpool')
-        # print(f'input: {input.size()}')
-        # print(f'self.weight: {self.weight.size()}')
-        return torch.matmul(self.weight, input)
-
-
-"""
-Helper functions for skeleton operation
-"""
-
-
-def dfs(x, fa, vis, dist):
-    vis[x] = 1
-    for y in range(len(fa)):
-        if (fa[y] == x or fa[x] == y) and vis[y] == 0:
-            dist[y] = dist[x] + 1
-            dfs(y, fa, vis, dist)
-
-
-"""
-def find_neighbor_joint(fa, threshold):
-    neighbor_list = [[]]
-    for x in range(1, len(fa)):
-        vis = [0 for _ in range(len(fa))]
-        dist = [0 for _ in range(len(fa))]
-        dist[0] = 10000
-        dfs(x, fa, vis, dist)
-        neighbor = []
-        for j in range(1, len(fa)):
-            if dist[j] <= threshold:
-                neighbor.append(j)
-        neighbor_list.append(neighbor)
-
-    neighbor = [0]
-    for i, x in enumerate(neighbor_list):
-        if i == 0: continue
-        if 1 in x:
-            neighbor.append(i)
-            neighbor_list[i] = [0] + neighbor_list[i]
-    neighbor_list[0] = neighbor
-    return neighbor_list
-
-
-def build_edge_topology(topology, offset):
-    # get all edges (pa, child, offset)
-    edges = []
-    joint_num = len(topology)
-    for i in range(1, joint_num):
-        edges.append((topology[i], i, offset[i]))
-    return edges
-"""
-
-
 def build_edge_topology(topology):
     # get all edges (pa, child)
     edges = []
@@ -432,53 +350,6 @@ def build_edge_topology(topology):
     for i in range(1, joint_num):
         edges.append((topology[i], i))
     return edges
-
-
-def build_joint_topology(edges, origin_names):
-    parent = []
-    offset = []
-    names = []
-    edge2joint = []
-    joint_from_edge = []  # -1 means virtual joint
-    joint_cnt = 0
-    out_degree = [0] * (len(edges) + 10)
-    for edge in edges:
-        out_degree[edge[0]] += 1
-
-    # add root joint
-    joint_from_edge.append(-1)
-    parent.append(0)
-    offset.append(np.array([0, 0, 0]))
-    names.append(origin_names[0])
-    joint_cnt += 1
-
-    def make_topology(edge_idx, pa):
-        nonlocal edges, parent, offset, names, edge2joint, joint_from_edge, joint_cnt
-        edge = edges[edge_idx]
-        if out_degree[edge[0]] > 1:
-            parent.append(pa)
-            offset.append(np.array([0, 0, 0]))
-            names.append(origin_names[edge[1]] + "_virtual")
-            edge2joint.append(-1)
-            pa = joint_cnt
-            joint_cnt += 1
-
-        parent.append(pa)
-        offset.append(edge[2])
-        names.append(origin_names[edge[1]])
-        edge2joint.append(edge_idx)
-        pa = joint_cnt
-        joint_cnt += 1
-
-        for idx, e in enumerate(edges):
-            if e[0] == edge[1]:
-                make_topology(idx, pa)
-
-    for idx, e in enumerate(edges):
-        if e[0] == 0:
-            make_topology(idx, 0)
-
-    return parent, offset, names, edge2joint
 
 
 def calc_edge_mat(edges):

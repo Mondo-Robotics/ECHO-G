@@ -14,8 +14,8 @@ from typing import Any
 import torch
 import torch.nn.functional as F
 
-V2_SCHEMA = "release30-bounded-qk-global-local-wordtime-v2.1"
-V2_CONFIG = {
+WORD_TIME_SCHEMA = "release30-bounded-qk-global-local-wordtime-v2.1"
+WORD_TIME_CONFIG = {
     "temperature_min": 1.0,
     "temperature_max": 16.0,
     "temperature_init": 8.0,
@@ -44,13 +44,17 @@ def bounded(raw: torch.Tensor, lower: float, upper: float) -> torch.Tensor:
 def block_parameters(block: Any) -> dict[str, torch.Tensor]:
     return {
         "temperature": bounded(
-            block.qk_temperature_raw, V2_CONFIG["temperature_min"], V2_CONFIG["temperature_max"]
+            block.qk_temperature_raw,
+            WORD_TIME_CONFIG["temperature_min"],
+            WORD_TIME_CONFIG["temperature_max"],
         ),
         "sigma": bounded(
-            block.word_sigma_raw, V2_CONFIG["sigma_min_seconds"], V2_CONFIG["sigma_max_seconds"]
+            block.word_sigma_raw,
+            WORD_TIME_CONFIG["sigma_min_seconds"],
+            WORD_TIME_CONFIG["sigma_max_seconds"],
         ),
-        "lag": V2_CONFIG["max_abs_lag_seconds"] * block.word_lag_raw.float().tanh(),
-        "mix": V2_CONFIG["max_mix"] * block.word_mix_raw.float().sigmoid(),
+        "lag": WORD_TIME_CONFIG["max_abs_lag_seconds"] * block.word_lag_raw.float().tanh(),
+        "mix": WORD_TIME_CONFIG["max_mix"] * block.word_mix_raw.float().sigmoid(),
     }
 
 
@@ -76,8 +80,8 @@ def attention_weights(
         raise ValueError("Q/K must be [B,H,T/N,D] with at least one key")
     if signed_distance.shape != (query.shape[0], query.shape[2], key.shape[2]):
         raise ValueError("signed time distances must be [B,T,N]")
-    q = F.normalize(query.float(), dim=-1, eps=V2_CONFIG["normalize_eps"])
-    k = F.normalize(key.float(), dim=-1, eps=V2_CONFIG["normalize_eps"])
+    q = F.normalize(query.float(), dim=-1, eps=WORD_TIME_CONFIG["normalize_eps"])
+    k = F.normalize(key.float(), dim=-1, eps=WORD_TIME_CONFIG["normalize_eps"])
     logits = (q @ k.transpose(-1, -2)) * temperature[None, :, None, None]
     global_weights = masked_softmax(logits, padding)
     standardized = (signed_distance[:, None].float() - lag[None, :, None, None]) / sigma[
@@ -85,7 +89,7 @@ def attention_weights(
     ]
     log_prior = -0.5 * standardized.square()
     local_weights = masked_softmax(
-        logits + log_prior.clamp_min(-V2_CONFIG["max_log_penalty"]), padding
+        logits + log_prior.clamp_min(-WORD_TIME_CONFIG["max_log_penalty"]), padding
     )
     affinity = log_prior.exp().masked_fill(padding[:, None, None, :], 0.0)
     support = affinity.amax(dim=-1, keepdim=True)

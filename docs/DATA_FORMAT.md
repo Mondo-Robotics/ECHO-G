@@ -90,7 +90,7 @@ Text is produced by Qwen3.5-4B hidden layer −2. Acoustic features use Wav2Vec2
 count with `align_corners=True`, then FP16 storage. The audio key name does not denote a 4 Hz rate.
 
 Upstream encoder repository IDs, fixed revisions and download commands are in
-[the encoder download guide](../README.md#download-the-frozen-encoders);
+[the encoder download guide](INFERENCE.md#download-the-frozen-encoders);
 [the encoder manifest](../manifests/condition_encoders.json) records the runtime file hashes.
 
 ### Complete-text provenance

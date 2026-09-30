@@ -20,20 +20,18 @@ or SMPL-X installation is required to run the released inference pipeline.
 ## Download
 
 Install the package and authenticate with an account that has access to the
-private repositories. The original audio + text revision `2026-09-30` remains
-available. The revision below contains all four models.
+private repositories. The revision below contains all four models.
 
 ```bash
 hf download gaopusen/ECHO-G --revision 2026-09-30-models \
   --include 'audio_only/*' 'text_only/*' 'human_retarget/*' \
             'configs/*' 'evaluation/*' 'SHA256SUMS' 'LICENSE*' 'NOTICE' \
-  --local-dir checkpoints/echo-g
+  --local-dir weights
 ```
 
 Select only the variant directories you need. The FGD encoder in `evaluation/`
 is shared. Model weights are licensed under CC BY-NC 4.0; source code remains
-under PolyForm Noncommercial 1.0.0. See the root README for the separately pinned
-dataset and upstream condition encoders.
+under PolyForm Noncommercial 1.0.0. See the [dataset guide](DATASET.md) and [encoder downloads](INFERENCE.md#download-the-frozen-encoders).
 
 ## Inference on the released validation split
 
@@ -42,20 +40,20 @@ the same frozen conditions, splits, and robot normalization as audio + text.
 
 ```bash
 echo-g-sample --config configs/sgdit_audio_only.yaml \
-  --checkpoint checkpoints/echo-g/audio_only/best.pt \
-  --data-root "$DATA_ROOT" --output-dir predictions/audio_only \
+  --checkpoint weights/audio_only/best.pt \
+  --data-root "$DATA_ROOT" --output-dir results/audio_only \
   --seeds 0 --steps 8 --guidance-scale 1 --batch-size 3 --device cuda
 
 echo-g-sample --config configs/sgdit_text_only.yaml \
-  --checkpoint checkpoints/echo-g/text_only/best.pt \
-  --data-root "$DATA_ROOT" --output-dir predictions/text_only \
+  --checkpoint weights/text_only/best.pt \
+  --data-root "$DATA_ROOT" --output-dir results/text_only \
   --seeds 0 --steps 8 --guidance-scale 1 --batch-size 3 --device cuda
 
 echo-g-sample --config configs/human_retarget_inference.yaml \
-  --checkpoint checkpoints/echo-g/human_retarget/best.pt \
-  --retarget-checkpoint checkpoints/echo-g/human_retarget/retarget_vae.pt \
-  --human-vae-checkpoint checkpoints/echo-g/human_retarget/human_motion_vae.pt \
-  --data-root "$DATA_ROOT" --output-dir predictions/human_retarget \
+  --checkpoint weights/human_retarget/best.pt \
+  --retarget-checkpoint weights/human_retarget/retarget_vae.pt \
+  --human-vae-checkpoint weights/human_retarget/human_motion_vae.pt \
+  --data-root "$DATA_ROOT" --output-dir results/human_retarget \
   --seeds 0 --steps 8 --guidance-scale 1 --batch-size 3 --device cuda
 ```
 
@@ -92,12 +90,11 @@ The extraction manifest needs only an audio path and a safe clip name:
 echo-g-extract-conditions --mode audio --manifest audio_requests.jsonl \
   --audio-model "$AUDIO_MODEL" --output-dir conditions --device cuda
 echo-g-infer --config configs/sgdit_audio_only.yaml \
-  --checkpoint checkpoints/echo-g/audio_only/best.pt \
-  --condition-dir conditions/.audio --output-dir predictions/new_audio --device cuda
+  --checkpoint weights/audio_only/best.pt \
+  --condition-dir conditions/.audio --output-dir results/new_audio --device cuda
 ```
 
-`AUDIO_MODEL` is the pinned wav2vec checkpoint described in the encoder download
-instructions. Features are linearly interpolated to `max(2, round(duration * 30))`
+`AUDIO_MODEL` is the pinned wav2vec checkpoint described in the [encoder download instructions](INFERENCE.md#download-the-frozen-encoders). Features are linearly interpolated to `max(2, round(duration * 30))`
 frames with `align_corners=True`, matching the existing preprocessing path.
 
 ### Text-only input without audio
@@ -112,14 +109,14 @@ Supply an explicit duration in seconds and word times relative to the clip start
 echo-g-extract-conditions --mode text --manifest text_requests.jsonl \
   --text-model "$TEXT_MODEL" --output-dir conditions --device cuda
 echo-g-infer --config configs/sgdit_text_only.yaml \
-  --checkpoint checkpoints/echo-g/text_only/best.pt \
-  --condition-dir conditions/.text --output-dir predictions/new_text --device cuda
+  --checkpoint weights/text_only/best.pt \
+  --condition-dir conditions/.text --output-dir results/new_text --device cuda
 ```
 
 `TEXT_MODEL` is the pinned Qwen checkpoint. Word times must fit the supplied
 duration. Acoustic input is allocated as zeros; no audio encoder is run for this
 path. When using released frozen conditions, provide the condition manifest and
-its SHA256 as described in the existing inference instructions.
+its SHA256 as described in [cached-condition inference](INFERENCE.md#cached-conditions-without-ground-truth-motion).
 
 ## HumanRetarget decoding
 
@@ -162,23 +159,7 @@ checkpoints, not new benchmark measurements from the release smoke tests.
 | Text only | 15,000 | 2.436127 | 1.680639 |
 | HumanRetarget, after robot decoding | 25,000 | 4.724520 | 1.498274 |
 
-Weight cleanup preserves every network tensor and normalization statistic.
-The port was checked against the preceding inference implementation on seven
-real clips per added model with identical inputs, noise, precision, and device:
-outputs were bitwise equal. HumanRetarget also matched exactly at 11 tested
-lengths, including 61–100-frame sequences and 599/600 frames. These checks do
-not promise bitwise agreement across different devices or PyTorch versions.
-
-
-The fixed HF release `2026-09-30-models` resolves to
-`8f2117c01e1b7d2a2e2df3bb75c3b513f03f644a`. All 19 supplied files were actually
-downloaded and checked against their SHA256 values. Each of the four models then
-passed condition-only inference, paired validation inference, and the common
-benchmark pipeline on the same three real clips (840 frames per model). The
-existing audio + text predictions remained bitwise equal. An additional real
-247-token, 588-frame sample matched exactly for text-only and HumanRetarget.
-These are release acceptance checks; the full-set scores above remain historical.
-
-Each added model also passed MuJoCo export and video/audio checks on one 312-frame,
-10.4-second clip using the released G1 assets. These videos validate the rendering
-pipeline, not physical robot tracking.
+The released weights preserve the source network parameters and normalization statistics.
+Sample comparisons with the preceding implementation produced identical outputs. The scores
+above remain historical full-set measurements; no new full-set FGD or MM20 is claimed for
+these three packaged models. Device and PyTorch differences can affect numerical results.

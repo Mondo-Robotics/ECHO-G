@@ -8,10 +8,7 @@
 
 """G1 motion-generation benchmark — CLASS-BASED metrics (EMAGE mertic.py style).
 
-Same numerics as scripts/eval_g1_motion.py, restructured so each benchmark is a stateful metric
-CLASS mirroring PantoMatrix/emage_evaltools/mertic.py: __init__(config) -> update/run/compute
-(per clip) -> compute()/avg() (final scalar) -> reset(). The per-clip loop fans each clip out to
-every evaluator; results are gathered at the end via .compute()/.avg().
+Each metric accumulates per-clip results under the shared protocol in docs/BENCHMARK.md.
 
 Metrics (all on pre-stored robot_repr[T,39] .pt for pred + reference; no model is run):
   FGD          : Fréchet distance on the learned G1 skeleton-conv AE latent (--g1-ae-ckpt REQUIRED,
@@ -27,19 +24,13 @@ Metrics (all on pre-stored robot_repr[T,39] .pt for pred + reference; no model i
                  Gaussian σ=0.3s, audio->motion by default, averaged over upper bodies. Prediction
                  and corresponding GT are both reported; their absolute gap is the lower-is-better
                  comparison metric. FK uses zero translation and identity global orientation.
-  SRGR         : historical opt-in metric (--sem-dir); excluded from the public dataset protocol.
-                 Semantic-mass-normalized per-frame/per-body FK-position recall. The numerator is
-                 semantic-weighted position hits; the denominator is the maximum possible semantic
-                 hit mass on the frames actually evaluated, so a perfect prediction is always 1.
-                 Its FK uses zero translation and identity global orientation. Default threshold is
-                 0.1 m, matching EMAGE's numeric default.
   jerk         : OMG body_jerk_mean on world-space G1 body positions: mean 3rd finite-difference
                  magnitude * fps^3 (m/s^3). Prediction and corresponding GT are both reported;
                  their absolute gap is the lower-is-better comparison metric. Reports both the
                  historical clip-equal aggregation and a length-weighted aggregation using T-3.
   foot_ground_error / contact_sliding_speed : OPTIONAL (--enable-foot-metrics), grounded-stance FK.
 
-Div/BA/SRGR/Multimodality use zero translation and identity root orientation. Jerk reconstructs
+Div/BA/Multimodality use zero translation and identity root orientation. Jerk reconstructs
 the world root trajectory from yaw_delta + base_vel_local, uses the stored full root orientation,
 and compares prediction and GT on their common temporal prefix. Only foot metrics need the
 grounded-stance z anchor.
@@ -101,8 +92,6 @@ _SOLE_OFFSETS = G1K.G1_SOLE_OFFSETS
 _SOLE_RADIUS = G1K.G1_SOLE_RADIUS
 
 _DEFAULT_ENCODER = ""
-_DEFAULT_SEM_DIR = ""
-_SRGR_SEMANTIC_PROTOCOL = "beat2_official_first_match_30fps_v1"
 _REQUIRED_EVAL_FPS = 30.0
 
 
@@ -230,13 +219,6 @@ def fk_grounded_world(rr: torch.Tensor, fps: float):
 # ============================================================================
 # Stateless feature / distance helpers (shared by the metric classes below)
 # ============================================================================
-def pooled_joint_stats_feature(joints: np.ndarray) -> np.ndarray:
-    """Per-clip Div feature: concat of time-mean and time-std of joint xyz.
-    joints (T,J,3) -> (J*3*2,). Robot: 30*3*2 = 180.
-    (== eval_emage_robot / hermes.benchmark.fid.)
-    """
-    j = np.asarray(joints, dtype=np.float64)
-    return np.concatenate([j.mean(axis=0).reshape(-1), j.std(axis=0).reshape(-1)], axis=0)
 
 
 def resolve_checkpoint_fps(
@@ -405,31 +387,6 @@ class FGD(object):
         return self.frechet_distance(pred_mat, gt_mat), pred_mat.shape[0], gt_mat.shape[0]
 
 
-class DivCrossClip(object):
-    """CROSS-clip diversity (ours): accumulate one pooled_joint_stats feature per clip (pred & gt),
-    at compute() report the EMAGE L1div (MAD about the batch mean) for pred and gt separately."""
-
-    def __init__(self):
-        self.reset()
-
-    def reset(self):
-        self.pred_feats, self.gt_feats = [], []
-
-    def update(self, pj, gj):
-        self.pred_feats.append(pooled_joint_stats_feature(pj))
-        self.gt_feats.append(pooled_joint_stats_feature(gj))
-
-    @staticmethod
-    def _l1div(feats):
-        F = np.stack(feats).astype(np.float64)  # (N, D)
-        if F.shape[0] < 2:
-            return float("nan")
-        return float(np.abs(F - F.mean(axis=0)).sum() / F.shape[0])  # Σ|F-mean|/N (EMAGE L1div)
-
-    def compute(self):
-        return self._l1div(self.pred_feats), self._l1div(self.gt_feats)
-
-
 class Div(object):
     """EMAGE L1div in G1 position space; core methods intentionally mirror mertic.py."""
 
@@ -547,76 +504,6 @@ class Multimodality(object):
         self.frames = 0
         self.sum = 0.0
         self.eq16_sum = 0.0
-
-
-class SRGRMass(object):
-    """Semantic Relevant Gesture Recall normalized by actual evaluated semantic mass.
-
-    This preserves EMAGE's per-frame/per-body Euclidean hit definition while replacing its
-    split-specific ``1 / 0.165`` scale with the exact maximum attainable weighted hit mass.
-    Consequently a perfect prediction is 1 on every nonzero-semantic evaluation set.
-    """
-
-    def __init__(
-        self, threshold: float = 0.1, joints: int = NUM_G1_BODIES, joint_dim: int = 3
-    ) -> None:
-        if threshold <= 0:
-            raise ValueError(f"SRGR threshold must be positive, got {threshold}")
-        if joints <= 0 or joint_dim <= 0:
-            raise ValueError(f"SRGR joints/joint_dim must be positive, got {joints}/{joint_dim}")
-        self.threshold = threshold
-        self.pose_dimes = joints
-        self.joint_dim = joint_dim
-        self.reset()
-
-    def run(
-        self, results: np.ndarray, targets: np.ndarray, semantic: np.ndarray, verbose: bool = False
-    ) -> float:
-        results = np.asarray(results).reshape(-1, self.pose_dimes, self.joint_dim)
-        targets = np.asarray(targets).reshape(-1, self.pose_dimes, self.joint_dim)
-        semantic = np.asarray(semantic, dtype=np.float64).reshape(-1)
-        if results.shape != targets.shape:
-            raise ValueError(f"SRGR pred/target shape mismatch: {results.shape} vs {targets.shape}")
-        if semantic.shape[0] != results.shape[0]:
-            raise ValueError(
-                f"SRGR semantic length {semantic.shape[0]} != motion length {results.shape[0]}"
-            )
-        if not np.isfinite(semantic).all():
-            raise ValueError("SRGR semantic weights must be finite")
-        if np.any(semantic < 0):
-            raise ValueError("SRGR semantic weights must be non-negative")
-
-        diff = np.linalg.norm(results - targets, axis=2)  # T, J
-        if not np.isfinite(diff).all():
-            raise ValueError("SRGR FK distances must be finite")
-        if verbose:
-            print(diff)
-        success = (diff < self.threshold).astype(np.float64)
-        semantic_mass = float(np.sum(semantic, dtype=np.float64))
-        numerator = float(np.sum(success * semantic[:, None], dtype=np.float64))
-        denominator = float(self.pose_dimes * semantic_mass)
-        if numerator > denominator:
-            roundoff = np.finfo(np.float64).eps * max(1.0, denominator) * 32
-            if numerator - denominator > roundoff:
-                raise RuntimeError(f"SRGR numerator {numerator} exceeds maximum mass {denominator}")
-            numerator = denominator
-
-        self.counter += success.shape[0]
-        self.semantic_mass += semantic_mass
-        self.numerator += numerator
-        self.denominator += denominator
-        return float(numerator / denominator) if denominator > 0 else float("nan")
-
-    def avg(self) -> float:
-        if self.denominator <= 0:
-            return float("nan")
-        return float(self.numerator / self.denominator)
-
-    def reset(self) -> None:
-        self.counter = 0
-        self.semantic_mass = 0.0
-        self.numerator = 0.0
-        self.denominator = 0.0
 
 
 class BeatAlign(object):
@@ -925,57 +812,6 @@ def wav_of(wav_dir: str, stem: str) -> str:
     return c1 if os.path.exists(c1) else f"{wav_dir}/{stem}.wav"
 
 
-def load_semantic(
-    sem_dir: str,
-    stem: str,
-    target_length: int,
-    target_fps: float,
-    semantic_fps: float,
-    semantic_protocol: str = _SRGR_SEMANTIC_PROTOCOL,
-) -> np.ndarray | None:
-    """Load a validated first-match semantic prefix without padding or resampling."""
-    path = os.path.join(sem_dir, f"{stem}.pt")
-    if not os.path.isfile(path):
-        return None
-    payload = torch.load(path, map_location="cpu", weights_only=False)
-    if not isinstance(payload, dict):
-        raise ValueError(f"{path}: semantic payload must be a metadata dictionary")
-    if payload.get("protocol") != semantic_protocol:
-        raise ValueError(
-            f"{path}: semantic protocol {payload.get('protocol')!r} != {semantic_protocol!r}"
-        )
-    if payload.get("stem") != stem:
-        raise ValueError(f"{path}: payload stem {payload.get('stem')!r} != {stem!r}")
-    payload_fps = float(payload.get("fps", float("nan")))
-    if not np.isclose(payload_fps, semantic_fps, rtol=0.0, atol=1e-9):
-        raise ValueError(f"{path}: payload fps {payload_fps} != --semantic-fps {semantic_fps}")
-    if not np.isclose(payload_fps, target_fps, rtol=0.0, atol=1e-9):
-        raise ValueError(
-            f"{path}: semantic fps {payload_fps} != evaluated motion fps {target_fps}; "
-            "resampling is forbidden for the canonical SRGR cache"
-        )
-
-    semantic = payload.get("sem")
-    if semantic is None:
-        raise ValueError(f"{path}: semantic payload has no 'sem' tensor")
-    semantic_np = np.asarray(torch.as_tensor(semantic).float().reshape(-1), dtype=np.float64)
-    if semantic_np.size == 0 or not np.isfinite(semantic_np).all():
-        raise ValueError(f"{path}: semantic scores are empty or non-finite")
-    if np.any(semantic_np < 0) or np.any(semantic_np > 1):
-        raise ValueError(f"{path}: semantic scores must lie in [0, 1]")
-    payload_frames = int(payload.get("num_frames", -1))
-    if payload_frames != semantic_np.size:
-        raise ValueError(
-            f"{path}: payload num_frames {payload_frames} != semantic length {semantic_np.size}"
-        )
-    if target_length > semantic_np.size:
-        raise ValueError(
-            f"{path}: evaluated motion length {target_length} exceeds semantic length "
-            f"{semantic_np.size}; final-value repetition is forbidden"
-        )
-    return semantic_np[:target_length]
-
-
 def summ(vals: list) -> dict:
     """Summary stats over a list, dropping NaNs."""
     a = np.asarray([v for v in vals if v == v], dtype=np.float64)  # drop nan
@@ -1046,35 +882,6 @@ def build_argparser() -> argparse.ArgumentParser:
         "--wav-dir",
         required=True,
         help="audio root: <wav-dir>/<stem>/audio.wav or <wav-dir>/<stem>.wav",
-    )
-    ap.add_argument(
-        "--sem-dir",
-        default=_DEFAULT_SEM_DIR,
-        help="historical opt-in SRGR cache: <sem-dir>/<stem>.pt with key 'sem'; "
-        "omit for the public dataset benchmark",
-    )
-    ap.add_argument(
-        "--semantic-fps",
-        type=float,
-        default=30.0,
-        help="expected frame rate stored in the canonical semantic cache",
-    )
-    ap.add_argument(
-        "--semantic-protocol",
-        default=_SRGR_SEMANTIC_PROTOCOL,
-        help="expected protocol string stored in every canonical semantic payload",
-    )
-    ap.add_argument(
-        "--srgr-threshold",
-        type=float,
-        default=0.1,
-        help="per-G1-body Euclidean FK-position success threshold in meters",
-    )
-    ap.add_argument(
-        "--expected-srgr-frames",
-        type=int,
-        default=0,
-        help="optional formal-run audit: require exactly this many evaluated frames",
     )
     ap.add_argument(
         "--val-split", default="", help="stem list; empty -> all stems present in BOTH dirs"
@@ -1229,21 +1036,6 @@ def main() -> None:
     _G1_MEAN_VEL_PATH = args.mmae_file
     _G1_MEAN_VEL = None
     _g1_mean_vel()
-    srgr_enabled = bool(args.sem_dir)
-    if srgr_enabled and not os.path.isdir(args.sem_dir):
-        raise SystemExit(f"explicit --sem-dir does not exist: {args.sem_dir}")
-    if not srgr_enabled and args.expected_srgr_frames:
-        raise ValueError("--expected-srgr-frames requires --sem-dir")
-    if args.semantic_fps <= 0:
-        raise ValueError(f"--semantic-fps must be positive, got {args.semantic_fps}")
-    if not args.semantic_protocol.strip():
-        raise ValueError("--semantic-protocol must be non-empty")
-    if args.srgr_threshold <= 0:
-        raise ValueError(f"--srgr-threshold must be positive, got {args.srgr_threshold}")
-    if args.expected_srgr_frames < 0:
-        raise ValueError(
-            f"--expected-srgr-frames must be non-negative, got {args.expected_srgr_frames}"
-        )
     multimodality_run_dirs = resolve_multimodality_run_dirs(
         args.multimodality_root, args.multimodality_runs
     )
@@ -1273,18 +1065,6 @@ def main() -> None:
     if len(stems) < 2:
         print(f"Need >=2 stems with both pred and ref; found {len(stems)}.")
         return
-    missing_semantic = (
-        [s for s in stems if not os.path.isfile(f"{args.sem_dir}/{s}.pt")] if srgr_enabled else []
-    )
-    if missing_semantic and args.require_all_stems:
-        raise SystemExit(
-            f"strict semantic coverage failed: requested={len(stems)} "
-            f"missing_semantic={len(missing_semantic)} {missing_semantic[:5]}"
-        )
-    if missing_semantic:
-        logger.warning(
-            "SRGR semantic coverage misses %d/%d clips", len(missing_semantic), len(stems)
-        )
 
     multimodality_missing: dict[str, list[str]] = {}
     if multimodality_run_dirs:
@@ -1326,14 +1106,11 @@ def main() -> None:
 
     # ---- instantiate the metric evaluators (EMAGE-style) ----
     fgd = FGD(net, cfg, ae_dev)
-    # Disabled: cross-clip pooled-feature Div is a research diagnostic, not EMAGE L1div.
-    # div_cross = DivCrossClip()
     div = Div()
     div_gt = Div()
     multimodality = (
         Multimodality(expected_runs=args.multimodality_runs) if multimodality_run_dirs else None
     )
-    srgr = SRGRMass(threshold=args.srgr_threshold)
     beat = BeatAlign(
         args.fps, sigma=args.bc_sigma, order=args.bc_order, direction=args.ba_direction
     )
@@ -1349,7 +1126,6 @@ def main() -> None:
 
     # ---- per-clip loop: load -> FK -> fan out to every evaluator's .update() ----
     n_done = 0
-    n_srgr = 0
     n_multimodality = 0
     for s in stems:
         pr = load_repr(f"{args.pred_dir}/{s}.pt", args.fps)
@@ -1379,7 +1155,6 @@ def main() -> None:
             np.save(f"{args.dump_fk_dir}/{s}_pred.npy", pj)
             np.save(f"{args.dump_fk_dir}/{s}_gt.npy", gj)
         fgd.update(pr, gr)  # FGD operates on repr directly
-        # Disabled: div_cross.update(pj, gj) used pooled_joint_stats, not EMAGE L1div.
         emage_pj = fk_positions_ba(pr)  # identity root rotation + zero translation
         emage_gj = fk_positions_ba(gr)
         motion_position_pred = emage_pj.reshape(emage_pj.shape[0], -1)  # EMAGE: (T, J*3)
@@ -1396,20 +1171,6 @@ def main() -> None:
             # No GT crop, temporal resampling, padding, or tail-drop is permitted here.
             multimodality.update(sampled_positions)
             n_multimodality += 1
-        if srgr_enabled:
-            semantic = load_semantic(
-                args.sem_dir,
-                s,
-                emage_pj.shape[0],
-                args.fps,
-                args.semantic_fps,
-                args.semantic_protocol,
-            )
-            if semantic is not None:
-                srgr.run(emage_pj, emage_gj, semantic)
-                n_srgr += 1
-            elif args.require_all_stems:
-                raise ValueError(f"strict semantic validation failed for {s}")
         wav_path = wav_of(args.wav_dir, s)
         beat.update(emage_pj, wav_path)
         beat_gt.update(emage_gj, wav_path)
@@ -1424,8 +1185,6 @@ def main() -> None:
 
     # ---- gather ----
     fgd_val, fgd_np, fgd_ng = fgd.compute()
-    # Disabled with the cross-clip Div calls above:
-    # div_pred, div_gt = div_cross.compute()
     jerk_gen, jerk_ref = jerk.summary()
     jerk_gen_length_weighted, jerk_ref_length_weighted = jerk.summary_length_weighted()
     ba_result = beat.summary()
@@ -1463,14 +1222,6 @@ def main() -> None:
         and jerk_ref_length_weighted["mean"] != 0.0
         else None
     )
-    if srgr_enabled:
-        if srgr.counter == 0 or srgr.denominator <= 0:
-            raise SystemExit("SRGR has zero evaluated frames or zero semantic mass")
-        if args.expected_srgr_frames and srgr.counter != args.expected_srgr_frames:
-            raise ValueError(
-                f"formal SRGR frame audit failed: actual={srgr.counter} "
-                f"expected={args.expected_srgr_frames}"
-            )
     if multimodality is None:
         multimodality_status = "SKIPPED_NO_MULTIRUN"
         multimodality_val = None
@@ -1564,9 +1315,6 @@ def main() -> None:
         },
         "metrics": {
             "FGD": fgd_val,
-            # Disabled: cross-clip pooled-feature Div_pred/Div_gt is not EMAGE L1div.
-            # "Div_pred": div_pred,
-            # "Div_gt": div_gt,
             "Div": div_value,
             "Div_GT": div_gt_value,
             "Div_signed_gap": div_closeness["signed_gap"],
@@ -1607,35 +1355,6 @@ def main() -> None:
             "jerk_reference_length_weighted": jerk_ref_length_weighted,
         },
     }
-    if srgr_enabled:
-        result["params"].update(
-            {
-                "srgr_metric": "SRGR mass on G1 FK positions: numerator=sum(hit*semantic), "
-                "denominator=30*sum(semantic) over all evaluated clips; per-frame, "
-                "per-body Euclidean-distance hit; all 30 G1 BFS bodies; identity root "
-                "orientation and zero translation; dynamic normalization guarantees a "
-                "perfect-prediction score of 1 on every nonzero-semantic test set.",
-                "srgr_variant": "semantic_mass",
-                "srgr_threshold_m": args.srgr_threshold,
-                "srgr_semantic_dir": args.sem_dir,
-                "srgr_semantic_fps": args.semantic_fps,
-                "srgr_semantic_protocol": args.semantic_protocol,
-                "srgr_coverage": f"{n_srgr}/{n_done} clips, {srgr.counter} frames",
-                "srgr_semantic_mass": srgr.semantic_mass,
-                "srgr_semantic_mass_source": ("dynamic_sum_after_pred_gt_common_prefix_crop"),
-                "srgr_semantic_mean_diagnostic": srgr.semantic_mass / srgr.counter,
-                "srgr_expected_frames": args.expected_srgr_frames or None,
-            }
-        )
-        result["metrics"].update(
-            {
-                "SRGR": srgr.avg(),
-                "SRGR_numerator": srgr.numerator,
-                "SRGR_denominator": srgr.denominator,
-                "SRGR_semantic_mass": srgr.semantic_mass,
-                "SRGR_frames": srgr.counter,
-            }
-        )
     if foot is not None:
         fge, csl = foot.summary()
         result["metrics"]["foot_ground_error"] = fge
@@ -1660,11 +1379,10 @@ def main() -> None:
     div_gap_str = f"{div_gap:.4f}" if div_gap is not None else "nan"
     mm = m["Multimodality"]
     mm_str = f"{mm:.4f}" if mm is not None else m["Multimodality_status"]
-    srgr_str = f"SRGR={m['SRGR']:.4f} | " if srgr_enabled else ""
     line = (
         f"[{result['tag']}] G1-emageFGD N={n_done} | FGD={m['FGD']:.3f}(lower=better) | "
         f"Div={div_str}(GT {div_gt_str}, gap {div_gap_str} lower=better) | "
-        f"Multimodality={mm_str} | {srgr_str}"
+        f"Multimodality={mm_str} | "
         f"BA={ba_str}(GT {ba_gt_str}, gap {ba_gap_str} lower=better) "
     )
     jg = m["Jerk"]["mean"]

@@ -2,344 +2,153 @@
 
 **Embodied Co-speech Humanoid mOtion Generation**
 
-ECHO-G generates full-body Unitree G1 motion from audio and a word-timed transcript.
-It generates physical 39D robot references at 30 FPS using a rectified-flow transformer.
-ECHO-G combines normalized Q/K content attention with global/local text attention and a learned,
-directional Gaussian time prior.
+ECHO-G generates full-body Unitree G1 motion at 30 FPS from speech and word-timed text.
+The audio+text model uses a rectified-flow transformer with QK normalization,
+global/local text attention, and a learned directional Gaussian time prior.
 
-```text
-Audio -> frozen Wav2Vec2 -> 30 FPS acoustic features ---+
-                                                      v
-Gaussian motion noise -> motion + audio + positions -> ECHO-G DiT -> physical robot39
-                                                      ^
-Word-timed text -> frozen Qwen -> token features -------+
-                       global / local Gaussian cross-attention
+| Model | Configuration | Support |
+|---|---|---|
+| Audio + text | [sgdit_audio_text.yaml](configs/sgdit_audio_text.yaml) | Training and inference |
+| Audio only | [sgdit_audio_only.yaml](configs/sgdit_audio_only.yaml) | Training and inference |
+| Text only | [sgdit_text_only.yaml](configs/sgdit_text_only.yaml) | Training and inference |
+| HumanRetarget | [human_retarget_inference.yaml](configs/human_retarget_inference.yaml) | Inference only |
+
+All models output physical 39D robot motion. Inputs support at most **20 seconds / 600 frames**
+and **256 text tokens**. HumanRetarget training data and training recipes are outside this release.
+
+## Installation
+
+Use Python 3.10 or 3.11 and a compatible PyTorch installation. Run the commands from this checkout:
+
+```bash
+git clone https://github.com/Mondo-Robotics/ECHO-G.git
+cd ECHO-G
+python -m venv .venv
+source .venv/bin/activate
+python -m pip install -e .
 ```
 
-This package provides the model, training and inference commands, a benchmark evaluator, and
-MuJoCo visualization for the released robot-motion dataset.
+Optional dependencies:
 
-See [model variants](docs/model_variants.md) for audio-only, text-only, and HumanRetarget.
-Training is provided for the direct robot models; **HumanRetarget is inference-only**.
-HumanRetarget training data and training recipes are outside this release.
+| Task | Install |
+|---|---|
+| Extract features for new raw inputs | `python -m pip install -e ".[preprocess]"` |
+| Benchmark | `python -m pip install -e ".[benchmark]"` |
+| MuJoCo rendering | `python -m pip install -e ".[visualization]"` |
+| Development | `python -m pip install -e ".[dev]"` |
 
 ## Data and weights
 
-**The dataset and model weights are available as private previews on Hugging Face.**
-Access requires an account authorized for each repository; public release remains pending.
-ECHO-G data contributions and project model/evaluation weights use **CC BY-NC 4.0**;
-third-party materials retain their applicable terms. See [licensing scope](docs/LICENSING.md).
+**The Hugging Face dataset and weights are currently private previews.** Downloads require an
+account authorized for each repository.
 
-| Asset | Hugging Face location | Status |
+| Asset | Repository / fixed revision | Contents |
 |---|---|---|
-| Processed robot-motion dataset | [gaopusen/ECHO-G](https://huggingface.co/datasets/gaopusen/ECHO-G) | Uploaded private preview |
-| ECHO-G audio+text `best.pt` (15k, EMA) | [Model repository](https://huggingface.co/gaopusen/ECHO-G/tree/2026-09-30) | Uploaded private preview |
-| Audio-only `best.pt` (25k, EMA) | [Model repository: audio_only](https://huggingface.co/gaopusen/ECHO-G/tree/2026-09-30-models/audio_only) | Private preview |
-| Text-only `best.pt` (15k, EMA) | [Model repository: text_only](https://huggingface.co/gaopusen/ECHO-G/tree/2026-09-30-models/text_only) | Private preview |
-| HumanRetarget inference weights | [Model repository: human_retarget](https://huggingface.co/gaopusen/ECHO-G/tree/2026-09-30-models/human_retarget) | Private preview; three files |
-| Benchmark FGD encoder | [Model repository: evaluation](https://huggingface.co/gaopusen/ECHO-G/tree/2026-09-30/evaluation) | Uploaded private preview |
-| Frozen BA normalization | With dataset | Included in the private dataset preview |
-| G1 MuJoCo XML and meshes | With dataset | Included under BSD-3-Clause |
+| Dataset | [gaopusen/ECHO-G](https://huggingface.co/datasets/gaopusen/ECHO-G/tree/2026-09-29-license) / `2026-09-29-license` | 14,987 training + 3,242 validation clips; motion, frozen conditions, audio, text, word times, splits, stats, BA normalization and G1 rendering assets |
+| Audio+text weights | [gaopusen/ECHO-G](https://huggingface.co/gaopusen/ECHO-G/tree/2026-09-30) / `2026-09-30` | `best.pt`, FGD encoder and configuration |
+| All model variants | [gaopusen/ECHO-G](https://huggingface.co/gaopusen/ECHO-G/tree/2026-09-30-models) / `2026-09-30-models` | Same audio+text weights plus audio-only, text-only and HumanRetarget |
 
-The prepared dataset contains processed robot motions, frozen audio/text conditions, clip-aligned
-audio, source transcripts, word-time annotations, frozen splits, training statistics, and the
-frozen BA normalization array. The dataset split is **14,987 training clips + 3,242 validation clips**.
-Audio is stored as `audio/<stem>.wav`, source text as `transcripts/<stem>.txt`, and canonical text,
-word times, and tokenizer mapping as `annotations/words/<stem>.json`. `raw_inputs.jsonl` provides
-inputs for feature extraction. BEAT2-derived audio/text retain their applicable source license
-and attribution, with clipping/text reconstruction documented. Encoder weights are separate downloads with their own terms. The dataset includes the G1
-MuJoCo XML and meshes with their BSD-3-Clause license; see [visualization](docs/VISUALIZATION.md).
-
-The public benchmark reports FGD, Div, BA, weighted jerk, foot metrics, and optional MM20. It does
-not require or distribute semantic labels. See [the benchmark protocol](docs/BENCHMARK.md).
-
-- [ECHO-G model card](docs/MODEL_CARD.md)
-- [Model variants and their download/inference commands](docs/model_variants.md)
-- [Dataset card](docs/DATASET_CARD.md)
-- [Download and use the dataset](docs/DATASET.md)
-- [Data format and timing contract](docs/DATA_FORMAT.md)
-- [Dataset asset manifest](manifests/dataset.json)
-- [Frozen-condition manifest identity](manifests/frozen_conditions.json)
-- [Model asset manifest](manifests/audio_text.json)
-- [Benchmark asset manifest](manifests/benchmark_assets.json)
-
-Follow the [dataset download guide](docs/DATASET.md), then use the commands below.
-The clip data comprise 12 tar archives (18.52 GB), with separate metadata and a robot-asset archive.
-Download and extract all archives into the same data root. The dataset revision is
-`2026-09-29-license`. The audio + text revision is `2026-09-30`; the combined model revision
-is `2026-09-30-models`. Both preserve the same audio + text weight file.
+Follow [the dataset guide](docs/DATASET.md#download-and-extract) to download and extract the data
+into `data/echo-g`. Supplied frozen conditions are ready to use; no feature extraction is needed.
 
 ### Download model weights
 
-Install the Hugging Face CLI with `python -m pip install huggingface_hub` if needed.
-Log in with an account authorized for the private model repository, then download and verify:
+For the audio+text examples below:
 
 ```bash
+python -m pip install huggingface_hub
 hf auth login
 hf download gaopusen/ECHO-G --repo-type model \
   --revision 2026-09-30 --local-dir weights
 (cd weights && sha256sum -c SHA256SUMS)
 ```
 
-This supplies `weights/best.pt`, `weights/evaluation/g1_fgd_encoder.pt`,
-`weights/configs/sgdit_audio_text.yaml`, the model card, license and checksums.
-The model and dataset are separate repository types with independent pinned revisions.
-No human-motion VAE is needed for this direct robot model. See the
-[model card](docs/MODEL_CARD.md) for file identities and release checks.
-
-## Installation
-
-Use Python 3.10 or 3.11 and a compatible PyTorch installation.
-
-```bash
-python -m venv .venv
-source .venv/bin/activate
-python -m pip install -e .
-```
-
-For extracting conditions from raw input:
-
-```bash
-python -m pip install -e ".[preprocess]"
-```
-
-For development:
-
-```bash
-python -m pip install -e ".[dev]"
-pytest
-ruff check .
-```
-
-Benchmark and MuJoCo dependencies are documented in [BENCHMARK.md](docs/BENCHMARK.md) and
-[VISUALIZATION.md](docs/VISUALIZATION.md).
-
-## Model at a glance
-
-| Setting | ECHO-G audio+text |
-|---|---|
-| Backbone | 12 blocks, width 768, 8 heads, FFN 2048 |
-| Motion representation | Direct physical 39D G1, 30 FPS |
-| Position encoding | Learned; model capacity 608, valid input limit 600 frames |
-| Text | Qwen3.5-4B layer −2, 2,560 dimensions; at most 256 tokens |
-| Audio | Wav2Vec2 final hidden state, 1,024 dimensions; interpolated to motion frames |
-| Cross-attention | QK normalization; global/local token branches sharing Q/K/V |
-| Time prior | Learned per-head width, signed lag, and mixture; support-gated Gaussian |
-| Sampling | EMA, 8 Euler updates, CFG = 1 |
-| Reference weights | Minimum-EMA-validation-loss `best.pt`, step 15,000 |
-
-The reference checkpoint was selected at step 15,000 by minimum EMA validation loss from
-63,000 training steps. ECHO-G uses `frame_seconds - token_center_seconds`, preserving the sign needed for
-learned lag. Text keys remain tokenizer units, including subwords; ECHO-G does not pool them into
-one key per word. See [the architecture](docs/ARCHITECTURE.md).
-
-## Training
-
-Expected core layout:
-
-```text
-DATA_ROOT/
-├── condition_30fps/<stem>.pt
-├── motion_39d_30fps/<stem>.pt
-├── splits/train_drop.txt
-├── splits/val_common.txt
-├── stats/drop_train.pt
-├── audit/condition/per_clip_condition_motion_audit.csv
-└── audit/condition/frozen_conditions.json
-```
-
-The supplied ECHO-G configurations use these files automatically. Download and extract the complete
-dataset, then run:
-
-```bash
-echo-g-train \
-  --config configs/sgdit_audio_text.yaml \
-  --data-root /path/to/echo-g-data \
-  --output-dir outputs/audio_text \
-  --device cuda
-```
-
-Resume using the same command plus `--resume outputs/audio_text/latest.pt`.
-The training directory records `experiment.json`, `latest.pt`, `best.pt`, `final.pt`, and
-`complete.json`. `latest.pt` is the full training-resume state; `best.pt` is selected by validation
-loss, not by FGD. The training recipe is in [REPRODUCIBILITY.md](docs/REPRODUCIBILITY.md).
+For audio-only, text-only or HumanRetarget, use [the variant guide](docs/MODEL_VARIANTS.md).
 
 ## Inference
 
-### Frozen validation split
-
-Use the paired dataset entry point when reproducing the canonical benchmark:
+Generate the full validation split with the released audio+text checkpoint:
 
 ```bash
 echo-g-sample \
   --checkpoint weights/best.pt \
-  --config weights/configs/sgdit_audio_text.yaml \
-  --data-root /path/to/echo-g-data \
+  --config configs/sgdit_audio_text.yaml \
+  --data-root data/echo-g \
   --output-dir results/audio_text \
   --split val --seeds 0 --device cuda
 ```
 
-### Cached conditions without ground-truth motion
+For a quick check, add `--limit 3`; remove it for the full benchmark. Predictions are saved as
+`results/audio_text/seed_000/<stem>.pt`. Each contains physical `robot_repr[T,39]` at 30 FPS.
 
-For new conditions produced by the current raw extractor, use the embedded complete-text
-provenance:
+For **your own audio/text or cached conditions**, follow [INFERENCE.md](docs/INFERENCE.md).
+The guide includes frozen encoder downloads and clip-relative word timing. New inputs exceeding
+the frame or token limit must be split explicitly.
+
+## Training
+
+Train the direct robot model using the supplied splits, frozen conditions and training statistics:
 
 ```bash
-echo-g-infer \
-  --checkpoint weights/best.pt \
-  --config weights/configs/sgdit_audio_text.yaml \
-  --condition-dir /path/to/condition_30fps \
-  --output-dir outputs/new_clips \
+echo-g-train \
+  --config configs/sgdit_audio_text.yaml \
+  --data-root data/echo-g \
+  --output-dir outputs/audio_text \
   --device cuda
 ```
 
-For independent inference on released dataset conditions, supply the included condition manifest:
-
-```bash
-echo-g-infer \
-  --checkpoint weights/best.pt \
-  --config weights/configs/sgdit_audio_text.yaml \
-  --condition-dir /path/to/echo-g-data/condition_30fps \
-  --condition-manifest /path/to/echo-g-data/audit/condition/frozen_conditions.json \
-  --condition-manifest-sha256 81e0b1197821f9014d147c8d17970ac9143a7d7f72c529d74e891a944d692b01 \
-  --output-dir outputs/frozen_conditions \
-  --device cuda
-```
-
-Both manifest options are required together. Independent inference does not infer a dataset
-root from the YAML. An explicitly supplied manifest always verifies condition-file identity,
-even if a file also has raw provenance.
-
-Use `--stem-list /path/to/stems.txt` to select clips. For canonical lengths, also provide
-`--lengths-csv /path/to/per_clip_condition_motion_audit.csv`. Otherwise the cached acoustic
-sequence supplies the output frame count. Predictions are denormalized physical robot references.
-
-### Raw audio and word-timed text
-
-The dataset includes `raw_inputs.jsonl` for its released clips. For your own inputs, create
-`utterances.jsonl` with paths relative to that manifest:
-
-```json
-{"stem":"example_0001","audio_path":"audio/example.wav","transcript":"Hello world","words":[{"text":"Hello","start":0.10,"end":0.42},{"text":"world","start":0.55,"end":0.91}]}
-```
-
-Word times are relative to the audio clip. The ECHO-G extractor reconstructs the canonical text
-from the word list and preserves the original token/time mapping.
-
-#### Download the frozen encoders
-
-Run the following commands from the ECHO-G checkout. These are separate upstream model
-repositories, not files in the ECHO-G model/dataset repository. Their upstream licenses apply.
-Encoder downloads are only needed for **new raw inputs**; inference on the released frozen
-conditions does not require either model.
-
-| Encoder | Upstream Hugging Face repository | Fixed revision (full commit SHA) |
-|---|---|---|
-| Text | [Qwen/Qwen3.5-4B](https://huggingface.co/Qwen/Qwen3.5-4B/tree/851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a) | `851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a` |
-| Audio | [jonatasgrosman/wav2vec2-large-xlsr-53-english](https://huggingface.co/jonatasgrosman/wav2vec2-large-xlsr-53-english/tree/569a6236e92bd5f7652a0420bfe9bb94c5664080) | `569a6236e92bd5f7652a0420bfe9bb94c5664080` |
-
-These revisions match the encoder file identities recorded during the raw-input acceptance.
-The Wav2Vec2 weights and configuration match the copy used from the
-`wav2vec2-large-xlsr-53-english` subdirectory of `Wan-AI/Wan2.2-S2V-14B`;
-the standalone repository avoids downloading the Wan video model. The exact identities,
-loader classes and SHA256 values are recorded in
-[the encoder manifest](manifests/condition_encoders.json).
-
-```bash
-python -m pip install -e ".[preprocess]"
-python -m pip install huggingface_hub
-
-hf download Qwen/Qwen3.5-4B \
-  --repo-type model \
-  --revision 851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a \
-  --local-dir models/Qwen3.5-4B
-
-hf download jonatasgrosman/wav2vec2-large-xlsr-53-english \
-  config.json preprocessor_config.json special_tokens_map.json vocab.json \
-  model.safetensors README.md \
-  --repo-type model \
-  --revision 569a6236e92bd5f7652a0420bfe9bb94c5664080 \
-  --local-dir models/wav2vec2-large-xlsr-53-english
-
-sha256sum -c manifests/condition_encoders.sha256
-```
-
-Allow roughly **10.6 GB** for the model files. The audio command intentionally downloads
-only the safetensors weights and processor files, not duplicate PyTorch/Flax weights or the
-ASR language model. Check that every listed file reports `OK` before extracting conditions.
-Use clean, dedicated model directories; do not mix files from different revisions.
-The extractor takes these **local directories**, not an unpinned Hub ID. Keep the
-`--revision` values above unchanged when preparing another machine.
-
-#### Extract and infer
-
-Using the verified downloads, run:
-
-```bash
-echo-g-extract-conditions \
-  --mode audio --manifest utterances.jsonl \
-  --output-dir data/new_conditions \
-  --audio-model models/wav2vec2-large-xlsr-53-english \
-  --fps 30 --device cuda
-
-echo-g-extract-conditions \
-  --mode text --manifest utterances.jsonl \
-  --output-dir data/new_conditions \
-  --text-model models/Qwen3.5-4B \
-  --text-layer -2 --max-text-tokens 256 --device cuda
-
-echo-g-extract-conditions \
-  --mode merge --manifest utterances.jsonl \
-  --output-dir data/new_conditions
-
-echo-g-infer \
-  --checkpoint weights/best.pt \
-  --config weights/configs/sgdit_audio_text.yaml \
-  --condition-dir data/new_conditions \
-  --output-dir outputs/raw \
-  --device cuda
-```
-
-The extractor writes `echo-g-complete-text-provenance-v1` metadata: the full tokenizer count,
-complete IDs/offsets, encoder and word-time provenance, and text/time tensor digests. These new
-conditions can be loaded without the frozen-dataset manifest.
-
-Output duration comes from the audio, with `T = max(2, round(duration_seconds * 30))`.
-Raw clips over 20 seconds or 256 text tokens are rejected; the pipeline does not automatically
-split, truncate, or stitch them. See [the timing and length rules](docs/DATA_FORMAT.md#time-and-length).
-
-Use frozen conditions for historical benchmark reproduction. Fresh encoder outputs can vary
-with encoder revisions, decoding, hardware, and backend; exact agreement with the historical
-audio or text cache is not claimed.
+Resume with `--resume outputs/audio_text/latest.pt`. `best.pt` is selected by EMA validation loss.
+See [the training recipe and reference results](docs/REPRODUCIBILITY.md) for batch size, optimizer,
+checkpoint selection and numerical reproducibility. Audio-only and text-only recipes are in
+[MODEL_VARIANTS.md](docs/MODEL_VARIANTS.md#training-the-direct-robot-models).
 
 ## Benchmark and visualization
 
-- Run the integrated latest `scripts/eval_g1_motion_cls.py` following
-  [BENCHMARK.md](docs/BENCHMARK.md). Required evaluator assets are tracked separately from weights.
-- Render physical robot references using the MuJoCo pipeline in
-  [VISUALIZATION.md](docs/VISUALIZATION.md).
+| Task | Entry point | Guide |
+|---|---|---|
+| FGD, Div, BA, weighted jerk, foot metrics and optional MM20 | `python scripts/eval_g1_motion_cls.py` | [BENCHMARK.md](docs/BENCHMARK.md) |
+| Export predictions to MuJoCo NPZ | `echo-g-export-mujoco` | [VISUALIZATION.md](docs/VISUALIZATION.md) |
+| Render NPZ to video and add audio | `echo-g-render`, then FFmpeg | [VISUALIZATION.md](docs/VISUALIZATION.md) |
 
-The reference checkpoint scores on the 3,242-clip validation split were **FGD 2.278349** (seed000) and
-**MM20 1.785556** (seeds 0–19). The packaged implementation scores **FGD 2.278311** under the released benchmark protocol;
-MM20 refers to the original 20-seed run.
-[Reproduction scope and reference results](docs/REPRODUCIBILITY.md#reference-results)
-explain the distinction.
+The packaged audio+text implementation achieves **FGD 2.278311** on all 3,242 validation clips.
+Historical checkpoint results are **FGD 2.278349 / MM20 1.785556**; MM20 was not rerun for the
+package. [Reference results](docs/REPRODUCIBILITY.md#reference-results) specify the protocol.
 
-## Project layout
+## Repository layout
 
 ```text
-configs/                  training and inference configuration
-src/echo_g/               model, data, training, inference, and condition extraction
-scripts/                  G1 evaluation and MuJoCo visualization entry points
-docs/                     architecture, data/model cards, and usage protocols
-manifests/                asset identities and Hugging Face distribution status
-tests/                    implementation and integration checks
+configs/                      one configuration per model variant
+src/echo_g/
+  model.py                    speech-conditioned motion transformer
+  word_time_attention.py      global/local text attention and signed time prior
+  config.py, data.py          configuration and dataset loading
+  conditions.py               raw audio/text feature extraction
+  condition_provenance.py     complete-token and timestamp validation
+  training.py, flow.py         training, rectified flow and sampling
+  inference.py                paired-split and condition-only inference
+  human_retarget/             HumanRetarget inference networks and decoding
+  evaluation/                 G1 metrics, kinematics and learned FGD encoder
+  visualization/              MuJoCo export and rendering
+scripts/                      three thin evaluation/rendering entry points
+docs/                         task guides, architecture and data/model cards
+manifests/                    pinned asset versions, checksums and reference scores
+tests/                        regression and integration tests
+.github/                      CI and contributor/community guidance
 ```
+
+### Documentation
+
+| Need | Read |
+|---|---|
+| Download and understand the data | [Download](docs/DATASET.md) · [Data card](docs/DATASET_CARD.md) · [Tensor and timing format](docs/DATA_FORMAT.md) |
+| Run new inputs or another model variant | [Inference](docs/INFERENCE.md) · [Model variants](docs/MODEL_VARIANTS.md) |
+| Understand the model and reproduce results | [Architecture](docs/ARCHITECTURE.md) · [Model card](docs/MODEL_CARD.md) · [Reproduction](docs/REPRODUCIBILITY.md) |
+| Evaluate or render predictions | [Benchmark](docs/BENCHMARK.md) · [MuJoCo visualization](docs/VISUALIZATION.md) |
 
 ## License and citation
 
-Code retains **PolyForm Noncommercial 1.0.0** under [LICENSE](LICENSE) and [NOTICE](NOTICE).
-ECHO-G data contributions and project model/evaluation weights use **CC BY-NC 4.0** under
-[LICENSE-DATA-WEIGHTS](LICENSE-DATA-WEIGHTS). Third-party materials retain their applicable
-licenses. See [licensing scope and contacts](docs/LICENSING.md). Citation metadata is in
-[CITATION.cff](CITATION.cff).
+Code uses [PolyForm Noncommercial 1.0.0](LICENSE). Project data contributions and weights use
+[CC BY-NC 4.0](LICENSE-DATA-WEIGHTS); third-party materials retain their applicable terms.
+See [licensing scope and contacts](docs/LICENSING.md), [NOTICE](NOTICE), and [CITATION.cff](CITATION.cff).
+
+For development and bug reports, see [Contributing](.github/CONTRIBUTING.md).

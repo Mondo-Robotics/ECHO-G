@@ -6,30 +6,12 @@
 # Commercial use requires written permission from Dr. Hao Xu
 # (xuhao3e8@gmail.com) and Dr. Shuo Yang (shuo.yang@mondorobotics.com).
 
-"""Featurize G1 robot_repr[T,39] -> the G1 skeleton-conv AE encoder input (SINGLE SOURCE OF
-TRUTH, shared by scripts/train_g1_aeskconv.py and scripts/eval_omg_robot_emage_FGD.py).
+"""Build G1 skeleton-convolution features from physical robot_repr[T,39].
 
-The skeleton-conv encoder (hermes/robot_fgd/motion_encoder.VAESKConv, topology=G1_BFS_PARENTS)
-sees 30 "bodies" (edge0 = virtual root, bodies 1..29 = the 29 URDF joints in BFS order). Each
-G1 joint is a single revolute DoF (scalar radian), so we feed [sin θ, cos θ] per body (avoids
-the ±π wrap discontinuity a raw-angle temporal conv would hit).
-
-  robot_repr[10:39] = 29 joint angles in CANONICAL order (G1_JOINT_NAMES).
-  encoder wants BFS body order -> body b (1..29) uses canonical index _BFS_TO_CANONICAL[b-1];
-  body 0 (pelvis root) has no joint -> zeros.
-
-Encoder input modes (all keep the SkeletonConv in_channels % 30 == 0 constraint):
-  * "padded6": 6 channels/body = [sinθ, cosθ, 0, 0, 0, 0]  -> (T, 30*6 = 180).
-               Matches EMAGE's hard-coded channel_base[0]=6, so LocalEncoder is UNEDITED.
-  * "pure2"  : 2 channels/body = [sinθ, cosθ]              -> (T, 30*2 =  60).
-               Requires the encoder built with args.channel_base=2 (LocalEncoder honours it).
-  * "rot6d"  : 6 channels/body = root-global + joint-local rotation-6D
-                                                               -> (T, 30*6 = 180).
-  * "rich12" : 12 channels/body = rot6d + position/dynamics -> (T, 30*12 = 360).
-
-The base/root block robot_repr[0:10] (base_orient_6d + yaw_delta + base_vel_local) is
-DELIBERATELY NOT fed to the skeleton conv (FGD must not cover root motion, per project decision).
-It is only a recon target for the plain decoder; see the trainer's --base-weight.
+Joint angles are reordered from canonical to BFS order across 30 bodies. The
+released encoder uses sin/cos joint angles (pure2); padded6, rot6d and rich12
+remain available for checkpoints that specify those input modes. Root motion
+is excluded in pure2/padded6 and included in rot6d/rich12.
 """
 
 from __future__ import annotations

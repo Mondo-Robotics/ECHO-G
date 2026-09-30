@@ -16,7 +16,12 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from echo_g.config import ModelConfig
-from echo_g.v2_attention import V2_CONFIG, attention_weights, block_parameters, initial_logit
+from echo_g.word_time_attention import (
+    WORD_TIME_CONFIG,
+    attention_weights,
+    block_parameters,
+    initial_logit,
+)
 
 
 def timestep_embedding(timestep: torch.Tensor, dimension: int) -> torch.Tensor:
@@ -37,7 +42,7 @@ def modulate(values: torch.Tensor, shift: torch.Tensor, scale: torch.Tensor) -> 
     return values * (1.0 + scale.unsqueeze(1)) + shift.unsqueeze(1)
 
 
-class V2CrossAttentionBlock(nn.Module):
+class WordTimeCrossAttentionBlock(nn.Module):
     def __init__(self, hidden: int, heads: int, feedforward: int, dropout: float) -> None:
         super().__init__()
         if hidden % heads:
@@ -66,9 +71,9 @@ class V2CrossAttentionBlock(nn.Module):
             torch.full(
                 (heads,),
                 initial_logit(
-                    V2_CONFIG["temperature_init"],
-                    V2_CONFIG["temperature_min"],
-                    V2_CONFIG["temperature_max"],
+                    WORD_TIME_CONFIG["temperature_init"],
+                    WORD_TIME_CONFIG["temperature_min"],
+                    WORD_TIME_CONFIG["temperature_max"],
                 ),
             )
         )
@@ -76,15 +81,18 @@ class V2CrossAttentionBlock(nn.Module):
             torch.full(
                 (heads,),
                 initial_logit(
-                    V2_CONFIG["sigma_init_seconds"],
-                    V2_CONFIG["sigma_min_seconds"],
-                    V2_CONFIG["sigma_max_seconds"],
+                    WORD_TIME_CONFIG["sigma_init_seconds"],
+                    WORD_TIME_CONFIG["sigma_min_seconds"],
+                    WORD_TIME_CONFIG["sigma_max_seconds"],
                 ),
             )
         )
         self.word_lag_raw = nn.Parameter(torch.zeros(heads))
         self.word_mix_raw = nn.Parameter(
-            torch.full((heads,), initial_logit(V2_CONFIG["init_mix"], 0.0, V2_CONFIG["max_mix"]))
+            torch.full(
+                (heads,),
+                initial_logit(WORD_TIME_CONFIG["init_mix"], 0.0, WORD_TIME_CONFIG["max_mix"]),
+            )
         )
 
     def cross_attention(
@@ -137,7 +145,7 @@ class V2CrossAttentionBlock(nn.Module):
         return values + mlp_gate.unsqueeze(1) * self.mlp(hidden)
 
 
-class AudioOnlyCrossAttentionBlock(V2CrossAttentionBlock):
+class AudioOnlyCrossAttentionBlock(WordTimeCrossAttentionBlock):
     """Original scaled-dot attention with the trained single null text key."""
 
     def __init__(self, hidden: int, heads: int, feedforward: int, dropout: float) -> None:
@@ -194,7 +202,7 @@ class SpeechGroundedDiT(nn.Module):
         block_type = (
             AudioOnlyCrossAttentionBlock
             if config.architecture == "audio_only"
-            else V2CrossAttentionBlock
+            else WordTimeCrossAttentionBlock
         )
         self.blocks = nn.ModuleList(
             [

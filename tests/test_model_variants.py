@@ -18,7 +18,7 @@ import torch
 from echo_g.conditions import load_manifest
 from echo_g.config import ExperimentConfig, HumanInferenceConfig, load_inference_config
 from echo_g.data import collate_motion, decode_condition
-from echo_g.human_retarget_decoder import align_root_rz90, retarget_arbitrary_length
+from echo_g.human_retarget.decoder import align_root_rz90, retarget_arbitrary_length
 from echo_g.model import SpeechGroundedDiT
 
 

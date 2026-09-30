@@ -15,8 +15,8 @@ import torch
 import torch.nn.functional as F
 
 from echo_g.config import ModelConfig
-from echo_g.model import SpeechGroundedDiT, V2CrossAttentionBlock
-from echo_g.v2_attention import V2_CONFIG, attention_weights, block_parameters
+from echo_g.model import SpeechGroundedDiT, WordTimeCrossAttentionBlock
+from echo_g.word_time_attention import WORD_TIME_CONFIG, attention_weights, block_parameters
 
 
 def _small_model() -> SpeechGroundedDiT:
@@ -69,7 +69,7 @@ def _reference_attention(
 
 def test_attention_matches_independent_reference_and_cross_output() -> None:
     torch.manual_seed(13)
-    block = V2CrossAttentionBlock(16, 4, 32, 0.0).eval()
+    block = WordTimeCrossAttentionBlock(16, 4, 32, 0.0).eval()
     with torch.no_grad():
         block.word_lag_raw.copy_(torch.tensor([-0.8, -0.2, 0.4, 1.1]))
     motion, text = torch.randn(2, 7, 16), torch.randn(2, 5, 16)
@@ -184,4 +184,4 @@ def test_v2_default_contract() -> None:
     config.validate()
     assert config.max_t == 608 and config.max_text_tokens == 256
     assert config.position_encoding == "learned" and config.architecture == "v2"
-    assert V2_CONFIG["max_abs_lag_seconds"] == 0.5
+    assert WORD_TIME_CONFIG["max_abs_lag_seconds"] == 0.5

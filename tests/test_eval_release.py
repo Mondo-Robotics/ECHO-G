@@ -24,7 +24,6 @@ from echo_g.evaluation.g1_kinematics import G1_BFS_PARENTS
 from echo_g.evaluation.g1_motion_cls import (
     Jerk,
     Multimodality,
-    SRGRMass,
     load_g1_ae,
     load_repr,
     map2latent_feature,
@@ -63,18 +62,6 @@ def test_weighted_jerk_uses_valid_difference_count() -> None:
     assert clip_equal["mean"] == pytest.approx(4)
     assert weighted["mean"] == pytest.approx(5)
     assert ground_truth["mean"] == 0
-
-
-def test_srgr_normalizes_evaluated_semantic_mass() -> None:
-    metric = SRGRMass()
-    truth = np.zeros((2, 30, 3))
-    prediction = truth.copy()
-    prediction[1, :, 0] = 0.2
-    metric.run(prediction, truth, np.array([0.25, 0.75]))
-    assert metric.avg() == pytest.approx(0.25)
-    metric.reset()
-    metric.run(truth, truth, np.array([0.25, 0.75]))
-    assert metric.avg() == 1
 
 
 def test_physical_motion_metadata_is_enforced(tmp_path: Path) -> None:
@@ -133,14 +120,14 @@ def test_fgd_checkpoint_load_and_feature_path_need_no_parent_repository(
     assert not loaded.training
 
 
-def test_public_benchmark_without_semantics_preserves_other_metrics(
+def test_public_benchmark_metrics_and_required_audio(
     tmp_path: Path,
     synthetic_encoder: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     pytest.importorskip("librosa")
     monkeypatch.setattr(torch.cuda, "is_available", lambda: False)
-    for directory in ["pred", "ref", "audio", "sem"]:
+    for directory in ["pred", "ref", "audio"]:
         (tmp_path / directory).mkdir()
     mmae = tmp_path / "mmae.npy"
     np.save(mmae, np.full(30, 0.1, dtype=np.float32))
@@ -176,16 +163,6 @@ def test_public_benchmark_without_semantics_preserves_other_metrics(
             handle.setsampwidth(2)
             handle.setframerate(16000)
             handle.writeframes(waveform.tobytes())
-        torch.save(
-            {
-                "stem": stem,
-                "fps": 30,
-                "num_frames": frames,
-                "protocol": "beat2_official_first_match_30fps_v1",
-                "sem": torch.full((frames,), 0.5),
-            },
-            tmp_path / "sem" / f"{stem}.pt",
-        )
 
     args = [
         "echo-g-eval",
@@ -223,29 +200,6 @@ def test_public_benchmark_without_semantics_preserves_other_metrics(
     assert metrics["foot_ground_error"]["n"] == 2
     assert metrics["contact_sliding_speed"]["n"] == 2
 
-    legacy_args = args + ["--sem-dir", str(tmp_path / "sem"), "--expected-srgr-frames", "160"]
-    monkeypatch.setattr(sys, "argv", legacy_args)
-    evaluator.main()
-    legacy = json.loads((tmp_path / "result.json").read_text())
-    assert legacy["metrics"]["SRGR_frames"] == 160
-    assert 0 <= legacy["metrics"]["SRGR"] <= 1
-    assert metrics == {
-        key: value for key, value in legacy["metrics"].items() if not key.startswith("SRGR")
-    }
-    assert public["params"] == {
-        key: value for key, value in legacy["params"].items() if not key.startswith("srgr")
-    }
-
-    (tmp_path / "sem" / "clip_0.pt").unlink()
-    with pytest.raises(SystemExit, match="strict semantic coverage"):
-        evaluator.main()
-    monkeypatch.setattr(sys, "argv", args + ["--sem-dir", str(tmp_path / "missing")])
-    with pytest.raises(SystemExit, match="explicit --sem-dir does not exist"):
-        evaluator.main()
-    monkeypatch.setattr(sys, "argv", args + ["--expected-srgr-frames", "160"])
-    with pytest.raises(ValueError, match="requires --sem-dir"):
-        evaluator.main()
-    monkeypatch.setattr(sys, "argv", args)
     (tmp_path / "audio" / "clip_0.wav").unlink()
     with pytest.raises(FileNotFoundError, match="BA audio is missing"):
         evaluator.main()

@@ -32,16 +32,8 @@ checkpoint; all inference parameters and normalization values are preserved.
 | `best.pt` | 655,730,204 | `c84f31fce140cdc8c3be5e5dbc8cb8eb3a82ce1865e2d84026a0791d4735928d` |
 | `evaluation/g1_fgd_encoder.pt` | 5,551,281 | `761d3ae1e833123765785c8d8fcb95ec3745ee07de230cc892b52c8ecd304b91` |
 
-The original main-checkpoint SHA256 is
-`c1e7e863e28b76b710bc18f9e9029836771fc86c1bb9fca42aa9d7655f74a616`.
-The original FGD-checkpoint SHA256 is
-`466b18af663156637b3dac8ce5fc074487e287b0c5d2749744fb4580ce00909a`.
-Use the published-file hashes above when verifying downloads.
-
-Release preparation verified tensor-by-tensor equality and strict loading through the public
-loaders. Motion predictions and FGD features matched the original checkpoints exactly on
-seven real clips (maximum absolute difference 0). This is packaging-equivalence validation,
-not a new full-split benchmark or MM20 run.
+Use these release-file checksums to verify downloads. The weights contain the inference
+parameters and normalization statistics; optimizer-resume state is not included.
 
 Training uses the 14,987-clip BEAT2-derived G1 full-text drop split; evaluation uses 3,242 held-out
 clips. Data and normalization hashes are part of the release manifest.
