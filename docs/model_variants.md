@@ -168,3 +168,17 @@ real clips per added model with identical inputs, noise, precision, and device:
 outputs were bitwise equal. HumanRetarget also matched exactly at 11 tested
 lengths, including 61–100-frame sequences and 599/600 frames. These checks do
 not promise bitwise agreement across different devices or PyTorch versions.
+
+
+The fixed HF release `2026-09-30-models` resolves to
+`8f2117c01e1b7d2a2e2df3bb75c3b513f03f644a`. All 19 supplied files were actually
+downloaded and checked against their SHA256 values. Each of the four models then
+passed condition-only inference, paired validation inference, and the common
+benchmark pipeline on the same three real clips (840 frames per model). The
+existing audio + text predictions remained bitwise equal. An additional real
+247-token, 588-frame sample matched exactly for text-only and HumanRetarget.
+These are release acceptance checks; the full-set scores above remain historical.
+
+Each added model also passed MuJoCo export and video/audio checks on one 312-frame,
+10.4-second clip using the released G1 assets. These videos validate the rendering
+pipeline, not physical robot tracking.

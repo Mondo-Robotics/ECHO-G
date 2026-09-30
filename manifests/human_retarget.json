@@ -7,7 +7,9 @@
     "repo_type": "model",
     "revision": "2026-09-30-models",
     "private": true,
-    "status": "prepared_upload_pending"
+    "status": "uploaded_private_preview",
+    "commit_sha": "8f2117c01e1b7d2a2e2df3bb75c3b513f03f644a",
+    "url": "https://huggingface.co/gaopusen/ECHO-G/tree/2026-09-30-models/human_retarget"
   },
   "inference_only": true,
   "target": "physical_robot39",
@@ -41,7 +43,23 @@
   "validation": {
     "real_clips": 7,
     "max_abs_difference": 0.0,
-    "state_tensors_bitwise_equal": true
+    "state_tensors_bitwise_equal": true,
+    "download_sha256_verified": true,
+    "download_inference_clips": 3,
+    "download_inference_frames": 840,
+    "paired_and_condition_only_inference": true,
+    "sample_benchmark_pipeline_pass": true,
+    "additional_token_cap_parity": {
+      "tokens": 247,
+      "frames": 588,
+      "max_abs_difference": 0.0
+    },
+    "mujoco_render": {
+      "frames": 312,
+      "fps": 30,
+      "audio_seconds": 10.4,
+      "status": "pass"
+    }
   },
   "human_training_data_included": false
 }
