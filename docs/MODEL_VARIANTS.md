@@ -3,7 +3,7 @@
 All four models generate physical Robot39 motion at 30 FPS and use the same
 [robot dataset](https://huggingface.co/datasets/gaopusen/ECHO-G),
 `scripts/eval_g1_motion_cls.py`, and MuJoCo visualization pipeline.
-The dataset and model repository remain private during release preparation.
+The dataset and all model weights are public at revision `v0.2.0`.
 
 | Model | Configuration | Weights | Training support |
 |---|---|---|---|
@@ -19,11 +19,10 @@ or SMPL-X installation is required to run the released inference pipeline.
 
 ## Download
 
-Install the package and authenticate with an account that has access to the
-private repositories. The revision below contains all four models.
+Install the package, then download the model variants you need from the public repository.
 
 ```bash
-hf download gaopusen/ECHO-G --revision 2026-09-30-models \
+hf download gaopusen/ECHO-G --revision v0.2.0 \
   --include 'audio_only/*' 'text_only/*' 'human_retarget/*' \
             'configs/*' 'evaluation/*' 'SHA256SUMS' 'LICENSE*' 'NOTICE' \
   --local-dir weights

@@ -38,7 +38,7 @@ FGD-selected checkpoint. Historical validation used `drop_last=True` and batch 3
 ## Checkpoint identity
 
 Released filename: `best.pt`, from model repository
-[gaopusen/ECHO-G](https://huggingface.co/gaopusen/ECHO-G/tree/2026-09-30), revision `2026-09-30`.
+[gaopusen/ECHO-G](https://huggingface.co/gaopusen/ECHO-G/tree/v0.2.0), revision `v0.2.0`.
 
 ```text
 Release SHA256: c84f31fce140cdc8c3be5e5dbc8cb8eb3a82ce1865e2d84026a0791d4735928d

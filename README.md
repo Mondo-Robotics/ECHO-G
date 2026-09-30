@@ -21,7 +21,7 @@ and **256 text tokens**. HumanRetarget training data and training recipes are ou
 Use Python 3.10 or 3.11 and a compatible PyTorch installation. Run the commands from this checkout:
 
 ```bash
-git clone https://github.com/Mondo-Robotics/ECHO-G.git
+git clone --branch v0.2.0 https://github.com/Mondo-Robotics/ECHO-G.git
 cd ECHO-G
 python -m venv .venv
 source .venv/bin/activate
@@ -39,14 +39,13 @@ Optional dependencies:
 
 ## Data and weights
 
-**The Hugging Face dataset and weights are currently private previews.** Downloads require an
-account authorized for each repository.
+**Release v0.2.0:** the dataset and all four model variants are publicly downloadable.
+Use GitHub tag `v0.2.0` with HF revision `v0.2.0` for the matching code, data and weights.
 
 | Asset | Repository / fixed revision | Contents |
 |---|---|---|
-| Dataset | [gaopusen/ECHO-G](https://huggingface.co/datasets/gaopusen/ECHO-G/tree/2026-09-29-license) / `2026-09-29-license` | 14,987 training + 3,242 validation clips; motion, frozen conditions, audio, text, word times, splits, stats, BA normalization and G1 rendering assets |
-| Audio+text weights | [gaopusen/ECHO-G](https://huggingface.co/gaopusen/ECHO-G/tree/2026-09-30) / `2026-09-30` | `best.pt`, FGD encoder and configuration |
-| All model variants | [gaopusen/ECHO-G](https://huggingface.co/gaopusen/ECHO-G/tree/2026-09-30-models) / `2026-09-30-models` | Same audio+text weights plus audio-only, text-only and HumanRetarget |
+| Dataset | [gaopusen/ECHO-G](https://huggingface.co/datasets/gaopusen/ECHO-G/tree/v0.2.0) / `v0.2.0` | 14,987 training + 3,242 validation clips; motion, frozen conditions, audio, text, word times, splits, stats, BA normalization and G1 rendering assets |
+| All model variants | [gaopusen/ECHO-G](https://huggingface.co/gaopusen/ECHO-G/tree/v0.2.0) / `v0.2.0` | Audio+text, audio-only, text-only, HumanRetarget and the shared FGD encoder |
 
 Follow [the dataset guide](docs/DATASET.md#download-and-extract) to download and extract the data
 into `data/echo-g`. Supplied frozen conditions are ready to use; no feature extraction is needed.
@@ -57,12 +56,14 @@ For the audio+text examples below:
 
 ```bash
 python -m pip install huggingface_hub
-hf auth login
 hf download gaopusen/ECHO-G --repo-type model \
-  --revision 2026-09-30 --local-dir weights
-(cd weights && sha256sum -c SHA256SUMS)
+  --revision v0.2.0 --local-dir weights \
+  --include 'best.pt' 'evaluation/*' 'configs/sgdit_audio_text.yaml' \
+            'SHA256SUMS' 'LICENSE*' 'NOTICE' 'README.md'
+(cd weights && sha256sum --ignore-missing -c SHA256SUMS)
 ```
 
+This downloads the audio+text files; the checksum command verifies files present locally.
 For audio-only, text-only or HumanRetarget, use [the variant guide](docs/MODEL_VARIANTS.md).
 
 ## Inference

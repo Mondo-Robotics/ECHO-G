@@ -1,9 +1,8 @@
 # Licensing
 
 ECHO-G uses separate licenses for code, data contributions and model weights.
-The dataset and model/FGD weights are available in separate private Hugging Face repositories.
-Access currently requires authorization for the relevant repository; public release remains
-pending. See the [dataset download guide](DATASET.md) and
+The dataset and model/FGD weights are publicly available in separate Hugging Face repositories
+at revision `v0.2.0`. See the [dataset download guide](DATASET.md) and
 [weight download commands](../README.md#download-model-weights).
 
 ## Scope

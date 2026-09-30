@@ -5,11 +5,11 @@
   "hugging_face": {
     "repo_id": "gaopusen/ECHO-G",
     "repo_type": "model",
-    "revision": "2026-09-30-models",
-    "private": true,
-    "status": "uploaded_private_preview",
-    "commit_sha": "8f2117c01e1b7d2a2e2df3bb75c3b513f03f644a",
-    "url": "https://huggingface.co/gaopusen/ECHO-G/tree/2026-09-30-models/human_retarget"
+    "revision": "v0.2.0",
+    "private": false,
+    "status": "public",
+    "url": "https://huggingface.co/gaopusen/ECHO-G/tree/v0.2.0/human_retarget",
+    "commit_sha": "fb14caf73a23d842282a34f51811aa5aaeef5e91"
   },
   "inference_only": true,
   "target": "physical_robot39",

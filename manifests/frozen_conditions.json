@@ -1,23 +1,23 @@
 {
   "schema": "echo-g-frozen-condition-manifest-identity-v1",
-  "publication_status": "uploaded_private_preview",
+  "publication_status": "public",
   "manifest": {
     "relative_dataset_path": "audit/condition/frozen_conditions.json",
     "schema": "echo-g-frozen-condition-manifest-v1",
     "sha256": "81e0b1197821f9014d147c8d17970ac9143a7d7f72c529d74e891a944d692b01",
     "entries": 18229,
     "maximum_full_token_count": 247,
-    "distribution": "Included in the private Hugging Face dataset preview; not embedded in the code repository."
+    "distribution": "Included in the public Hugging Face dataset; not embedded in the code repository."
   },
   "loader_policy": "Raw conditions require echo-g-complete-text-provenance-v1. Frozen conditions require this manifest and its pinned SHA256; each condition file must match its manifest entry.",
   "hugging_face": {
-    "status": "uploaded_private_preview",
+    "status": "public",
     "repo_id": "gaopusen/ECHO-G",
-    "revision": "2026-09-29",
-    "url": "https://huggingface.co/datasets/gaopusen/ECHO-G/resolve/2026-09-29/audit/condition/frozen_conditions.json",
+    "revision": "v0.2.0",
+    "url": "https://huggingface.co/datasets/gaopusen/ECHO-G/resolve/v0.2.0/audit/condition/frozen_conditions.json",
     "repo_type": "dataset",
-    "private": true,
-    "access": "authorized_accounts_only",
-    "commit_sha": "fd0fa719143df8e2e7afd40968660922ab93f59e"
+    "private": false,
+    "access": "public",
+    "commit_sha": "a1280e7524817e74f06c928285698378ba5d85bc"
   }
 }

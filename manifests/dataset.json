@@ -1,17 +1,16 @@
 {
   "schema": "echo-g-dataset-manifest-v1",
-  "release_candidate_date": "2026-09-29",
   "name": "ECHO-G BEAT2 G1 motion dataset",
-  "publication_status": "uploaded_private_preview_public_release_pending",
+  "publication_status": "public",
   "hugging_face": {
-    "status": "uploaded_private_preview",
+    "status": "public",
     "repo_id": "gaopusen/ECHO-G",
-    "revision": "2026-09-29-license",
+    "revision": "v0.2.0",
     "url": "https://huggingface.co/datasets/gaopusen/ECHO-G",
     "repo_type": "dataset",
-    "private": true,
-    "access": "authorized_accounts_only",
-    "commit_sha": "d823a10dcba627561bb8183d613158f2814aedfc"
+    "private": false,
+    "access": "public",
+    "commit_sha": "a1280e7524817e74f06c928285698378ba5d85bc"
   },
   "license_status": "confirmed",
   "scope": [
@@ -50,7 +49,7 @@
     "english_3_solomon_"
   ],
   "public_packaging": {
-    "inventory_sha256": "153baa4d93cf6e1442b30b86b581a9587fa804fd6822bbb384f17aa142fca4ef",
+    "inventory_sha256": "c87c9e48f66502a711c4ef27e63a2337d057e8c03697fe25b9fc3ab833e4f740",
     "word_time_annotation_schema": "echo-g-word-token-annotations-v1",
     "shards": [
       {
@@ -145,7 +144,7 @@
     "archive_index_sha256": "96931d7dd0fdf34fa60aedd719659946e03e5df57d1ea56569d0e8d7c9f4e77d",
     "archive_index_path": "data_archives.json",
     "archive_bytes": 18523729920,
-    "download_bytes": 18631940841,
+    "download_bytes": 18631941020,
     "download_files": 35,
     "archive_checksum_manifest_sha256": "fe25eef237b1ec3ae91857184685e37e94fb46010cbec5201ce69799f5e8d9fa",
     "robot_assets": {
@@ -182,5 +181,6 @@
   "license": "cc-by-nc-4.0",
   "license_file": "LICENSE-DATA-WEIGHTS",
   "license_scope": "Project contributions within the rights it controls; upstream component licenses remain applicable.",
-  "licensing_document": "docs/LICENSING.md"
+  "licensing_document": "docs/LICENSING.md",
+  "release_version": "v0.2.0"
 }

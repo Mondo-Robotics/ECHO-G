@@ -12,4 +12,4 @@ from echo_g.config import ExperimentConfig
 from echo_g.model import SpeechGroundedDiT
 
 __all__ = ["ExperimentConfig", "SpeechGroundedDiT"]
-__version__ = "0.2.0.dev0"
+__version__ = "0.2.0"

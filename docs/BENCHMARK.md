@@ -11,13 +11,12 @@ python -m pip install -e '.[benchmark]'
 python -c "import librosa, scipy, soundfile; print(librosa.__version__, scipy.__version__, soundfile.__version__)"
 ```
 
-The dataset is available in the private preview
+The dataset is publicly available at
 [gaopusen/ECHO-G](https://huggingface.co/datasets/gaopusen/ECHO-G); see the
 [download guide](DATASET.md). ECHO-G model weights and the FGD encoder are available in the
-[private model repository](https://huggingface.co/gaopusen/ECHO-G/tree/2026-09-30); follow the
-[weight download commands](../README.md#download-model-weights). Only authorized accounts
-can access these repositories. Pin dataset revision `2026-09-29-license` and model revision
-`2026-09-30`. Dataset archive and FGD/MMAE asset hashes are recorded in the
+[public model repository](https://huggingface.co/gaopusen/ECHO-G/tree/v0.2.0); follow the
+[weight download commands](../README.md#download-model-weights). Both repositories are public. Pin dataset revision `v0.2.0` and model revision
+`v0.2.0`. Dataset archive and FGD/MMAE asset hashes are recorded in the
 [dataset manifest](../manifests/dataset.json) and
 [benchmark asset manifest](../manifests/benchmark_assets.json); this branch contains code,
 protocols and identity records, not the large assets.
@@ -26,11 +25,11 @@ Use the same pinned asset revisions for every model in a comparison.
 | Required input | Expected content | Distribution |
 |---|---|---|
 | Predictions | One physical `robot_repr[T,39]` tensor per `<stem>.pt`, 30 FPS | Generate with ECHO-G inference |
-| References | Released ECHO-G robot motion files, same stems and coordinate system | [Private dataset preview](https://huggingface.co/datasets/gaopusen/ECHO-G) |
-| Split | Released `splits/val_common.txt`; any formal exclusion list must be frozen and shared across methods | [Private dataset preview](https://huggingface.co/datasets/gaopusen/ECHO-G) |
-| FGD encoder | Trained G1 skeleton-convolution AE `evaluation/g1_fgd_encoder.pt`, including its configuration/state | [Private model preview](https://huggingface.co/gaopusen/ECHO-G/tree/2026-09-30/evaluation) |
-| BA normalization | `eval_assets/mmae/g1_mmae_30body_30fps.npy`, finite array of shape `(30,)` | Included in the [private dataset preview](https://huggingface.co/datasets/gaopusen/ECHO-G) |
-| Audio | `audio/<stem>.wav`, matching the start of the released motion | Included in the [private dataset preview](https://huggingface.co/datasets/gaopusen/ECHO-G), under its source terms |
+| References | Released ECHO-G robot motion files, same stems and coordinate system | [Public dataset](https://huggingface.co/datasets/gaopusen/ECHO-G) |
+| Split | Released `splits/val_common.txt`; any formal exclusion list must be frozen and shared across methods | [Public dataset](https://huggingface.co/datasets/gaopusen/ECHO-G) |
+| FGD encoder | Trained G1 skeleton-convolution AE `evaluation/g1_fgd_encoder.pt`, including its configuration/state | [Public model weights](https://huggingface.co/gaopusen/ECHO-G/tree/v0.2.0/evaluation) |
+| BA normalization | `eval_assets/mmae/g1_mmae_30body_30fps.npy`, finite array of shape `(30,)` | Included in the [public dataset](https://huggingface.co/datasets/gaopusen/ECHO-G) |
+| Audio | `audio/<stem>.wav`, matching the start of the released motion | Included in the [public dataset](https://huggingface.co/datasets/gaopusen/ECHO-G), under its source terms |
 
 BA reads the included clip-aligned waveform, not the frozen acoustic feature tensor. The
 loader accepts both `<wav-dir>/<stem>.wav` and the `<wav-dir>/<stem>/audio.wav` layout.
@@ -146,7 +145,7 @@ EMAGE evaluation code, with skeleton convolution from DeepMotionEditing and deco
 code from TM2T. Their source notices are retained in the vendored files. The rotation
 utilities retain their PyTorch3D-derived attribution. No third-party model weights,
 robot assets, SMPL-X assets or audio are included in this code branch. The project-trained
-FGD encoder weights are available in the private model repository under **CC BY-NC 4.0**.
+FGD encoder weights are available in the public model repository under **CC BY-NC 4.0**.
 The project's contribution to the frozen BA normalization is covered by the same data license.
 Code and third-party source materials retain their applicable licenses; see
 [licensing scope](LICENSING.md).

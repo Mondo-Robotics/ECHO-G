@@ -5,20 +5,17 @@ physical G1 motion, frozen audio/text conditions, segmented audio, transcript an
 annotations. Splits, training statistics and BA normalization are included.
 
 The dataset is available at [gaopusen/ECHO-G](https://huggingface.co/datasets/gaopusen/ECHO-G)
-as a **private preview**. Only authorized accounts can download it; public release remains
-pending. ECHO-G data contributions use **CC BY-NC 4.0**; third-party materials retain their
+as a **public release**. Downloads do not require access approval. ECHO-G data contributions use **CC BY-NC 4.0**; third-party materials retain their
 applicable terms. See the [data card](DATASET_CARD.md) and [licensing scope](LICENSING.md).
 
 ## Download and extract
 
 Install the standard Hugging Face CLI with `python -m pip install huggingface_hub` if needed.
-Log in with an account authorized to access the private repository, then download the pinned
-revision and extract the archives:
+Download the pinned revision and extract the archives:
 
 ```bash
-hf auth login
 hf download gaopusen/ECHO-G --repo-type dataset \
-  --revision 2026-09-29-license --local-dir data/echo-g
+  --revision v0.2.0 --local-dir data/echo-g
 
 for archive in data/echo-g/data/*.tar data/echo-g/robot_assets/*.tar; do
   tar -xf "$archive" -C data/echo-g
@@ -46,7 +43,7 @@ echo-g-train \
   --device cuda
 ```
 
-Download the private model repository at revision `2026-09-30` using the
+Download the public model repository at revision `v0.2.0` using the
 [weight download commands](../README.md#download-model-weights), then generate the validation
 split with:
 

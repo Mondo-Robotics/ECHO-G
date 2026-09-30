@@ -1,8 +1,7 @@
 # ECHO-G audio+text model card
 
-Status: **uploaded private preview, 2026-09-30**, at
-[gaopusen/ECHO-G](https://huggingface.co/gaopusen/ECHO-G/tree/2026-09-30). Access requires
-an authorized account; public release remains pending.
+Status: **public release v0.2.0**, at
+[gaopusen/ECHO-G](https://huggingface.co/gaopusen/ECHO-G/tree/v0.2.0). Downloads do not require access approval.
 [Model manifest](../manifests/audio_text.json) · [Data card](DATASET_CARD.md) ·
 [Architecture](ARCHITECTURE.md) · [Reproduction protocol](REPRODUCIBILITY.md).
 
@@ -27,7 +26,7 @@ run completed at 63,000 steps. The published file is an inference package with u
 training metadata and internal paths removed. Its identity differs from the original serialized
 checkpoint; all inference parameters and normalization values are preserved.
 
-| File at model revision `2026-09-30` | Bytes | SHA256 |
+| File at model revision `v0.2.0` | Bytes | SHA256 |
 |---|---:|---|
 | `best.pt` | 655,730,204 | `c84f31fce140cdc8c3be5e5dbc8cb8eb3a82ce1865e2d84026a0791d4735928d` |
 | `evaluation/g1_fgd_encoder.pt` | 5,551,281 | `761d3ae1e833123765785c8d8fcb95ec3745ee07de230cc892b52c8ecd304b91` |
@@ -54,10 +53,10 @@ MuJoCo visualization is a rendering of reference motion, not a closed-loop track
 
 ## Distribution
 
-Download the private model repository at revision `2026-09-30` using the
+Download the public model repository at revision `v0.2.0` using the
 [README commands](../README.md#download-model-weights). It includes the main checkpoint, FGD
 encoder, matching configuration, license and `SHA256SUMS`. Use dataset revision
-`2026-09-29-license` from the [separate dataset repository](https://huggingface.co/datasets/gaopusen/ECHO-G/tree/2026-09-29-license).
+`v0.2.0` from the [separate dataset repository](https://huggingface.co/datasets/gaopusen/ECHO-G/tree/v0.2.0).
 Source speech, transcript and frozen audio/text encoder assets have separate terms. G1 XML and
 meshes are included with the dataset under BSD-3-Clause; they are not embedded in this code repository.
 The ECHO-G checkpoint is designated **CC BY-NC 4.0**, covering rights held by the project;

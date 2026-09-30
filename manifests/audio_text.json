@@ -3,13 +3,13 @@
   "name": "ECHO-G audio+text direct robot",
   "config": "configs/sgdit_audio_text.yaml",
   "hugging_face": {
-    "status": "uploaded_private_preview",
+    "status": "public",
     "repo_id": "gaopusen/ECHO-G",
     "repo_type": "model",
-    "revision": "2026-09-30",
+    "revision": "v0.2.0",
     "url": "https://huggingface.co/gaopusen/ECHO-G",
-    "private": true,
-    "commit_sha": "193f9c74dcf6b0c457ead7a095bb640b324c2872"
+    "private": false,
+    "commit_sha": "fb14caf73a23d842282a34f51811aa5aaeef5e91"
   },
   "checkpoint": {
     "suggested_local_filename": "best.pt",
@@ -20,7 +20,7 @@
     "validation_loss": 0.289654246331365,
     "upload_filename": "best.pt",
     "bytes": 655730204,
-    "url": "https://huggingface.co/gaopusen/ECHO-G/resolve/2026-09-30/best.pt"
+    "url": "https://huggingface.co/gaopusen/ECHO-G/resolve/v0.2.0/best.pt"
   },
   "training_completed_optimizer_steps": 63000,
   "training_validation_clips_at_batch_three": 3240,

@@ -1,8 +1,7 @@
 # ECHO-G dataset card
 
-Status: **uploaded private preview, 2026-09-29** at
-[gaopusen/ECHO-G](https://huggingface.co/datasets/gaopusen/ECHO-G). Access is limited to
-authorized accounts; public release remains pending.
+Status: **public release v0.2.0** at
+[gaopusen/ECHO-G](https://huggingface.co/datasets/gaopusen/ECHO-G). Downloads do not require access approval.
 This card describes the BEAT2-derived data used by ECHO-G.
 [Download and usage](DATASET.md) · [Data format](DATA_FORMAT.md).
 
@@ -105,5 +104,5 @@ metadata and documentation use **CC BY-NC 4.0**, to the extent the project holds
 rights. See [LICENSE-DATA-WEIGHTS](../LICENSE-DATA-WEIGHTS) and [licensing scope](LICENSING.md).
 BEAT2-derived source content retains its applicable upstream terms and attribution; G1 rendering
 assets retain BSD-3-Clause. The dataset includes source and modification notices.
-Code remains under PolyForm Noncommercial 1.0.0. Public release remains pending; the pinned
+Code remains under PolyForm Noncommercial 1.0.0. The pinned
 dataset revision is recorded in the [dataset manifest](../manifests/dataset.json).
